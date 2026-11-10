@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TW-ElemBadminton Tracker // 國小羽球賽事時序與報名甘特圖</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --border: #e2e8f0;
+    }
+    html.dark {
+      --background: #0b0f19;
+      --card: #111827;
+      --foreground: #f1f5f9;
+      --muted-foreground: #94a3b8;
+      --border: #1e293b;
+    }
+    .gantt-grid {
+      background-image: linear-gradient(to right, var(--border) 1px, transparent 1px);
+      background-size: calc(100% / 13) 100%;
+    }
+    .bar-reg {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(59, 130, 246, 0.28),
+        rgba(59, 130, 246, 0.28) 6px,
+        rgba(59, 130, 246, 0.45) 6px,
+        rgba(59, 130, 246, 0.45) 12px
+      );
+      border: 1px solid rgba(59, 130, 246, 0.8);
+    }
+    .bar-match {
+      background: rgba(16, 185, 129, 0.85);
+      border: 1px solid rgba(5, 150, 105, 1);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6 text-xs">
+  <!-- Top Google Internal Style Header Bar (Moma / Launchcal / Buganizer vibe) -->
+  <header class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono font-bold text-xs tracking-wide">GO/TW-BADMINTON</span>
+        <div>
+          <h1 class="text-base font-bold text-[var(--foreground)]">全臺國小羽球盃賽時序追蹤器 (115~116年度 / 前後半年甘特圖)</h1>
+          <p class="text-[var(--muted-foreground)] text-xs">基準日：2026-11-10 ｜ 觀測區間：2026-05 至 2027-05（前後半年）｜ 涵蓋：報名起訖日 &amp; 正式比賽日</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnExportCsv" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
+          匯出賽事 CSV
+        </button>
+        <a href="#commentSection" class="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium text-xs">
+          💬 留言 / 回報賽事情報
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI Summary Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4 pt-3 border-t border-[var(--border)]" id="kpiStrip"></div>
+  </header>
+
+  <!-- Filter & Search Controls -->
+  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-1.5" id="regionFilters">
+      <span class="text-[var(--muted-foreground)] font-medium mr-1">分區篩選：</span>
+      <button data-region="ALL" class="reg-btn px-2.5 py-1 rounded font-medium bg-blue-600 text-white">全部地區</button>
+      <button data-region="全國" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]">全國賽</button>
+      <button data-region="北區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]">北區 (基北桃竹宜)</button>
+      <button data-region="中區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]">中區 (苗中彰投雲)</button>
+      <button data-region="南區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]">南區 (嘉南高屏澎)</button>
+      <button data-region="東區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]">東區 (花東)</button>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <select id="statusFilter" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs">
+        <option value="ALL">所有報名狀態</option>
+        <option value="報名中">🟢 報名進行中 / 即將截止</option>
+        <option value="即將開放">🔵 尚未開放 / 預定行事曆</option>
+        <option value="待開賽">🟡 報名截止・準備開賽</option>
+        <option value="已結束">⚪ 已完賽</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="搜尋盃賽名稱、地點、縣市..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-48" />
+    </div>
+  </section>
+
+  <!-- Gantt Chart Section -->
+  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 overflow-x-auto">
+    <div class="flex items-center justify-between mb-3">
+      <div class="font-bold text-sm flex items-center gap-2">
+        <span>📊 時序甘特圖 (Gantt Timeline: 2026/05 – 2027/05)</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-reg"></span> 報名期間 (起~迄)</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-match"></span> 比賽期間</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-0.5 h-3.5 bg-red-500"></span> 今日基準線 (2026-11-10)</span>
+      </div>
+    </div>
+
+    <div class="min-w-[860px]">
+      <!-- Month Header -->
+      <div class="grid grid-cols-12 border-b border-[var(--border)] pb-1.5 font-mono text-[var(--muted-foreground)]">
+        <div class="col-span-4 pl-2 font-sans font-semibold text-[var(--foreground)]">分區 / 賽事名稱</div>
+        <div class="col-span-8 grid grid-cols-13 text-center" style="display:grid;grid-template-columns:repeat(13,minmax(0,1fr));">
+          <span>26/05</span><span>26/06</span><span>26/07</span><span>26/08</span><span>26/09</span><span>26/10</span>
+          <span class="text-red-500 font-bold">26/11</span>
+          <span>26/12</span><span>27/01</span><span>27/02</span><span>27/03</span><span>27/04</span><span>27/05</span>
+        </div>
+      </div>
+
+      <!-- Gantt Rows -->
+      <div id="ganttContainer" class="divide-y divide-[var(--border)]"></div>
+    </div>
+  </section>
+
+  <!-- Detailed Structured Table (Google Issue / Launch Tracker Table style) -->
+  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 overflow-x-auto">
+    <h2 class="font-bold text-sm mb-3">📋 國小羽球賽事報名與賽程明細表（依時序排列）</h2>
+    <table class="w-full text-left border-collapse min-w-[860px]">
+      <thead>
+        <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] font-semibold">
+          <th class="py-2 px-2">區域</th>
+          <th class="py-2 px-2">縣市/場館</th>
+          <th class="py-2 px-2">賽事名稱 (含國小組別)</th>
+          <th class="py-2 px-2 font-mono">報名起始日</th>
+          <th class="py-2 px-2 font-mono">報名結束日</th>
+          <th class="py-2 px-2 font-mono">比賽日期</th>
+          <th class="py-2 px-2">狀態</th>
+          <th class="py-2 px-2">報名平台 / 備註</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody" class="divide-y divide-[var(--border)]"></tbody>
+    </table>
+  </section>
+
+  <!-- Comment & Feedback Board (Google Buganizer / Issue Comment Thread style) -->
+  <section id="commentSection" class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mt-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div>
+        <h2 class="font-bold text-sm">💬 賽事情報補充 &amp; 網頁改善留言板 (Issue &amp; Tip Collector)</h2>
+        <p class="text-[var(--muted-foreground)] text-xs">賽事資料由系統定期自動搜尋更新。歡迎教練與家長在此留言提供遺漏盃賽、勘誤或功能建議，AI 助手將定期彙整所有留言供後續優化！</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker/issues/1" target="_blank" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium text-xs">
+          🌐 前往雲端公開討論串留言
+        </a>
+        <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
+          📥 匯出留言紀錄 (CSV)
+        </button>
+      </div>
+    </div>
+
+    <!-- New Comment Form -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4 p-3 rounded bg-[var(--background)] border border-[var(--border)]">
+      <div class="md:col-span-2">
+        <label class="block text-[var(--muted-foreground)] mb-1">稱呼 / 身份</label>
+        <input id="cAuthor" type="text" placeholder="例：新北林教練 / 王媽媽" class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-[var(--muted-foreground)] mb-1">留言分類</label>
+        <select id="cType" class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]">
+          <option value="情報補充">📣 賽事情報補充</option>
+          <option value="日期勘誤">🛠️ 報名/日期勘誤</option>
+          <option value="功能建議">💡 網頁改善建議</option>
+          <option value="其他問題">❓ 其他提問</option>
+        </select>
+      </div>
+      <div class="md:col-span-6">
+        <label class="block text-[var(--muted-foreground)] mb-1">留言內容（如：盃賽名稱、地區、報名網址或改善建議）</label>
+        <input id="cContent" type="text" placeholder="請輸入您的情報或建議，AI 將自動收集整理..." class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]" />
+      </div>
+      <div class="md:col-span-2 flex items-end">
+        <button id="btnSubmitComment" class="w-full px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">
+          送出留言
+        </button>
+      </div>
+    </div>
+
+    <!-- Comment Thread List -->
+    <div id="commentList" class="space-y-2"></div>
+  </section>
+
+  <script>
+    const REF_TODAY = "2026-11-10";
+    const TIMELINE_START = new Date("2026-05-01T00:00:00");
+    const TIMELINE_END = new Date("2027-05-31T23:59:59");
+    const TOTAL_MS = TIMELINE_END - TIMELINE_START;
+
+    const INITIAL_EVENTS = [
+      // 前半年 (2026/05 ~ 2026/10)
+      {
+        region: "中區",
+        venue: "苗栗縣・巨蛋體育館",
+        title: "115年全國羽球團體錦標賽 (國小男/女團)",
+        regStart: "2026-03-16",
+        regEnd: "2026-04-08",
+        matchStart: "2026-05-02",
+        matchEnd: "2026-05-11",
+        platform: "中華羽協 / MY Livescore (已完賽)"
+      },
+      {
+        region: "北區",
+        venue: "桃園市・市立蘆竹羽球館",
+        title: "115年桃園市運動會－市長盃羽球錦標賽 (含國小組)",
+        regStart: "2026-03-12",
+        regEnd: "2026-05-01",
+        matchStart: "2026-05-28",
+        matchEnd: "2026-05-30",
+        platform: "LAPGO 運動平台 (已完賽)"
+      },
+      {
+        region: "中區",
+        venue: "臺中市・朝馬國民運動中心",
+        title: "115年臺中久樘國小盃羽球錦標賽",
+        regStart: "2026-04-20",
+        regEnd: "2026-05-15",
+        matchStart: "2026-06-06",
+        matchEnd: "2026-06-07",
+        platform: "臺中市羽委會 / 盃賽網 (已完賽)"
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館",
+        title: "2026年臺北市市長盃羽球錦標賽 (國小組/親子組)",
+        regStart: "2026-06-05",
+        regEnd: "2026-07-03",
+        matchStart: "2026-08-02",
+        matchEnd: "2026-08-09",
+        platform: "臺北市體育總會羽協 (已完賽)"
+      },
+      {
+        region: "南區",
+        venue: "臺南市・市立羽球館",
+        title: "臺南市115年中小學羽球錦標賽 (國小團/個人)",
+        regStart: "2026-08-03",
+        regEnd: "2026-08-21",
+        matchStart: "2026-09-14",
+        matchEnd: "2026-09-18",
+        platform: "臺南市教育局競賽系統 (已完賽)"
+      },
+      {
+        region: "南區",
+        venue: "屏東縣・縣立體育館",
+        title: "115年屏東縣縣長盃羽球錦標賽 (國小組)",
+        regStart: "2026-08-25",
+        regEnd: "2026-09-14",
+        matchStart: "2026-10-02",
+        matchEnd: "2026-10-03",
+        platform: "屏東縣體育會羽委會 (已完賽)"
+      },
+      {
+        region: "中區",
+        venue: "彰化縣・彰南國民運動中心",
+        title: "彰化縣115學年度縣長盃羽球錦標賽 (國小各年級組)",
+        regStart: "2026-08-24",
+        regEnd: "2026-09-11",
+        matchStart: "2026-10-03",
+        matchEnd: "2026-10-07",
+        platform: "MY Livescore 賽事系統 (已完賽)"
+      },
+      {
+        region: "南區",
+        venue: "高雄市・莊敬國小活動中心",
+        title: "高雄市國小體育促進會115年度校際羽球聯賽",
+        regStart: "2026-09-14",
+        regEnd: "2026-09-30",
+        matchStart: "2026-10-19",
+        matchEnd: "2026-10-21",
+        platform: "高雄市體促會 (已完賽)"
+      },
+      // 近期與後半年 (2026/11 ~ 2027/05)
+      {
+        region: "中區",
+        venue: "臺中市・朝馬國民運動中心",
+        title: "115年臺中市長盃全國羽球錦標賽 (國小團/個人)",
+        regStart: "2026-09-15",
+        regEnd: "2026-10-16",
+        matchStart: "2026-11-14",
+        matchEnd: "2026-11-22",
+        platform: "臺中市羽委會 / MY Livescore"
+      },
+      {
+        region: "北區",
+        venue: "新竹市・竹光國民運動中心",
+        title: "115年未來里建設盃國小羽球錦標賽",
+        regStart: "2026-10-19",
+        regEnd: "2026-10-30",
+        matchStart: "2026-11-22",
+        matchEnd: "2026-11-22",
+        platform: "LAPGO 運動共享平台"
+      },
+      {
+        region: "南區",
+        venue: "澎湖縣・縣立羽毛球館",
+        title: "115年澎湖縣中小學羽球聯賽 (國小團體/低年級單打)",
+        regStart: "2026-10-12",
+        regEnd: "2026-11-02",
+        matchStart: "2026-11-21",
+        matchEnd: "2026-11-22",
+        platform: "BeClass 線上報名"
+      },
+      {
+        region: "全國",
+        venue: "臺北市・臺北體育館7樓",
+        title: "115年全國國小盃羽球錦標賽 (4~6年級團/個人)",
+        regStart: "2026-09-28",
+        regEnd: "2026-10-26",
+        matchStart: "2026-12-04",
+        matchEnd: "2026-12-16",
+        platform: "中華羽協 (ctba.mylivescore.tw)"
+      },
+      {
+        region: "北區",
+        venue: "宜蘭縣・宜蘭運動公園體育館",
+        title: "115學年度宜蘭縣中小學運動會－羽球項目 (國小組)",
+        regStart: "2026-11-02",
+        regEnd: "2026-11-09",
+        matchStart: "2026-12-11",
+        matchEnd: "2026-12-17",
+        platform: "LAPGO 運動共享平台"
+      },
+      {
+        region: "南區",
+        venue: "高雄市・亞柏會館",
+        title: "2026冬季亞柏盃全國學童分齡羽球錦標賽",
+        regStart: "2026-11-01",
+        regEnd: "2026-11-27",
+        matchStart: "2026-12-19",
+        matchEnd: "2026-12-20",
+        platform: "MY Livescore (報名進行中)"
+      },
+      {
+        region: "北區",
+        venue: "臺北市・中正運動中心",
+        title: "2027北市冬季主委盃國小分齡暨親子羽球賽",
+        regStart: "2026-11-05",
+        regEnd: "2026-12-11",
+        matchStart: "2027-01-16",
+        matchEnd: "2027-01-17",
+        platform: "BeClass / 地方羽委會 (報名中)"
+      },
+      {
+        region: "東區",
+        venue: "臺東縣・東海運動公園羽球館",
+        title: "2027年第十二屆新苗後山盃全國羽球錦標賽 (國小組)",
+        regStart: "2026-12-07",
+        regEnd: "2027-01-08",
+        matchStart: "2027-02-03",
+        matchEnd: "2027-02-07",
+        platform: "MY Livescore (預定12月初開放)"
+      },
+      {
+        region: "全國",
+        venue: "高雄市・樹德科技大學體育館",
+        title: "116年度全國學童盃羽球錦標賽 (國小1~6年級單雙打)",
+        regStart: "2027-01-18",
+        regEnd: "2027-02-10",
+        matchStart: "2027-02-26",
+        matchEnd: "2027-03-01",
+        platform: "MY Livescore (依往年時程預估)"
+      },
+      {
+        region: "中區",
+        venue: "南投縣・國立暨大附中體育館",
+        title: "116年「日月潭盃」全國羽球錦標賽 (含國小各組)",
+        regStart: "2027-01-25",
+        regEnd: "2027-03-05",
+        matchStart: "2027-03-18",
+        matchEnd: "2027-03-21",
+        platform: "ntbc.mylivescore.link (預定)"
+      },
+      {
+        region: "北區",
+        venue: "新北市・板樹體育館",
+        title: "新北市116年度青年盃羽球錦標賽 (國小團/個人賽)",
+        regStart: "2027-02-08",
+        regEnd: "2027-03-03",
+        matchStart: "2027-03-23",
+        matchEnd: "2027-03-26",
+        platform: "新北市羽委會 / BeClass (預定)"
+      },
+      {
+        region: "東區",
+        venue: "花蓮縣・宜昌國中體育館",
+        title: "116年花蓮縣縣長盃暨議長盃羽球錦標賽 (國小組)",
+        regStart: "2027-02-22",
+        regEnd: "2027-03-19",
+        matchStart: "2027-04-10",
+        matchEnd: "2027-04-12",
+        platform: "花蓮縣羽委會 / LAPGO (預定)"
+      },
+      {
+        region: "全國",
+        venue: "待中華羽協公告",
+        title: "116年全國羽球團體錦標賽 (含國小男女團體組)",
+        regStart: "2027-03-22",
+        regEnd: "2027-04-14",
+        matchStart: "2027-05-10",
+        matchEnd: "2027-05-21",
+        platform: "中華羽協 116年度行事曆公告"
+      }
+    ];
+
+    let events = [...INITIAL_EVENTS];
+    let currentRegion = "ALL";
+
+    function computeStatus(ev) {
+      if (REF_TODAY > ev.matchEnd) return "已結束";
+      if (REF_TODAY >= ev.regStart && REF_TODAY <= ev.regEnd) return "報名中";
+      if (REF_TODAY < ev.regStart) return "即將開放";
+      return "待開賽";
+    }
+
+    function statusBadge(status) {
+      const map = {
+        "報名中": "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
+        "即將開放": "bg-blue-500/15 text-blue-500 border-blue-500/40",
+        "待開賽": "bg-amber-500/15 text-amber-500 border-amber-500/40",
+        "已結束": "bg-gray-500/15 text-[var(--muted-foreground)] border-[var(--border)]"
+      };
+      return `<span class="px-2 py-0.5 rounded border text-xs font-medium ${map[status] || ""}">${status}</span>`;
+    }
+
+    function regionBadge(reg) {
+      const map = {
+        "全國": "bg-purple-500/15 text-purple-400 border-purple-500/40",
+        "北區": "bg-sky-500/15 text-sky-400 border-sky-500/40",
+        "中區": "bg-teal-500/15 text-teal-400 border-teal-500/40",
+        "南區": "bg-orange-500/15 text-orange-400 border-orange-500/40",
+        "東區": "bg-rose-500/15 text-rose-400 border-rose-500/40"
+      };
+      return `<span class="px-2 py-0.5 rounded border text-xs font-semibold ${map[reg] || ""}">${reg}</span>`;
+    }
+
+    function pctPos(dateStr) {
+      const d = new Date(dateStr + "T00:00:00");
+      const clamped = Math.max(TIMELINE_START.getTime(), Math.min(TIMELINE_END.getTime(), d.getTime()));
+      return ((clamped - TIMELINE_START.getTime()) / TOTAL_MS) * 100;
+    }
+
+    function renderAll() {
+      const statusVal = document.getElementById("statusFilter").value;
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+
+      const sorted = [...events].sort((a, b) => a.matchStart.localeCompare(b.matchStart));
+      const filtered = sorted.filter(ev => {
+        const st = computeStatus(ev);
+        if (currentRegion !== "ALL" && ev.region !== currentRegion) return false;
+        if (statusVal !== "ALL" && st !== statusVal) return false;
+        if (q && !(ev.title.toLowerCase().includes(q) || ev.venue.toLowerCase().includes(q) || ev.region.toLowerCase().includes(q))) return false;
+        return true;
+      });
+
+      // KPI Strip
+      const counts = { total: events.length, open: 0, upcoming: 0, ready: 0, done: 0 };
+      events.forEach(e => {
+        const s = computeStatus(e);
+        if (s === "報名中") counts.open++;
+        else if (s === "即將開放") counts.upcoming++;
+        else if (s === "待開賽") counts.ready++;
+        else counts.done++;
+      });
+      document.getElementById("kpiStrip").innerHTML = `
+        <div class="p-2 rounded bg-[var(--background)] border border-[var(--border)]">
+          <div class="text-[var(--muted-foreground)]">收錄總賽事 (前後半年)</div>
+          <div class="text-base font-bold font-mono mt-0.5">${counts.total} 場</div>
+        </div>
+        <div class="p-2 rounded bg-[var(--background)] border border-[var(--border)]">
+          <div class="text-emerald-500 font-medium">🟢 報名進行中</div>
+          <div class="text-base font-bold font-mono mt-0.5">${counts.open} 場</div>
+        </div>
+        <div class="p-2 rounded bg-[var(--background)] border border-[var(--border)]">
+          <div class="text-blue-500 font-medium">🔵 即將開放報名</div>
+          <div class="text-base font-bold font-mono mt-0.5">${counts.upcoming} 場</div>
+        </div>
+        <div class="p-2 rounded bg-[var(--background)] border border-[var(--border)]">
+          <div class="text-amber-500 font-medium">🟡 報名截止・待開賽</div>
+          <div class="text-base font-bold font-mono mt-0.5">${counts.ready} 場</div>
+        </div>
+        <div class="p-2 rounded bg-[var(--background)] border border-[var(--border)]">
+          <div class="text-[var(--muted-foreground)]">⚪ 前半年已完賽</div>
+          <div class="text-base font-bold font-mono mt-0.5">${counts.done} 場</div>
+        </div>
+      `;
+
+      // Render Gantt
+      const todayLeft = pctPos(REF_TODAY);
+      const ganttHtml = filtered.map(ev => {
+        const rLeft = pctPos(ev.regStart);
+        const rRight = pctPos(ev.regEnd);
+        const rWidth = Math.max(1.2, rRight - rLeft);
+
+        const mLeft = pctPos(ev.matchStart);
+        const mRight = pctPos(ev.matchEnd);
+        const mWidth = Math.max(1.0, mRight - mLeft);
+
+        return `
+          <div class="grid grid-cols-12 items-center py-2 hover:bg-[var(--background)] transition-colors">
+            <div class="col-span-4 pr-2 flex items-center gap-2 truncate">
+              ${regionBadge(ev.region)}
+              <span class="truncate font-medium" title="${ev.title}">${ev.title}</span>
+            </div>
+            <div class="col-span-8 relative h-6 gantt-grid rounded bg-[var(--background)]/40">
+              <!-- Today Line -->
+              <div class="absolute top-0 bottom-0 w-0.5 bg-red-500/80 z-10" style="left:${todayLeft}%;" title="今日 (2026-11-10)"></div>
+              <!-- Registration Bar -->
+              <div class="absolute top-1 h-4 rounded-sm bar-reg" style="left:${rLeft}%;width:${rWidth}%;" title="報名區間：${ev.regStart} ~ ${ev.regEnd}"></div>
+              <!-- Match Bar -->
+              <div class="absolute top-1 h-4 rounded-sm bar-match" style="left:${mLeft}%;width:${mWidth}%;" title="比賽日期：${ev.matchStart} ~ ${ev.matchEnd}"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      document.getElementById("ganttContainer").innerHTML = ganttHtml || `<div class="py-6 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事</div>`;
+
+      // Render Table
+      document.getElementById("tableBody").innerHTML = filtered.map(ev => {
+        const st = computeStatus(ev);
+        return `
+          <tr class="hover:bg-[var(--background)]/60">
+            <td class="py-2 px-2 whitespace-nowrap">${regionBadge(ev.region)}</td>
+            <td class="py-2 px-2 whitespace-nowrap text-[var(--muted-foreground)]">${ev.venue}</td>
+            <td class="py-2 px-2 font-medium">${ev.title}</td>
+            <td class="py-2 px-2 font-mono whitespace-nowrap text-blue-400">${ev.regStart}</td>
+            <td class="py-2 px-2 font-mono whitespace-nowrap text-blue-400">${ev.regEnd}</td>
+            <td class="py-2 px-2 font-mono whitespace-nowrap text-emerald-400">${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</td>
+            <td class="py-2 px-2 whitespace-nowrap">${statusBadge(st)}</td>
+            <td class="py-2 px-2 text-[var(--muted-foreground)]">${ev.platform}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // Event Listeners
+    document.querySelectorAll(".reg-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentRegion = btn.getAttribute("data-region");
+        document.querySelectorAll(".reg-btn").forEach(b => {
+          b.className = "reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)]";
+        });
+        btn.className = "reg-btn px-2.5 py-1 rounded font-medium bg-blue-600 text-white";
+        renderAll();
+      });
+    });
+
+    document.getElementById("statusFilter").addEventListener("change", renderAll);
+    document.getElementById("searchInput").addEventListener("input", renderAll);
+
+    // Comments & Feedback Logic
+    const INITIAL_COMMENTS = [
+      {
+        time: "2026-11-10 21:30",
+        author: "系統管理員",
+        type: "情報補充",
+        content: "歡迎各位教練與家長！若發現有地方主委盃、分齡賽尚未列入上方甘特圖，或對網頁顯示有任何建議，請直接於上方留言，AI 助手將定期彙整更新。"
+      }
+    ];
+    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v1") || "null") || [...INITIAL_COMMENTS];
+
+    async function loadServerComments() {
+      try {
+        const ghRes = await fetch("https://api.github.com/repos/moonwind1985-annita-emma/tw-badminton-tracker/issues/1/comments");
+        if (ghRes.ok) {
+          const ghData = await ghRes.json();
+          if (Array.isArray(ghData) && ghData.length > 0) {
+            const mapped = ghData.map(item => ({
+              time: item.created_at.slice(0, 16).replace("T", " "),
+              author: item.user ? item.user.login : "球友",
+              type: "情報補充",
+              content: item.body
+            })).reverse();
+            comments = [...mapped, ...INITIAL_COMMENTS];
+            renderComments();
+          }
+        }
+      } catch (e) {}
+      try {
+        const res = await fetch("/api/comments");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            comments = data;
+            renderComments();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderComments() {
+      const typeColors = {
+        "情報補充": "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
+        "日期勘誤": "bg-amber-500/15 text-amber-500 border-amber-500/40",
+        "功能建議": "bg-blue-500/15 text-blue-500 border-blue-500/40",
+        "其他問題": "bg-purple-500/15 text-purple-400 border-purple-500/40"
+      };
+      document.getElementById("commentList").innerHTML = comments.map((c, idx) => `
+        <div class="p-2.5 rounded border border-[var(--border)] bg-[var(--background)]/50 flex flex-wrap items-start justify-between gap-2">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded border text-xs font-medium ${typeColors[c.type] || ""}">${c.type}</span>
+              <span class="font-bold text-[var(--foreground)]">${c.author}</span>
+              <span class="font-mono text-[var(--muted-foreground)]">#${idx + 1} · ${c.time}</span>
+            </div>
+            <p class="text-[var(--foreground)] pl-1">${c.content}</p>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("btnSubmitComment").addEventListener("click", async () => {
+      const content = document.getElementById("cContent").value.trim();
+      if (!content) return;
+      const author = document.getElementById("cAuthor").value.trim() || "熱心球友/家長";
+      const type = document.getElementById("cType").value;
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      const newEntry = { time: timeStr, author, type, content };
+      comments.unshift(newEntry);
+      localStorage.setItem("tw_badminton_comments_v1", JSON.stringify(comments));
+      document.getElementById("cContent").value = "";
+      renderComments();
+      try {
+        await fetch("/api/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify(newEntry)
+        });
+      } catch (e) {}
+    });
+
+    loadServerComments();
+
+    document.getElementById("btnExportComments").addEventListener("click", () => {
+      const headers = ["留言時間", "稱呼/身份", "分類", "留言內容"];
+      const rows = comments.map(c => [c.time, `"${c.author}"`, c.type, `"${c.content.replace(/"/g, '""')}"`]);
+      const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tw_badminton_user_comments.csv";
+      a.click();
+    });
+
+    // CSV Export
+    document.getElementById("btnExportCsv").addEventListener("click", () => {
+      const headers = ["區域", "縣市與場館", "賽事名稱", "報名起始日", "報名結束日", "比賽開始日", "比賽結束日", "狀態", "報名平台"];
+      const rows = events.map(e => [
+        e.region, e.venue, `"${e.title}"`, e.regStart, e.regEnd, e.matchStart, e.matchEnd, computeStatus(e), `"${e.platform}"`
+      ]);
+      const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tw_elementary_badminton_schedule.csv";
+      a.click();
+    });
+
+    renderAll();
+    renderComments();
+  </script>
+</body>
+</html>
