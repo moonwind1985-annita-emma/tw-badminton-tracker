@@ -48,7 +48,7 @@
         <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono font-bold text-xs tracking-wide">GO/TW-BADMINTON</span>
         <div>
           <h1 class="text-base font-bold text-[var(--foreground)]">全臺國小羽球盃賽時序追蹤器 (115~116年度 / 前後半年甘特圖)</h1>
-          <p class="text-[var(--muted-foreground)] text-xs">基準日：2026-11-10 ｜ 觀測區間：2026-05 至 2027-05（前後半年）｜ 涵蓋：報名起訖日 &amp; 正式比賽日</p>
+          <p class="text-[var(--muted-foreground)] text-xs">基準日：2026-11-11 ｜ 觀測區間：2026-05 至 2027-05 ｜ 巡邏來源：FB 全台羽球交流賽、中華羽協、MY Livescore、Race8、康凡賽務、LAPGO、BeClass</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -145,14 +145,9 @@
         <h2 class="font-bold text-sm">💬 賽事情報補充 &amp; 網頁改善留言板 (Issue &amp; Tip Collector)</h2>
         <p class="text-[var(--muted-foreground)] text-xs">賽事資料由系統定期自動搜尋更新。歡迎教練與家長在此留言提供遺漏盃賽、勘誤或功能建議，AI 助手將定期彙整所有留言供後續優化！</p>
       </div>
-      <div class="flex items-center gap-2">
-        <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker/issues/1" target="_blank" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium text-xs">
-          🌐 前往雲端公開討論串留言
-        </a>
-        <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
-          📥 匯出留言紀錄 (CSV)
-        </button>
-      </div>
+      <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
+        📥 匯出留言紀錄 (供 AI 彙整)
+      </button>
     </div>
 
     <!-- New Comment Form -->
@@ -214,6 +209,16 @@
         platform: "LAPGO 運動平台 (已完賽)"
       },
       {
+        region: "南區",
+        venue: "高雄市・亞柏會館",
+        title: "2026港都群岳盃全國羽球分齡錦標賽 (國小各年級)",
+        regStart: "2026-04-06",
+        regEnd: "2026-05-08",
+        matchStart: "2026-05-30",
+        matchEnd: "2026-05-31",
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
         region: "中區",
         venue: "臺中市・朝馬國民運動中心",
         title: "115年臺中久樘國小盃羽球錦標賽",
@@ -226,12 +231,62 @@
       {
         region: "北區",
         venue: "臺北市・臺北體育館",
+        title: "2026群岳盃全國羽球分齡錦標賽 (臺北暑期場・國小組)",
+        regStart: "2026-06-01",
+        regEnd: "2026-06-30",
+        matchStart: "2026-07-23",
+        matchEnd: "2026-07-25",
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
+        region: "南區",
+        venue: "高雄市・亞柏會館",
+        title: "2026第16屆高雄港都盃全國羽球錦標賽 (國小組8/3-8/8)",
+        regStart: "2026-05-18",
+        regEnd: "2026-06-26",
+        matchStart: "2026-08-01",
+        matchEnd: "2026-08-09",
+        platform: "高市羽委會 / MY Livescore (已完賽)"
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館",
         title: "2026年臺北市市長盃羽球錦標賽 (國小組/親子組)",
         regStart: "2026-06-05",
         regEnd: "2026-07-03",
         matchStart: "2026-08-02",
         matchEnd: "2026-08-09",
         platform: "臺北市體育總會羽協 (已完賽)"
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館",
+        title: "2026第20屆全民會長盃國際羽球賽暨青少年國小分齡賽",
+        regStart: "2026-05-25",
+        regEnd: "2026-07-02",
+        matchStart: "2026-08-22",
+        matchEnd: "2026-08-27",
+        platform: "全民羽協 / Convensports 康凡賽務"
+      },
+      {
+        region: "北區",
+        venue: "新北市・板橋馬公公園運動中心",
+        title: "115年全國舞動山水盃夏季羽球錦標賽 (含國小分齡)",
+        regStart: "2026-07-15",
+        regEnd: "2026-08-14",
+        matchStart: "2026-09-05",
+        matchEnd: "2026-09-06",
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
+        region: "北區",
+        venue: "雙北運動中心羽球館",
+        title: "2026台灣星動公益運動嘉年華－明日星兒少暨親子羽球賽",
+        regStart: "2026-07-20",
+        regEnd: "2026-08-21",
+        matchStart: "2026-09-12",
+        matchEnd: "2026-09-12",
+        platform: "LAPGO 運動共享平台 (已完賽)"
       },
       {
         region: "南區",
@@ -275,6 +330,16 @@
       },
       // 近期與後半年 (2026/11 ~ 2027/05)
       {
+        region: "北區",
+        venue: "臺北市・中山國中活動中心4樓 (原詩欣館)",
+        title: "2026生麗羽你同行國小暨親子分齡賽暨生麗盃公開賽",
+        regStart: "2026-09-14",
+        regEnd: "2026-10-16",
+        matchStart: "2026-11-14",
+        matchEnd: "2026-11-15",
+        platform: "Race8 競速運動網 (bewithyou.race8.net)"
+      },
+      {
         region: "中區",
         venue: "臺中市・朝馬國民運動中心",
         title: "115年臺中市長盃全國羽球錦標賽 (國小團/個人)",
@@ -290,7 +355,7 @@
         title: "115年未來里建設盃國小羽球錦標賽",
         regStart: "2026-10-19",
         regEnd: "2026-10-30",
-        matchStart: "2026-11-22",
+        matchStart: "2026-11-21",
         matchEnd: "2026-11-22",
         platform: "LAPGO 運動共享平台"
       },
@@ -325,6 +390,16 @@
         platform: "LAPGO 運動共享平台"
       },
       {
+        region: "北區",
+        venue: "新北市・新莊樂穎羽球館 (新樹路69-68號)",
+        title: "第四屆樂穎盃全國羽球錦標賽 (含國小分齡/交流組)",
+        regStart: "2026-10-20",
+        regEnd: "2026-11-27",
+        matchStart: "2026-12-19",
+        matchEnd: "2026-12-20",
+        platform: "樂穎羽球館FB / MY Livescore・FB全台羽球交流賽"
+      },
+      {
         region: "南區",
         venue: "高雄市・亞柏會館",
         title: "2026冬季亞柏盃全國學童分齡羽球錦標賽",
@@ -333,6 +408,16 @@
         matchStart: "2026-12-19",
         matchEnd: "2026-12-20",
         platform: "MY Livescore (報名進行中)"
+      },
+      {
+        region: "北區",
+        venue: "新北市・板橋馬公公園運動中心/指定館",
+        title: "2026聖誕舞動山水盃全國羽球錦標賽 (國小/親子分齡)",
+        regStart: "2026-10-26",
+        regEnd: "2026-11-30",
+        matchStart: "2026-12-26",
+        matchEnd: "2026-12-27",
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽"
       },
       {
         region: "北區",
@@ -345,6 +430,26 @@
         platform: "BeClass / 地方羽委會 (報名中)"
       },
       {
+        region: "南區",
+        venue: "高雄市・樹德科技大學體育館",
+        title: "2027高雄市第20屆樹德超力盃全國羽球錦標賽 (國小1/25-29)",
+        regStart: "2026-11-23",
+        regEnd: "2026-12-24",
+        matchStart: "2027-01-23",
+        matchEnd: "2027-01-29",
+        platform: "高市羽委會 / MY Livescore"
+      },
+      {
+        region: "北區",
+        venue: "新竹縣・明新科技大學體育館",
+        title: "2027台羽盃全國分齡羽球錦標賽 (國小U11/各年級分齡)",
+        regStart: "2026-12-01",
+        regEnd: "2027-01-08",
+        matchStart: "2027-01-30",
+        matchEnd: "2027-01-31",
+        platform: "台羽盃 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
         region: "東區",
         venue: "臺東縣・東海運動公園羽球館",
         title: "2027年第十二屆新苗後山盃全國羽球錦標賽 (國小組)",
@@ -355,6 +460,16 @@
         platform: "MY Livescore (預定12月初開放)"
       },
       {
+        region: "中區",
+        venue: "苗栗縣・苗栗巨蛋體育館",
+        title: "2027第四屆山城盃全國羽球錦標賽 (國小團/個人各年級)",
+        regStart: "2026-11-16",
+        regEnd: "2026-12-25",
+        matchStart: "2027-02-04",
+        matchEnd: "2027-02-07",
+        platform: "竹南羽協 / MY Livescore・FB全台羽球交流賽 (參考第3屆2/5-2/8)"
+      },
+      {
         region: "全國",
         venue: "高雄市・樹德科技大學體育館",
         title: "116年度全國學童盃羽球錦標賽 (國小1~6年級單雙打)",
@@ -363,6 +478,26 @@
         matchStart: "2027-02-26",
         matchEnd: "2027-03-01",
         platform: "MY Livescore (依往年時程預估)"
+      },
+      {
+        region: "北區",
+        venue: "新竹市・竹光/新科國民運動中心",
+        title: "2027群岳盃全國羽球分齡錦標賽 (228風城站・國小組)",
+        regStart: "2026-12-15",
+        regEnd: "2027-01-19",
+        matchStart: "2027-02-27",
+        matchEnd: "2027-03-01",
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
+        region: "中區",
+        venue: "臺中市・指定羽球館",
+        title: "2027 SUPERKIDS 羽球新秀挑戰賽 (國小新秀各組)",
+        regStart: "2027-01-11",
+        regEnd: "2027-02-19",
+        matchStart: "2027-03-13",
+        matchEnd: "2027-03-14",
+        platform: "LAPGO 運動共享平台"
       },
       {
         region: "中區",
@@ -383,6 +518,26 @@
         matchStart: "2027-03-23",
         matchEnd: "2027-03-26",
         platform: "新北市羽委會 / BeClass (預定)"
+      },
+      {
+        region: "北區",
+        venue: "新北市・板橋馬公公園運動中心",
+        title: "2027舞動山水盃春季羽球錦標賽 (含國小/親子分齡)",
+        regStart: "2027-01-20",
+        regEnd: "2027-03-05",
+        matchStart: "2027-03-27",
+        matchEnd: "2027-03-28",
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽"
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館",
+        title: "2027群岳盃全國羽球分齡錦標賽 (臺北清明場・國小組)",
+        regStart: "2027-01-25",
+        regEnd: "2027-03-01",
+        matchStart: "2027-04-03",
+        matchEnd: "2027-04-06",
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
       },
       {
         region: "東區",
@@ -562,35 +717,6 @@
     ];
     let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v1") || "null") || [...INITIAL_COMMENTS];
 
-    async function loadServerComments() {
-      try {
-        const ghRes = await fetch("https://api.github.com/repos/moonwind1985-annita-emma/tw-badminton-tracker/issues/1/comments");
-        if (ghRes.ok) {
-          const ghData = await ghRes.json();
-          if (Array.isArray(ghData) && ghData.length > 0) {
-            const mapped = ghData.map(item => ({
-              time: item.created_at.slice(0, 16).replace("T", " "),
-              author: item.user ? item.user.login : "球友",
-              type: "情報補充",
-              content: item.body
-            })).reverse();
-            comments = [...mapped, ...INITIAL_COMMENTS];
-            renderComments();
-          }
-        }
-      } catch (e) {}
-      try {
-        const res = await fetch("/api/comments");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            comments = data;
-            renderComments();
-          }
-        }
-      } catch (e) {}
-    }
-
     function renderComments() {
       const typeColors = {
         "情報補充": "bg-emerald-500/15 text-emerald-500 border-emerald-500/40",
@@ -612,28 +738,18 @@
       `).join("");
     }
 
-    document.getElementById("btnSubmitComment").addEventListener("click", async () => {
+    document.getElementById("btnSubmitComment").addEventListener("click", () => {
       const content = document.getElementById("cContent").value.trim();
       if (!content) return;
       const author = document.getElementById("cAuthor").value.trim() || "熱心球友/家長";
       const type = document.getElementById("cType").value;
       const now = new Date();
       const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
-      const newEntry = { time: timeStr, author, type, content };
-      comments.unshift(newEntry);
+      comments.unshift({ time: timeStr, author, type, content });
       localStorage.setItem("tw_badminton_comments_v1", JSON.stringify(comments));
       document.getElementById("cContent").value = "";
       renderComments();
-      try {
-        await fetch("/api/comments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-          body: JSON.stringify(newEntry)
-        });
-      } catch (e) {}
     });
-
-    loadServerComments();
 
     document.getElementById("btnExportComments").addEventListener("click", () => {
       const headers = ["留言時間", "稱呼/身份", "分類", "留言內容"];
