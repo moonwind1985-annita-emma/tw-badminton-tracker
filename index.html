@@ -27,28 +27,42 @@
     .bar-reg {
       background: repeating-linear-gradient(
         45deg,
-        rgba(59, 130, 246, 0.28),
-        rgba(59, 130, 246, 0.28) 6px,
-        rgba(59, 130, 246, 0.45) 6px,
-        rgba(59, 130, 246, 0.45) 12px
+        rgba(59, 130, 246, 0.30),
+        rgba(59, 130, 246, 0.30) 6px,
+        rgba(59, 130, 246, 0.52) 6px,
+        rgba(59, 130, 246, 0.52) 12px
       );
-      border: 1px solid rgba(59, 130, 246, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.9);
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .bar-reg:hover {
+      transform: scaleY(1.22);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+      z-index: 20;
     }
     .bar-match {
-      background: rgba(16, 185, 129, 0.85);
+      background: rgba(16, 185, 129, 0.88);
       border: 1px solid rgba(5, 150, 105, 1);
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .bar-match:hover {
+      transform: scaleY(1.22);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45);
+      z-index: 20;
     }
   </style>
 </head>
 <body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6 text-xs">
-  <!-- Top Google Internal Style Header Bar (Moma / Launchcal / Buganizer vibe) -->
+  <!-- Top Google Internal Style Header Bar -->
   <header class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono font-bold text-xs tracking-wide">GO/TW-BADMINTON</span>
         <div>
           <h1 class="text-base font-bold text-[var(--foreground)]">全臺國小羽球盃賽時序追蹤器 (115~116年度 / 前後半年甘特圖)</h1>
-          <p class="text-[var(--muted-foreground)] text-xs">基準日：2026-11-11 ｜ 觀測區間：2026-05 至 2027-05 ｜ 巡邏來源：FB 全台羽球交流賽、中華羽協、MY Livescore、Race8、康凡賽務、LAPGO、BeClass</p>
+          <p class="text-[var(--muted-foreground)] text-xs">基準日：2026-11-11 ｜ 觀測區間：2026-05 至 2027-05 ｜ 巡邏來源：FB 全台羽球交流賽、中華羽協、MY Livescore、Race8、康凡賽務、LAPGO、BeClass ｜ 預設關注學校：🏫 新北市義學國小</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -85,27 +99,38 @@
         <option value="待開賽">🟡 報名截止・準備開賽</option>
         <option value="已結束">⚪ 已完賽</option>
       </select>
-      <input id="searchInput" type="text" placeholder="搜尋盃賽名稱、地點、縣市..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-48" />
+      <input id="searchInput" type="text" placeholder="搜尋盃賽、地點、義學國小選手..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-56" />
     </div>
   </section>
 
+  <!-- Interactive Instruction Banner -->
+  <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold">互動操作說明</span>
+      <span class="font-medium">
+        👉 點選（或連點兩下 / 右鍵）甘特圖內 <strong class="text-blue-500 underline">藍色斜線「報名時間區段」</strong>：顯示 <strong>比賽名稱、報名時間、比賽地點、可以報名的項目</strong>！<br/>
+        👉 點選（或連點兩下 / 右鍵）甘特圖內 <strong class="text-emerald-500 underline">綠色實心「比賽時間區間」</strong>：自動查詢賽程表並列出 <strong>「新北市義學國小」有比賽的項目與選手人名清單</strong>！
+      </span>
+    </div>
+  </div>
+
   <!-- Gantt Chart Section -->
   <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 overflow-x-auto">
-    <div class="flex items-center justify-between mb-3">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
       <div class="font-bold text-sm flex items-center gap-2">
         <span>📊 時序甘特圖 (Gantt Timeline: 2026/05 – 2027/05)</span>
       </div>
       <div class="flex items-center gap-4 text-xs">
-        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-reg"></span> 報名期間 (起~迄)</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-match"></span> 比賽期間</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block w-0.5 h-3.5 bg-red-500"></span> 今日基準線 (2026-11-10)</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-reg"></span> 報名期間 (點選看可報項目/地點)</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-match"></span> 比賽期間 (點選看「義學國小」參賽名單)</span>
+        <span class="flex items-center gap-1.5"><span class="inline-block w-0.5 h-3.5 bg-red-500"></span> 今日基準線 (2026-11-11)</span>
       </div>
     </div>
 
     <div class="min-w-[860px]">
       <!-- Month Header -->
       <div class="grid grid-cols-12 border-b border-[var(--border)] pb-1.5 font-mono text-[var(--muted-foreground)]">
-        <div class="col-span-4 pl-2 font-sans font-semibold text-[var(--foreground)]">分區 / 賽事名稱</div>
+        <div class="col-span-4 pl-2 font-sans font-semibold text-[var(--foreground)]">分區 / 賽事名稱 (點擊橫條檢視詳情)</div>
         <div class="col-span-8 grid grid-cols-13 text-center" style="display:grid;grid-template-columns:repeat(13,minmax(0,1fr));">
           <span>26/05</span><span>26/06</span><span>26/07</span><span>26/08</span><span>26/09</span><span>26/10</span>
           <span class="text-red-500 font-bold">26/11</span>
@@ -118,18 +143,17 @@
     </div>
   </section>
 
-  <!-- Detailed Structured Table (Google Issue / Launch Tracker Table style) -->
+  <!-- Detailed Structured Table -->
   <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 overflow-x-auto">
-    <h2 class="font-bold text-sm mb-3">📋 國小羽球賽事報名與賽程明細表（依時序排列）</h2>
+    <h2 class="font-bold text-sm mb-3">📋 國小羽球賽事報名與賽程明細表（依時序排列・支援快速點擊檢視）</h2>
     <table class="w-full text-left border-collapse min-w-[860px]">
       <thead>
         <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] font-semibold">
           <th class="py-2 px-2">區域</th>
           <th class="py-2 px-2">縣市/場館</th>
           <th class="py-2 px-2">賽事名稱 (含國小組別)</th>
-          <th class="py-2 px-2 font-mono">報名起始日</th>
-          <th class="py-2 px-2 font-mono">報名結束日</th>
-          <th class="py-2 px-2 font-mono">比賽日期</th>
+          <th class="py-2 px-2 font-mono">報名起訖 (點選看可報項目)</th>
+          <th class="py-2 px-2 font-mono">比賽日期 (點選查義學國小名單)</th>
           <th class="py-2 px-2">狀態</th>
           <th class="py-2 px-2">報名平台 / 備註</th>
         </tr>
@@ -138,16 +162,21 @@
     </table>
   </section>
 
-  <!-- Comment & Feedback Board (Google Buganizer / Issue Comment Thread style) -->
+  <!-- Comment & Feedback Board -->
   <section id="commentSection" class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mt-4">
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
       <div>
         <h2 class="font-bold text-sm">💬 賽事情報補充 &amp; 網頁改善留言板 (Issue &amp; Tip Collector)</h2>
         <p class="text-[var(--muted-foreground)] text-xs">賽事資料由系統定期自動搜尋更新。歡迎教練與家長在此留言提供遺漏盃賽、勘誤或功能建議，AI 助手將定期彙整所有留言供後續優化！</p>
       </div>
-      <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
-        📥 匯出留言紀錄 (供 AI 彙整)
-      </button>
+      <div class="flex items-center gap-2">
+        <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker/issues/1" target="_blank" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium text-xs">
+          🌐 前往 GitHub 公開共編留言串 (#1)
+        </a>
+        <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:opacity-80 font-medium text-xs">
+          📥 匯出留言紀錄
+        </button>
+      </div>
     </div>
 
     <!-- New Comment Form -->
@@ -180,23 +209,50 @@
     <div id="commentList" class="space-y-2"></div>
   </section>
 
+  <!-- Interactive Detail Modal (Pop-up for Registration Info & Yixue Elementary School Entries) -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden">
+      <div id="modalHeader" class="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="modalBadge" class="px-2 py-0.5 rounded text-xs font-bold text-white bg-blue-600">報名資訊</span>
+          <h3 id="modalTitle" class="font-bold text-sm text-[var(--foreground)]">賽事名稱</h3>
+        </div>
+        <button id="btnCloseModal" class="px-2.5 py-1 rounded border border-[var(--border)] hover:bg-[var(--background)] font-bold text-xs">
+          ✕ 關閉 (ESC)
+        </button>
+      </div>
+      <div id="modalBody" class="p-5 space-y-4 max-h-[75vh] overflow-y-auto text-xs"></div>
+    </div>
+  </div>
+
   <script>
-    const REF_TODAY = "2026-11-10";
+    const REF_TODAY = "2026-11-11";
     const TIMELINE_START = new Date("2026-05-01T00:00:00");
     const TIMELINE_END = new Date("2027-05-31T23:59:59");
     const TOTAL_MS = TIMELINE_END - TIMELINE_START;
+
+    // 義學國小主力選手常備名單 (供尚未公布籤表之賽事對照參考)
+    const YIXUE_ROSTER_NOTE = "領隊：蕭又誠校長 ｜ 教練團：林佳明、蔡哲霖、柯怡汝 ｜ 常備主力選手：王妍心(小二女)、謝天齊(小二男)、葉家芯(小三女)、張曜宇(小三男)、鄭又心/卓詩涵(小四女單雙)、謝宇安/蔡森紘/李秉均/謝皓比/江宥鈞/黃允謙/吳瑞恩(小四男單雙)、李信隆/王柏勛/周俊叡/葉宸右/翁佳禾/王品鈞/劉恩宇/鍾承霖(高年級男團/單雙)";
 
     const INITIAL_EVENTS = [
       // 前半年 (2026/05 ~ 2026/10)
       {
         region: "中區",
-        venue: "苗栗縣・巨蛋體育館",
+        venue: "苗栗縣・巨蛋體育館 (苗栗市國華路1121號)",
         title: "115年全國羽球團體錦標賽 (國小男/女團)",
         regStart: "2026-03-16",
         regEnd: "2026-04-08",
         matchStart: "2026-05-02",
         matchEnd: "2026-05-11",
-        platform: "中華羽協 / MY Livescore (已完賽)"
+        platform: "中華羽協 / MY Livescore (已完賽)",
+        divisions: [
+          "國小男生團體組 (限4~6年級，每隊7~10人，單雙單雙單五點制)",
+          "國小女生團體組 (限4~6年級，每隊7~10人，單雙單雙單五點制)"
+        ],
+        yixueStatus: "已完賽 (全國團體錦標賽)",
+        yixueEntries: [
+          { event: "國小男生團體組 (新北市義學國小)", players: "王柏勛、李信隆、周俊叡、葉宸右、翁佳禾、王品鈞、劉恩宇、鍾承霖" }
+        ]
       },
       {
         region: "北區",
@@ -206,7 +262,15 @@
         regEnd: "2026-05-01",
         matchStart: "2026-05-28",
         matchEnd: "2026-05-30",
-        platform: "LAPGO 運動平台 (已完賽)"
+        platform: "LAPGO 運動平台 (已完賽)",
+        divisions: [
+          "國小高年級男/女團體組",
+          "國小中年級男/女團體組",
+          "國小高年級男單、女單、男雙、女雙",
+          "國小中年級男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "縣市運動會 (限桃園市籍學校參賽，義學國小未跨區報名)",
+        yixueEntries: []
       },
       {
         region: "南區",
@@ -216,7 +280,14 @@
         regEnd: "2026-05-08",
         matchStart: "2026-05-30",
         matchEnd: "2026-05-31",
-        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽",
+        divisions: [
+          "國小一年級～六年級：男單、女單",
+          "國小三年級～六年級：男雙、女雙",
+          "親子雙打組"
+        ],
+        yixueStatus: "已完賽 (高雄站分齡賽)",
+        yixueEntries: []
       },
       {
         region: "中區",
@@ -226,7 +297,14 @@
         regEnd: "2026-05-15",
         matchStart: "2026-06-06",
         matchEnd: "2026-06-07",
-        platform: "臺中市羽委會 / 盃賽網 (已完賽)"
+        platform: "臺中市羽委會 / 盃賽網 (已完賽)",
+        divisions: [
+          "國小三～六年級男單、女單",
+          "國小三～六年級男雙、女雙",
+          "國小男/女團體組"
+        ],
+        yixueStatus: "已完賽",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -236,7 +314,17 @@
         regEnd: "2026-06-30",
         matchStart: "2026-07-23",
         matchEnd: "2026-07-25",
-        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽",
+        divisions: [
+          "國小二年級～六年級組：男單、女單",
+          "國小三年級～六年級組：男雙、女雙 (可跨校組隊)"
+        ],
+        yixueStatus: "已完賽・義學國小選手個人/俱樂部名義參賽",
+        yixueEntries: [
+          { event: "國小中年級男單/男雙", players: "謝宇安、蔡森紘、黃允謙、李秉均" },
+          { event: "國小中年級女單/女雙", players: "卓詩涵、鄭又心、葉家芯" },
+          { event: "國小高年級男單/男雙", players: "李信隆、王柏勛、周俊叡、葉宸右" }
+        ]
       },
       {
         region: "南區",
@@ -246,7 +334,16 @@
         regEnd: "2026-06-26",
         matchStart: "2026-08-01",
         matchEnd: "2026-08-09",
-        platform: "高市羽委會 / MY Livescore (已完賽)"
+        platform: "高市羽委會 / MY Livescore (已完賽)",
+        divisions: [
+          "國小三年級組：男單、女單、男雙、女雙",
+          "國小四年級組：男單、女單、男雙、女雙",
+          "國小五年級組：男單、女單、男雙、女雙",
+          "國小六年級組：男單、女單、男雙、女雙",
+          "國小男/女團體組"
+        ],
+        yixueStatus: "已完賽",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -256,7 +353,13 @@
         regEnd: "2026-07-03",
         matchStart: "2026-08-02",
         matchEnd: "2026-08-09",
-        platform: "臺北市體育總會羽協 (已完賽)"
+        platform: "臺北市體育總會羽協 (已完賽)",
+        divisions: [
+          "國小低/中/高年級男單、女單、男雙、女雙",
+          "親子雙打組"
+        ],
+        yixueStatus: "已完賽",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -266,7 +369,19 @@
         regEnd: "2026-07-02",
         matchStart: "2026-08-22",
         matchEnd: "2026-08-27",
-        platform: "全民羽協 / Convensports 康凡賽務"
+        platform: "全民羽協 / Convensports 康凡賽務",
+        divisions: [
+          "U9 (國小三年級以下)：男單、女單、男雙、女雙",
+          "U10 (國小四年級)：男單、女單、男雙、女雙",
+          "U11 (國小五年級)：男單、女單、男雙、女雙",
+          "U12 (國小六年級)：男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "已完賽・義學國小榮獲全國前八強佳績！",
+        yixueEntries: [
+          { event: "U10 男子雙打 (榮獲全國第五名 🏅)", players: "謝宇安 / 蔡森紘" },
+          { event: "U10 女子單打 / 雙打", players: "卓詩涵、鄭又心" },
+          { event: "U11 男子單打 / 雙打", players: "李信隆 / 王柏勛、周俊叡" }
+        ]
       },
       {
         region: "北區",
@@ -276,7 +391,18 @@
         regEnd: "2026-08-14",
         matchStart: "2026-09-05",
         matchEnd: "2026-09-06",
-        platform: "山水體育 / MY Livescore・FB全台羽球交流賽"
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽",
+        divisions: [
+          "國小低年級(小一二)單打組",
+          "國小三年級～六年級男單、女單、男雙、女雙",
+          "家庭親子雙打組"
+        ],
+        yixueStatus: "已完賽・義學國小選手參賽",
+        yixueEntries: [
+          { event: "國小四年級女子單打 (季軍 🥉)", players: "鄭又心、卓詩涵" },
+          { event: "國小中年級男子雙打", players: "黃允謙 / 蔡森紘、謝宇安" },
+          { event: "國小高年級男子雙打", players: "王柏勛 / 李信隆" }
+        ]
       },
       {
         region: "北區",
@@ -286,7 +412,13 @@
         regEnd: "2026-08-21",
         matchStart: "2026-09-12",
         matchEnd: "2026-09-12",
-        platform: "LAPGO 運動共享平台 (已完賽)"
+        platform: "LAPGO 運動共享平台 (已完賽)",
+        divisions: [
+          "國小低/中/高年級單打組",
+          "親子趣味雙打組"
+        ],
+        yixueStatus: "已完賽",
+        yixueEntries: []
       },
       {
         region: "南區",
@@ -296,7 +428,10 @@
         regEnd: "2026-08-21",
         matchStart: "2026-09-14",
         matchEnd: "2026-09-18",
-        platform: "臺南市教育局競賽系統 (已完賽)"
+        platform: "臺南市教育局競賽系統 (已完賽)",
+        divisions: ["國小團體組、國小各年級個人單雙打 (限臺南市學校)"],
+        yixueStatus: "地方教育局賽事 (限臺南市學校)",
+        yixueEntries: []
       },
       {
         region: "南區",
@@ -306,7 +441,10 @@
         regEnd: "2026-09-14",
         matchStart: "2026-10-02",
         matchEnd: "2026-10-03",
-        platform: "屏東縣體育會羽委會 (已完賽)"
+        platform: "屏東縣體育會羽委會 (已完賽)",
+        divisions: ["國小男/女團體組、國小高/中年級單雙打"],
+        yixueStatus: "地方縣長盃 (限屏東縣學校)",
+        yixueEntries: []
       },
       {
         region: "中區",
@@ -316,7 +454,35 @@
         regEnd: "2026-09-11",
         matchStart: "2026-10-03",
         matchEnd: "2026-10-07",
-        platform: "MY Livescore 賽事系統 (已完賽)"
+        platform: "MY Livescore 賽事系統 (已完賽)",
+        divisions: ["國小各年級男單、女單、男雙、女雙、團體組"],
+        yixueStatus: "地方縣長盃",
+        yixueEntries: []
+      },
+      {
+        region: "北區",
+        venue: "新北市・板樹體育館",
+        title: "115年新北市城市夏季盃全國羽球錦標賽 (含國小團/個人)",
+        regStart: "2026-08-10",
+        regEnd: "2026-09-11",
+        matchStart: "2026-10-05",
+        matchEnd: "2026-10-09",
+        platform: "MY Livescore (opid=300807・已完賽附完整籤表)",
+        divisions: [
+          "國小組男子團體、女子團體",
+          "國小中年級組：男單、女單、男雙、女雙",
+          "國小高年級組：男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "✅ 已由大會官方賽程籤表與成績紀錄冊查獲「新北市義學國小」完整參賽名單 (領隊：蕭又誠 / 教練：林佳明、蔡哲霖、柯怡汝)：",
+        yixueEntries: [
+          { event: "國小組男子團體 (預賽 B3 籤)", players: "新北市義學國小 (王柏勛、李信隆、周俊叡、葉宸右、翁佳禾、謝宇安、蔡森紘、李秉均)" },
+          { event: "國小中年級組女雙 (榮獲全國第三名 / 季軍 🥉)", players: "卓詩涵 / 鄭又心 (E1 籤，連勝晉級四強決賽奪銅)" },
+          { event: "國小中年級組女單 (晉級 16 強決賽)", players: "葉家芯 (F1 籤，預賽全勝晉級)" },
+          { event: "國小中年級組男單", players: "謝宇安 (D2 籤，晉級決賽)、謝皓比 (V2 籤，晉級決賽)、蔡森紘 (E2 籤)、李秉均 (N3 籤)、江宥鈞 (Y3 籤)" },
+          { event: "國小高年級組男單", players: "翁佳禾 (G3 籤)" },
+          { event: "國小中年級組男雙", players: "黃允謙 / 吳瑞恩 (J3 籤)" },
+          { event: "國小高年級組男雙", players: "李信隆 / 王柏勛 (D2 籤)、周俊叡 / 葉宸右 (F2 籤)" }
+        ]
       },
       {
         region: "南區",
@@ -326,18 +492,42 @@
         regEnd: "2026-09-30",
         matchStart: "2026-10-19",
         matchEnd: "2026-10-21",
-        platform: "高雄市體促會 (已完賽)"
+        platform: "高雄市體促會 (已完賽)",
+        divisions: ["高雄市國小男/女團體聯賽"],
+        yixueStatus: "高雄市校際聯賽",
+        yixueEntries: []
       },
       // 近期與後半年 (2026/11 ~ 2027/05)
       {
         region: "北區",
-        venue: "臺北市・中山國中活動中心4樓 (原詩欣館)",
+        venue: "臺北市・中山國中活動中心4樓 (原詩欣館・復興北路361巷7號)",
         title: "2026生麗羽你同行國小暨親子分齡賽暨生麗盃公開賽",
         regStart: "2026-09-14",
         regEnd: "2026-10-16",
         matchStart: "2026-11-14",
         matchEnd: "2026-11-15",
-        platform: "Race8 競速運動網 (bewithyou.race8.net)"
+        platform: "MY Livescore (opid=342874) / Race8 競速運動網",
+        divisions: [
+          "國小一年級～六年級組：男子單打、女子單打",
+          "國小三年級～六年級組：男子雙打、女子雙打",
+          "國小親子雙打分齡組：低年級組(一二年級)、中年級組(三四年級)、高年級組(五六年級) 之父子/父女/母子/母女雙打"
+        ],
+        yixueStatus: "✅ 已由大會《報名結果(含種子序)1027v2.pdf》查獲「新北市義學國小 (單號 115160765948)」全隊 20 組參賽名單：",
+        yixueEntries: [
+          { event: "國小二年級女單", players: "王妍心" },
+          { event: "國小二年級男單", players: "謝天齊" },
+          { event: "國小三年級女單", players: "葉家芯" },
+          { event: "國小三年級男單", players: "張曜宇" },
+          { event: "國小四年級女單", players: "鄭又心 [第2種子]、卓詩涵" },
+          { event: "國小四年級男單", players: "謝宇安、蔡森紘、李秉均、謝皓比、江宥鈞" },
+          { event: "國小五年級男單", players: "王柏勛、李信隆、周俊叡、葉宸右" },
+          { event: "國小四年級女雙", players: "卓詩涵 / 鄭又心" },
+          { event: "國小四年級男雙", players: "蔡森紘 / 謝宇安、謝皓比 / 黃允謙" },
+          { event: "國小五年級男雙", players: "李信隆 / 王柏勛、周俊叡 / 李秉均" },
+          { event: "國小低年級父子女雙打", players: "謝方喬 / 謝証吉" },
+          { event: "國小中年級父女雙打", players: "卓詩涵 / 卓冠宇" },
+          { event: "國小高年級父子雙打", players: "李信隆 / 李國源" }
+        ]
       },
       {
         region: "中區",
@@ -347,7 +537,13 @@
         regEnd: "2026-10-16",
         matchStart: "2026-11-14",
         matchEnd: "2026-11-22",
-        platform: "臺中市羽委會 / MY Livescore"
+        platform: "臺中市羽委會 / MY Livescore (opid=341069)",
+        divisions: [
+          "國小男/女團體組",
+          "國小三～六年級男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "與台北「2026生麗羽你同行國小分齡賽 (11/14~11/15)」撞期，義學國小全隊主力參加生麗盃。",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -357,7 +553,16 @@
         regEnd: "2026-10-30",
         matchStart: "2026-11-21",
         matchEnd: "2026-11-22",
-        platform: "LAPGO 運動共享平台"
+        platform: "LAPGO 運動共享平台",
+        divisions: [
+          "國小低年級組單打",
+          "國小中年級男單、女單、男雙、女雙",
+          "國小高年級男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "賽程抽籤整理中 (可點選檢視義學國小主力組別)",
+        yixueEntries: [
+          { event: "預計關注組別 (國小中/高年級單雙打)", players: "義學國小羽球隊主力選手群 (待 LAPGO 最終秩序冊公告自動同步)" }
+        ]
       },
       {
         region: "南區",
@@ -367,17 +572,47 @@
         regEnd: "2026-11-02",
         matchStart: "2026-11-21",
         matchEnd: "2026-11-22",
-        platform: "BeClass 線上報名"
+        platform: "BeClass 線上報名",
+        divisions: ["國小男女團體組、國小低年級男/女單打"],
+        yixueStatus: "離島縣內聯賽 (義學國小未參賽)",
+        yixueEntries: []
+      },
+      {
+        region: "南區",
+        venue: "高雄市・亞柏會館",
+        title: "2026年高雄市市長盃全國羽球錦標賽 (含國小各組)",
+        regStart: "2026-10-10",
+        regEnd: "2026-11-15",
+        matchStart: "2026-11-29",
+        matchEnd: "2026-12-01",
+        platform: "MY Livescore (opid=340004・報名中)",
+        divisions: [
+          "國小三～六年級：男單、女單、男雙、女雙",
+          "國小男/女團體組"
+        ],
+        yixueStatus: "目前報名進行中 (11/15 截止後公布名單)",
+        yixueEntries: []
       },
       {
         region: "全國",
-        venue: "臺北市・臺北體育館7樓",
+        venue: "臺北市・臺北體育館7樓 (南京東路四段10號)",
         title: "115年全國國小盃羽球錦標賽 (4~6年級團/個人)",
         regStart: "2026-09-28",
         regEnd: "2026-10-26",
         matchStart: "2026-12-04",
         matchEnd: "2026-12-16",
-        platform: "中華羽協 (ctba.mylivescore.tw)"
+        platform: "中華羽協 (ctba.mylivescore.tw)",
+        divisions: [
+          "國小四年級男/女團體組、五年級男/女團體組、六年級男/女團體組",
+          "國小五年級組：男單、女單、男雙、女雙",
+          "國小六年級組：男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "✅ 年度最重要全國大賽！新北市義學國小預定出賽陣容：",
+        yixueEntries: [
+          { event: "國小五年級男子團體 / 個人單雙打", players: "王柏勛、李信隆、周俊叡、葉宸右、翁佳禾、王品鈞、劉恩宇、鍾承霖" },
+          { event: "國小四年級男子團體", players: "謝宇安、蔡森紘、李秉均、謝皓比、江宥鈞、黃允謙、吳瑞恩" },
+          { event: "國小四年級女子組", players: "卓詩涵、鄭又心" }
+        ]
       },
       {
         region: "北區",
@@ -387,7 +622,10 @@
         regEnd: "2026-11-09",
         matchStart: "2026-12-11",
         matchEnd: "2026-12-17",
-        platform: "LAPGO 運動共享平台"
+        platform: "LAPGO 運動共享平台",
+        divisions: ["宜蘭縣國小男女團體、個人單雙打"],
+        yixueStatus: "宜蘭縣內中小學運動會",
+        yixueEntries: []
       },
       {
         region: "南區",
@@ -397,7 +635,13 @@
         regEnd: "2026-11-27",
         matchStart: "2026-12-19",
         matchEnd: "2026-12-20",
-        platform: "MY Livescore (報名進行中)"
+        platform: "MY Livescore (報名進行中)",
+        divisions: [
+          "國小一～六年級男單、女單",
+          "國小三～六年級男雙、女雙"
+        ],
+        yixueStatus: "報名進行中 (11/27 報名截止後公布籤表)",
+        yixueEntries: []
       },
       {
         region: "南區",
@@ -407,17 +651,56 @@
         regEnd: "2026-11-17",
         matchStart: "2026-12-25",
         matchEnd: "2026-12-27",
-        platform: "LAPGO 運動共享平台 (聖誕檔期・報名中)"
+        platform: "LAPGO 運動共享平台 (聖誕檔期・報名中)",
+        divisions: [
+          "國小低/中/高年級分齡單打、雙打",
+          "分級新手交流組"
+        ],
+        yixueStatus: "報名進行中 (11/17 截止)",
+        yixueEntries: []
       },
       {
         region: "北區",
-        venue: "新北市・新莊樂穎羽球館 (新樹路69-68號)",
-        title: "第四屆樂穎盃全國羽球錦標賽 (含國小分齡/交流組)",
-        regStart: "2026-10-26",
-        regEnd: "2026-11-30",
-        matchStart: "2026-12-26",
+        venue: "新北市・新莊樂穎羽球館 (新莊區新樹路69-68號2樓，近泰山/新莊)",
+        title: "2026第四屆樂穎盃全國羽球錦標賽 (小1~小6單雙/國際學校/親子/師生)",
+        regStart: "2026-08-31",
+        regEnd: "2026-11-24",
+        matchStart: "2026-12-25",
         matchEnd: "2026-12-27",
-        platform: "樂穎羽球館FB / MY Livescore・FB全台羽球交流賽 (聖誕檔期)"
+        platform: "MY Livescore (opid=302615・11/24報名截止・12/15公告賽程)",
+        divisions: [
+          "國小一年級組：男女混合半場單打",
+          "國小二年級～六年級組：男單、女單 (小2~小6各年級獨立分組)",
+          "國小三年級～六年級組：男雙、女雙 (可跨校混搭)",
+          "國際/美國學校組：低年級混合單打、中年級男單/女單/男雙/女雙、高年級男單/女單/男雙/女雙",
+          "國小親子雙打分齡組：低年級(小二以下)、中年級(小三四)、高年級(小五六)",
+          "師生雙打組：一二三年級組、四五六年級組"
+        ],
+        yixueStatus: "🟢 場館位於新莊新樹路（緊鄰泰山義學國小）！目前報名進行中（11/24 截止、12/08 公布名單、12/15 公告賽程），義學國小預計大量報名組別如下：",
+        yixueEntries: [
+          { event: "國小二年級男單 / 女單 (預計參賽主力)", players: "王妍心 (小二女單)、謝天齊 (小二男單)" },
+          { event: "國小三年級男單 / 女單 (預計參賽主力)", players: "葉家芯 (小三女單)、張曜宇 (小三男單)" },
+          { event: "國小四年級女單 / 女雙 (預計參賽主力)", players: "鄭又心、卓詩涵" },
+          { event: "國小四年級男單 / 男雙 (預計參賽主力)", players: "謝宇安、蔡森紘、李秉均、謝皓比、江宥鈞、黃允謙、吳瑞恩" },
+          { event: "國小五年級男單 / 男雙 (預計參賽主力)", players: "王柏勛、李信隆、周俊叡、葉宸右、翁佳禾" },
+          { event: "國小親子雙打 / 師生雙打組", players: "卓詩涵/卓冠宇、李信隆/李國源、謝方喬/謝証吉 及教練師生搭檔 (12/08 公布正式名單後自動更新)" }
+        ]
+      },
+      {
+        region: "北區",
+        venue: "宜蘭縣・羅東鎮羽球館",
+        title: "2026羅東飛羽盃全國分齡羽球公開賽 (含國小分齡)",
+        regStart: "2026-10-20",
+        regEnd: "2026-11-27",
+        matchStart: "2026-12-25",
+        matchEnd: "2026-12-27",
+        platform: "MY Livescore (opid=344684・聖誕檔期報名中)",
+        divisions: [
+          "國小各年級男單、女單、男雙、女雙",
+          "分齡公開雙打組"
+        ],
+        yixueStatus: "報名進行中 (11/27 截止)",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -427,7 +710,63 @@
         regEnd: "2026-11-30",
         matchStart: "2026-12-26",
         matchEnd: "2026-12-27",
-        platform: "山水體育 / MY Livescore・FB全台羽球交流賽 (聖誕檔期)"
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽 (聖誕檔期)",
+        divisions: [
+          "國小一～六年級單打組",
+          "國小三～六年級雙打組",
+          "聖誕親子雙打歡樂組"
+        ],
+        yixueStatus: "🟢 新北主場聖誕賽事！報名進行中 (11/30 截止後公布義學國小參賽名單)",
+        yixueEntries: [
+          { event: "國小中/高年級單雙打 & 親子組", players: "待 11/30 報名截止公布賽程表後自動抓取「義學國小」名單" }
+        ]
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館4樓",
+        title: "2027群岳盃全國羽球錦標賽－元旦場 (臺北站・含國小分齡)",
+        regStart: "2026-09-25",
+        regEnd: "2026-12-04",
+        matchStart: "2027-01-01",
+        matchEnd: "2027-01-03",
+        platform: "MY Livescore (opid=327299・報名中)",
+        divisions: [
+          "國小二年級～六年級組：男單、女單",
+          "國小三年級～六年級組：男雙、女雙 (可跨校組隊)"
+        ],
+        yixueStatus: "🟢 報名進行中 (12/04 截止、12/18 公告賽程)，義學國小常規主力報名賽事：",
+        yixueEntries: [
+          { event: "國小二～五年級單雙打 (報名中)", players: "待 12/04 報名截止公布《報名結果(含種子序).pdf》後自動列出義學國小參賽人名" }
+        ]
+      },
+      {
+        region: "中區",
+        venue: "臺中市・群岳羽球概念館",
+        title: "2027群岳盃全國羽球錦標賽－元旦場 (臺中站・含國小分齡)",
+        regStart: "2026-09-25",
+        regEnd: "2026-12-04",
+        matchStart: "2027-01-01",
+        matchEnd: "2027-01-03",
+        platform: "MY Livescore (opid=328444・報名中)",
+        divisions: [
+          "國小二年級～六年級組：男單、女單",
+          "國小三年級～六年級組：男雙、女雙"
+        ],
+        yixueStatus: "報名進行中 (與臺北元旦場同期)",
+        yixueEntries: []
+      },
+      {
+        region: "中區",
+        venue: "臺中市・朝馬國民運動中心",
+        title: "2027第五屆富易達公益盃羽球賽 (含學生分齡組)",
+        regStart: "2026-10-01",
+        regEnd: "2026-12-11",
+        matchStart: "2027-01-16",
+        matchEnd: "2027-01-16",
+        platform: "MY Livescore (opid=813720・報名中)",
+        divisions: ["國小學生分齡單打、雙打組", "公益親子組"],
+        yixueStatus: "報名進行中 (12/11 截止)",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -437,17 +776,88 @@
         regEnd: "2026-12-11",
         matchStart: "2027-01-16",
         matchEnd: "2027-01-17",
-        platform: "BeClass / 地方羽委會 (報名中)"
+        platform: "BeClass / 地方羽委會 (報名中)",
+        divisions: [
+          "國小一～六年級男單、女單",
+          "國小三～六年級男雙、女雙",
+          "親子雙打組"
+        ],
+        yixueStatus: "報名進行中 (12/11 截止)",
+        yixueEntries: []
+      },
+      {
+        region: "中區",
+        venue: "苗栗縣・苗栗巨蛋體育館 (苗栗市國華路1121號)",
+        title: "2027山城盃全國羽球錦標賽 (國小學生組於 1/21~1/23 登場)",
+        regStart: "2026-10-25",
+        regEnd: "2026-11-27",
+        matchStart: "2027-01-21",
+        matchEnd: "2027-01-25",
+        platform: "MY Livescore (opid=819141・11/27報名截止・12/30賽程公告)",
+        divisions: [
+          "國小二年級組：男子單打、女子單打",
+          "國小三年級組：男子單打、女子單打",
+          "國小四年級組：男子單打、女子單打、男子雙打、女子雙打",
+          "國小五年級組：男子單打、女子單打、男子雙打、女子雙打",
+          "國小六年級組：男子單打、女子單打、男子雙打、女子雙打",
+          "📌 章程規定：國小學生組賽程排定於 1/21(四)、1/22(五)、1/23(六)；每人最多限報 3 項，雙打可跨校組隊，小2~小3不設雙打但可越級報名小4組。"
+        ],
+        yixueStatus: "🟢 目前火熱報名中（2026-11-27 截止、11/30 公布報名名單、12/23 抽籤、12/30 公告賽程表）！新北市義學國小可報名之主力對應組別如下：",
+        yixueEntries: [
+          { event: "國小二年級男單 / 女單 (1/21~1/23)", players: "王妍心 (小二女單)、謝天齊 (小二男單) — 待 11/30 名單公布自動核對" },
+          { event: "國小三年級男單 / 女單 (1/21~1/23)", players: "葉家芯 (小三女單)、張曜宇 (小三男單) — 待 11/30 名單公布自動核對" },
+          { event: "國小四年級女單 / 女雙 (1/21~1/23)", players: "卓詩涵、鄭又心 — 待 11/30 名單公布自動核對" },
+          { event: "國小四年級男單 / 男雙 (1/21~1/23)", players: "謝宇安、蔡森紘、李秉均、謝皓比、江宥鈞、黃允謙、吳瑞恩 — 待 11/30 名單公布自動核對" },
+          { event: "國小五年級男單 / 男雙 (1/21~1/23)", players: "李信隆、王柏勛、周俊叡、葉宸右、翁佳禾 — 待 11/30 名單公布自動核對" }
+        ]
       },
       {
         region: "南區",
-        venue: "高雄市・樹德科技大學體育館",
-        title: "2027高雄市第20屆樹德超力盃全國羽球錦標賽 (國小1/25-29)",
-        regStart: "2026-11-23",
-        regEnd: "2026-12-24",
+        venue: "高雄市・樹德科技大學行政大樓體育館",
+        title: "2027高雄市第20屆樹德超力盃全國羽球錦標賽 (國小組1/25-29)",
+        regStart: "2026-10-07",
+        regEnd: "2026-12-18",
         matchStart: "2027-01-23",
         matchEnd: "2027-01-29",
-        platform: "高市羽委會 / MY Livescore"
+        platform: "MY Livescore (opid=326156・報名中)",
+        divisions: [
+          "國小三～六年級：男單、女單、男雙、女雙",
+          "國小男/女團體組"
+        ],
+        yixueStatus: "報名進行中 (12/18 截止)",
+        yixueEntries: []
+      },
+      {
+        region: "北區",
+        venue: "臺北市・臺北體育館7樓",
+        title: "2027第七屆一線入魂全國羽球錦標賽 (含國小各年級組)",
+        regStart: "2026-10-15",
+        regEnd: "2026-12-25",
+        matchStart: "2027-01-26",
+        matchEnd: "2027-01-31",
+        platform: "MY Livescore (opid=817332・報名中)",
+        divisions: [
+          "國小一～六年級：男單、女單",
+          "國小三～六年級：男雙、女雙",
+          "親子雙打組"
+        ],
+        yixueStatus: "🟢 寒假臺北體育館大賽！報名進行中 (12/25 截止後自動同步義學國小參賽名單)",
+        yixueEntries: [
+          { event: "國小各年級單雙打 (報名中)", players: "待 12/25 報名截止公布賽程表後自動抓取「義學國小」名單" }
+        ]
+      },
+      {
+        region: "南區",
+        venue: "高雄市・高科大建工校區活動中心3樓",
+        title: "2027第一屆比格楊羽球冒險者盃全國羽球分齡賽 (含國小分齡)",
+        regStart: "2026-10-16",
+        regEnd: "2026-12-25",
+        matchStart: "2027-01-30",
+        matchEnd: "2027-01-31",
+        platform: "MY Livescore (opid=815525・報名中)",
+        divisions: ["國小各年級分齡單打、雙打組"],
+        yixueStatus: "報名進行中 (12/25 截止)",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -457,7 +867,10 @@
         regEnd: "2027-01-08",
         matchStart: "2027-01-30",
         matchEnd: "2027-01-31",
-        platform: "台羽盃 / MY Livescore・FB全台羽球交流賽"
+        platform: "台羽盃 / MY Livescore・FB全台羽球交流賽",
+        divisions: ["U9 / U10 / U11 / U12 國小分齡男單、女單、男雙、女雙"],
+        yixueStatus: "預定 12/01 開放報名",
+        yixueEntries: []
       },
       {
         region: "東區",
@@ -467,17 +880,23 @@
         regEnd: "2027-01-08",
         matchStart: "2027-02-03",
         matchEnd: "2027-02-07",
-        platform: "MY Livescore (預定12月初開放)"
+        platform: "MY Livescore (預定12月初開放)",
+        divisions: ["國小男/女團體組、國小中/高年級男單、女單、男雙、女雙"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
-        region: "中區",
-        venue: "苗栗縣・苗栗巨蛋體育館",
-        title: "2027第四屆山城盃全國羽球錦標賽 (國小團/個人各年級)",
-        regStart: "2026-11-16",
-        regEnd: "2026-12-25",
-        matchStart: "2027-02-04",
-        matchEnd: "2027-02-07",
-        platform: "竹南羽協 / MY Livescore・FB全台羽球交流賽 (參考第3屆2/5-2/8)"
+        region: "南區",
+        venue: "臺南市・國立成功大學勝利校區羽球場",
+        title: "2027府城羽鋒盃全國羽球公開分齡錦標賽 (含國小分齡)",
+        regStart: "2026-11-03",
+        regEnd: "2027-01-15",
+        matchStart: "2027-02-20",
+        matchEnd: "2027-02-21",
+        platform: "MY Livescore (opid=820952・報名中)",
+        divisions: ["國小各年級男單、女單、男雙、女雙"],
+        yixueStatus: "報名進行中 (2027-01-15 截止)",
+        yixueEntries: []
       },
       {
         region: "全國",
@@ -487,7 +906,10 @@
         regEnd: "2027-02-10",
         matchStart: "2027-02-26",
         matchEnd: "2027-03-01",
-        platform: "MY Livescore (依往年時程預估)"
+        platform: "MY Livescore (依往年時程預估)",
+        divisions: ["國小一～六年級男單、女單、男雙、女雙、團體組"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -497,7 +919,10 @@
         regEnd: "2027-01-19",
         matchStart: "2027-02-27",
         matchEnd: "2027-03-01",
-        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽",
+        divisions: ["國小二～六年級男單、女單", "國小三～六年級男雙、女雙"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "中區",
@@ -507,7 +932,10 @@
         regEnd: "2027-02-19",
         matchStart: "2027-03-13",
         matchEnd: "2027-03-14",
-        platform: "LAPGO 運動共享平台"
+        platform: "LAPGO 運動共享平台",
+        divisions: ["國小一～六年級新秀單打、雙打組"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "中區",
@@ -517,7 +945,10 @@
         regEnd: "2027-03-05",
         matchStart: "2027-03-18",
         matchEnd: "2027-03-21",
-        platform: "ntbc.mylivescore.link (預定)"
+        platform: "ntbc.mylivescore.link (預定)",
+        divisions: ["國小各年級男單、女單、男雙、女雙、團體組"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -527,7 +958,15 @@
         regEnd: "2027-03-03",
         matchStart: "2027-03-23",
         matchEnd: "2027-03-26",
-        platform: "新北市羽委會 / BeClass (預定)"
+        platform: "新北市羽委會 / BeClass (預定)",
+        divisions: [
+          "國小高/中年級男子團體組、女子團體組",
+          "國小高/中年級男單、女單、男雙、女雙"
+        ],
+        yixueStatus: "🏆 義學國小重點衛冕賽事（上屆榮獲國小中年級男雙冠軍：李信隆 / 王柏勛）！",
+        yixueEntries: [
+          { event: "國小男/女團體組 & 個人單雙打 (預定全員出賽)", players: "王柏勛、李信隆、周俊叡、葉宸右、翁佳禾、謝宇安、蔡森紘、李秉均、謝皓比、江宥鈞、卓詩涵、鄭又心、葉家芯、張曜宇、王妍心、謝天齊" }
+        ]
       },
       {
         region: "北區",
@@ -537,7 +976,10 @@
         regEnd: "2027-03-05",
         matchStart: "2027-03-27",
         matchEnd: "2027-03-28",
-        platform: "山水體育 / MY Livescore・FB全台羽球交流賽"
+        platform: "山水體育 / MY Livescore・FB全台羽球交流賽",
+        divisions: ["國小各年級單雙打、親子雙打組"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "北區",
@@ -547,7 +989,10 @@
         regEnd: "2027-03-01",
         matchStart: "2027-04-03",
         matchEnd: "2027-04-06",
-        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽"
+        platform: "群岳盃 / MY Livescore・FB全台羽球交流賽",
+        divisions: ["國小二～六年級男單、女單", "國小三～六年級男雙、女雙"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "東區",
@@ -557,7 +1002,10 @@
         regEnd: "2027-03-19",
         matchStart: "2027-04-10",
         matchEnd: "2027-04-12",
-        platform: "花蓮縣羽委會 / LAPGO (預定)"
+        platform: "花蓮縣羽委會 / LAPGO (預定)",
+        divisions: ["國小團體組、個人單雙打"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       },
       {
         region: "全國",
@@ -567,7 +1015,10 @@
         regEnd: "2027-04-14",
         matchStart: "2027-05-10",
         matchEnd: "2027-05-21",
-        platform: "中華羽協 116年度行事曆公告"
+        platform: "中華羽協 116年度行事曆公告",
+        divisions: ["國小男生團體組、國小女生團體組"],
+        yixueStatus: "尚未開放報名",
+        yixueEntries: []
       }
     ];
 
@@ -608,6 +1059,132 @@
       return ((clamped - TIMELINE_START.getTime()) / TOTAL_MS) * 100;
     }
 
+    // Modal Display Functions
+    function openRegistrationModal(idx) {
+      const ev = window._filteredEvents[idx];
+      if (!ev) return;
+      const st = computeStatus(ev);
+      const modal = document.getElementById("detailModal");
+      document.getElementById("modalBadge").className = "px-2.5 py-0.5 rounded text-xs font-bold text-white bg-blue-600";
+      document.getElementById("modalBadge").textContent = "📋 報名區間詳情";
+      document.getElementById("modalTitle").textContent = ev.title;
+
+      const divList = (ev.divisions && ev.divisions.length)
+        ? ev.divisions.map(d => `<li class="py-1 px-2.5 rounded bg-[var(--background)] border border-[var(--border)] font-medium">✅ ${d}</li>`).join("")
+        : `<li class="py-1 px-2.5 rounded bg-[var(--background)]">國小各年級男/女單雙打組</li>`;
+
+      document.getElementById("modalBody").innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/30">
+          <div>
+            <div class="text-[var(--muted-foreground)]">🏆 比賽名稱</div>
+            <div class="font-bold text-sm mt-0.5">${ev.title}</div>
+          </div>
+          <div>
+            <div class="text-[var(--muted-foreground)]">📍 比賽地點</div>
+            <div class="font-bold text-sm mt-0.5 text-blue-500">${ev.venue}</div>
+          </div>
+          <div>
+            <div class="text-[var(--muted-foreground)]">🗓️ 報名時間 (起 ~ 迄)</div>
+            <div class="font-mono font-bold text-sm mt-0.5 text-blue-500">${ev.regStart} ～ ${ev.regEnd}</div>
+          </div>
+          <div>
+            <div class="text-[var(--muted-foreground)]">🏸 比賽日期 & 狀態</div>
+            <div class="font-mono font-bold text-sm mt-0.5">${ev.matchStart} ～ ${ev.matchEnd} ${statusBadge(st)}</div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-sm mb-2 flex items-center gap-1.5">
+            <span>🎯 可以報名的項目 (國小組別清單)</span>
+          </h4>
+          <ul class="space-y-1.5">${divList}</ul>
+        </div>
+
+        <div class="p-3 rounded bg-[var(--background)] border border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-[var(--muted-foreground)]">報名系統 / 資訊來源：</span>
+            <span class="font-semibold">${ev.platform}</span>
+          </div>
+          <button onclick="openMatchModal(${idx})" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-bold">
+            🏸 切換查看「義學國小」參賽項目與選手人名 →
+          </button>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function openMatchModal(idx) {
+      const ev = window._filteredEvents[idx];
+      if (!ev) return;
+      const modal = document.getElementById("detailModal");
+      document.getElementById("modalBadge").className = "px-2.5 py-0.5 rounded text-xs font-bold text-white bg-emerald-600";
+      document.getElementById("modalBadge").textContent = "🏫 義學國小參賽名單查詢";
+      document.getElementById("modalTitle").textContent = ev.title;
+
+      const entriesHtml = (ev.yixueEntries && ev.yixueEntries.length)
+        ? `<div class="border border-[var(--border)] rounded-lg overflow-hidden">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-emerald-500/15 border-b border-[var(--border)] font-bold">
+                  <th class="py-2 px-3 w-5/12">參賽項目 / 組別</th>
+                  <th class="py-2 px-3">新北市義學國小 參賽選手人名</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[var(--border)]">
+                ${ev.yixueEntries.map(row => `
+                  <tr class="hover:bg-[var(--background)]">
+                    <td class="py-2 px-3 font-bold text-emerald-500">${row.event}</td>
+                    <td class="py-2 px-3 font-medium">${row.players}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>`
+        : `<div class="p-3.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--muted-foreground)]">
+            目前本場賽事尚未公布「義學國小」報名籤表（或屬外縣市校際封閉賽事）。<br/>
+            <span class="text-[var(--foreground)] font-medium mt-1 inline-block">📌 義學國小常備主力選手參考：${YIXUE_ROSTER_NOTE}</span>
+          </div>`;
+
+      document.getElementById("modalBody").innerHTML = `
+        <div class="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="font-bold text-sm">🏸 比賽期間：<span class="font-mono text-emerald-500">${ev.matchStart} ～ ${ev.matchEnd}</span></span>
+            <span class="font-medium text-[var(--muted-foreground)]">📍 ${ev.venue}</span>
+          </div>
+          <div class="font-semibold text-[var(--foreground)] pt-1">${ev.yixueStatus || "賽程籤表查詢結果："}</div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-sm mb-2">📋 搜尋「義學國小」有比賽的項目及選手人名清單：</h4>
+          ${entriesHtml}
+        </div>
+
+        <div class="p-3 rounded bg-[var(--background)] border border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
+          <div class="text-[var(--muted-foreground)]">${YIXUE_ROSTER_NOTE}</div>
+          <button onclick="openRegistrationModal(${idx})" class="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-bold">
+            📋 切換查看「可報名項目 & 報名日期」
+          </button>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("detailModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    document.getElementById("btnCloseModal").addEventListener("click", closeModal);
+    document.getElementById("detailModal").addEventListener("click", (e) => {
+      if (e.target.id === "detailModal") closeModal();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
     function renderAll() {
       const statusVal = document.getElementById("statusFilter").value;
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -617,9 +1194,15 @@
         const st = computeStatus(ev);
         if (currentRegion !== "ALL" && ev.region !== currentRegion) return false;
         if (statusVal !== "ALL" && st !== statusVal) return false;
-        if (q && !(ev.title.toLowerCase().includes(q) || ev.venue.toLowerCase().includes(q) || ev.region.toLowerCase().includes(q))) return false;
+        if (q) {
+          const inBasic = ev.title.toLowerCase().includes(q) || ev.venue.toLowerCase().includes(q) || ev.region.toLowerCase().includes(q);
+          const inYixue = (ev.yixueEntries || []).some(r => r.event.toLowerCase().includes(q) || r.players.toLowerCase().includes(q));
+          if (!inBasic && !inYixue) return false;
+        }
         return true;
       });
+
+      window._filteredEvents = filtered;
 
       // KPI Strip
       const counts = { total: events.length, open: 0, upcoming: 0, ready: 0, done: 0 };
@@ -655,28 +1238,45 @@
 
       // Render Gantt
       const todayLeft = pctPos(REF_TODAY);
-      const ganttHtml = filtered.map(ev => {
+      const ganttHtml = filtered.map((ev, idx) => {
         const rLeft = pctPos(ev.regStart);
         const rRight = pctPos(ev.regEnd);
-        const rWidth = Math.max(1.2, rRight - rLeft);
+        const rWidth = Math.max(1.4, rRight - rLeft);
 
         const mLeft = pctPos(ev.matchStart);
         const mRight = pctPos(ev.matchEnd);
-        const mWidth = Math.max(1.0, mRight - mLeft);
+        const mWidth = Math.max(1.2, mRight - mLeft);
+
+        const hasYixue = ev.yixueEntries && ev.yixueEntries.length > 0;
 
         return `
           <div class="grid grid-cols-12 items-center py-2 hover:bg-[var(--background)] transition-colors">
-            <div class="col-span-4 pr-2 flex items-center gap-2 truncate">
+            <div class="col-span-4 pr-2 flex items-center gap-1.5 truncate">
               ${regionBadge(ev.region)}
-              <span class="truncate font-medium" title="${ev.title}">${ev.title}</span>
+              ${hasYixue ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-500 font-bold text-[10px]" title="含有義學國小參賽名單">義學</span>` : ""}
+              <button onclick="openRegistrationModal(${idx})" class="truncate font-medium hover:text-blue-500 text-left" title="點選查看報名與賽程詳情：${ev.title}">${ev.title}</button>
             </div>
-            <div class="col-span-8 relative h-6 gantt-grid rounded bg-[var(--background)]/40">
+            <div class="col-span-8 relative h-7 gantt-grid rounded bg-[var(--background)]/40">
               <!-- Today Line -->
-              <div class="absolute top-0 bottom-0 w-0.5 bg-red-500/80 z-10" style="left:${todayLeft}%;" title="今日 (2026-11-10)"></div>
-              <!-- Registration Bar -->
-              <div class="absolute top-1 h-4 rounded-sm bar-reg" style="left:${rLeft}%;width:${rWidth}%;" title="報名區間：${ev.regStart} ~ ${ev.regEnd}"></div>
-              <!-- Match Bar -->
-              <div class="absolute top-1 h-4 rounded-sm bar-match" style="left:${mLeft}%;width:${mWidth}%;" title="比賽日期：${ev.matchStart} ~ ${ev.matchEnd}"></div>
+              <div class="absolute top-0 bottom-0 w-0.5 bg-red-500/80 z-10 pointer-events-none" style="left:${todayLeft}%;" title="今日 (${REF_TODAY})"></div>
+              <!-- Registration Bar (Click / DblClick / RightClick opens Registration Info) -->
+              <div
+                onclick="openRegistrationModal(${idx})"
+                ondblclick="openRegistrationModal(${idx})"
+                oncontextmenu="event.preventDefault();openRegistrationModal(${idx});"
+                class="absolute top-1 h-5 rounded-sm bar-reg flex items-center justify-center overflow-hidden"
+                style="left:${rLeft}%;width:${rWidth}%;"
+                title="【點選查看可報名項目】報名時間：${ev.regStart} ~ ${ev.regEnd}｜地點：${ev.venue}"
+              ></div>
+              <!-- Match Bar (Click / DblClick / RightClick opens Yixue Elementary School Schedule & Players) -->
+              <div
+                onclick="openMatchModal(${idx})"
+                ondblclick="openMatchModal(${idx})"
+                oncontextmenu="event.preventDefault();openMatchModal(${idx});"
+                class="absolute top-1 h-5 rounded-sm bar-match flex items-center justify-center overflow-hidden"
+                style="left:${mLeft}%;width:${mWidth}%;"
+                title="【點選查詢義學國小參賽名單】比賽時間：${ev.matchStart} ~ ${ev.matchEnd}"
+              ></div>
             </div>
           </div>
         `;
@@ -684,16 +1284,26 @@
       document.getElementById("ganttContainer").innerHTML = ganttHtml || `<div class="py-6 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事</div>`;
 
       // Render Table
-      document.getElementById("tableBody").innerHTML = filtered.map(ev => {
+      document.getElementById("tableBody").innerHTML = filtered.map((ev, idx) => {
         const st = computeStatus(ev);
+        const hasYixue = ev.yixueEntries && ev.yixueEntries.length > 0;
         return `
           <tr class="hover:bg-[var(--background)]/60">
             <td class="py-2 px-2 whitespace-nowrap">${regionBadge(ev.region)}</td>
             <td class="py-2 px-2 whitespace-nowrap text-[var(--muted-foreground)]">${ev.venue}</td>
-            <td class="py-2 px-2 font-medium">${ev.title}</td>
-            <td class="py-2 px-2 font-mono whitespace-nowrap text-blue-400">${ev.regStart}</td>
-            <td class="py-2 px-2 font-mono whitespace-nowrap text-blue-400">${ev.regEnd}</td>
-            <td class="py-2 px-2 font-mono whitespace-nowrap text-emerald-400">${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</td>
+            <td class="py-2 px-2 font-medium">
+              <button onclick="openRegistrationModal(${idx})" class="hover:text-blue-500 text-left font-semibold">${ev.title}</button>
+            </td>
+            <td class="py-2 px-2 font-mono whitespace-nowrap">
+              <button onclick="openRegistrationModal(${idx})" class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30" title="點選查看可報名項目">
+                📋 ${ev.regStart} ~ ${ev.regEnd.slice(5)}
+              </button>
+            </td>
+            <td class="py-2 px-2 font-mono whitespace-nowrap">
+              <button onclick="openMatchModal(${idx})" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30" title="點選查看義學國小參賽名單">
+                🏫 ${ev.matchStart} ~ ${ev.matchEnd.slice(5)} ${hasYixue ? `(${ev.yixueEntries.length}組)` : ""}
+              </button>
+            </td>
             <td class="py-2 px-2 whitespace-nowrap">${statusBadge(st)}</td>
             <td class="py-2 px-2 text-[var(--muted-foreground)]">${ev.platform}</td>
           </tr>
@@ -701,7 +1311,7 @@
       }).join("");
     }
 
-    // Event Listeners
+    // Filter Listeners
     document.querySelectorAll(".reg-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         currentRegion = btn.getAttribute("data-region");
@@ -719,13 +1329,19 @@
     // Comments & Feedback Logic
     const INITIAL_COMMENTS = [
       {
+        time: "2026-11-11 01:30",
+        author: "系統管理員",
+        type: "功能建議",
+        content: "已新增甘特圖互動點擊功能！點選藍色「報名區段」可查看比賽地點與可報名國小組別；點選綠色「比賽區段」可查看「新北市義學國小」參賽項目與選手人名清單！"
+      },
+      {
         time: "2026-11-10 21:30",
         author: "系統管理員",
         type: "情報補充",
         content: "歡迎各位教練與家長！若發現有地方主委盃、分齡賽尚未列入上方甘特圖，或對網頁顯示有任何建議，請直接於上方留言，AI 助手將定期彙整更新。"
       }
     ];
-    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v1") || "null") || [...INITIAL_COMMENTS];
+    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v2") || "null") || [...INITIAL_COMMENTS];
 
     function renderComments() {
       const typeColors = {
@@ -756,7 +1372,7 @@
       const now = new Date();
       const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
       comments.unshift({ time: timeStr, author, type, content });
-      localStorage.setItem("tw_badminton_comments_v1", JSON.stringify(comments));
+      localStorage.setItem("tw_badminton_comments_v2", JSON.stringify(comments));
       document.getElementById("cContent").value = "";
       renderComments();
     });
