@@ -3,430 +3,910 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TW-ElemBadminton Tracker v2.8 // 全臺國小羽球賽事時序（全國必選置頂・北區預選・已完賽收折・三維排序）</title>
-  <meta name="description" content="全臺國小羽球盃賽時序追蹤器 v2.8 — 全國賽必選置頂、北區預選多區切換、已完成賽事收折歸檔，支援時間排序、地區排序、已報名優先排序與義學國小正式賽程防呆管理。" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>go/tw-badminton · 國小羽球賽事追蹤 (v2.9)</title>
+  <meta name="description" content="全臺國小羽球賽事時序追蹤器 — 全國必選置頂、北區預選、已完賽收折、時間/地區/已報名優先排序與義學國小正式賽程核對。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --background: #f8fafc;
-      --card: #ffffff;
-      --foreground: #0f172a;
-      --muted-foreground: #64748b;
-      --border: #e2e8f0;
-      --hover-bg: #f1f5f9;
-      --accent-subtle: rgba(37, 99, 235, 0.06);
+      --bg-app: #f8f9fa;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f3f4;
+      --bg-hover: #f1f3f4;
+      --bg-selected: #e8f0fe;
+      --border: #dadce0;
+      --border-light: #e8eaed;
+      --text: #202124;
+      --text-sec: #5f6368;
+      --text-muted: #80868b;
+      --blue: #1a73e8;
+      --blue-text: #1967d2;
+      --blue-bg: #e8f0fe;
+      --green: #188038;
+      --green-bg: #e6f4ea;
+      --red: #d93025;
+      --red-bg: #fce8e6;
+      --amber: #b06000;
+      --amber-bg: #fef7e0;
+      --teal: #007b83;
+      --teal-bg: #e4f7fb;
+      --indigo: #3949ab;
+      --indigo-bg: #e8eaf6;
+      --shadow-sm: 0 1px 2px rgba(60, 64, 67, 0.08);
+      --shadow-drawer: -4px 0 24px rgba(32, 33, 36, 0.18);
     }
     html.dark {
-      --background: #0b0f19;
-      --card: #111827;
-      --foreground: #f1f5f9;
-      --muted-foreground: #94a3b8;
-      --border: #1e293b;
-      --hover-bg: #1e293b;
-      --accent-subtle: rgba(59, 130, 246, 0.12);
+      --bg-app: #131314;
+      --bg-surface: #1e1f20;
+      --bg-subtle: #282a2c;
+      --bg-hover: #2d2f31;
+      --bg-selected: rgba(138, 180, 248, 0.16);
+      --border: #3c4043;
+      --border-light: #2d2f31;
+      --text: #e8eaed;
+      --text-sec: #9aa0a6;
+      --text-muted: #80868b;
+      --blue: #8ab4f8;
+      --blue-text: #8ab4f8;
+      --blue-bg: rgba(138, 180, 248, 0.16);
+      --green: #81c995;
+      --green-bg: rgba(129, 201, 149, 0.16);
+      --red: #f28b82;
+      --red-bg: rgba(242, 139, 130, 0.16);
+      --amber: #fdd663;
+      --amber-bg: rgba(253, 214, 99, 0.15);
+      --teal: #78d9ec;
+      --teal-bg: rgba(120, 217, 236, 0.15);
+      --indigo: #9fa8da;
+      --indigo-bg: rgba(159, 168, 218, 0.16);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-drawer: -4px 0 28px rgba(0, 0, 0, 0.55);
     }
-    .gantt-grid {
-      background-image: linear-gradient(to right, var(--border) 1px, transparent 1px);
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg-app);
+      color: var(--text);
+      font-family: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      font-size: 12.5px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'Roboto Mono', ui-monospace, monospace; }
+
+    /* Top Appbar (Google Buganizer / Launchcal style) */
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .appbar-left, .appbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .go-link {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+    }
+    html.dark .go-link { color: #131314; }
+    h1.app-title {
+      margin: 0 4px 0 0;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Main Workspace Container */
+    .workspace {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 10px 14px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Cards / Panels */
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel-head {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-subtle);
+      border-radius: 8px 8px 0 0;
+    }
+    .panel-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Buttons & Interactive Chips */
+    button, .btn {
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text);
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg-hover); }
+    .btn-primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+    html.dark .btn-primary { color: #131314; }
+    .btn-primary:hover { opacity: 0.92; background: var(--blue); }
+    .btn-xs {
+      height: 23px;
+      padding: 0 7px;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+
+    /* KPI / Quick Stat Chips in Appbar */
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text-sec);
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .stat-chip:hover { border-color: var(--blue); color: var(--blue-text); }
+    .stat-chip.active {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      color: var(--blue-text);
+      font-weight: 600;
+    }
+    .stat-chip b { font-family: 'Roboto Mono', monospace; font-weight: 600; }
+
+    /* Control Matrix (Form Rows) */
+    .filter-panel { padding: 8px 12px; display: flex; flex-direction: column; gap: 7px; }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-row + .filter-row {
+      padding-top: 7px;
+      border-top: 1px solid var(--border-light);
+    }
+    .group-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sec);
+      margin-right: 2px;
+      white-space: nowrap;
+    }
+    .v-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 3px;
+    }
+
+    /* Checkbox Filter Chips (Google Filter Chip style) */
+    .chk-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 27px;
+      padding: 0 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .chk-chip:hover { background: var(--bg-hover); }
+    .chk-chip input[type="checkbox"], .chk-chip input[type="radio"] {
+      margin: 0;
+      width: 13.5px;
+      height: 13.5px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+    .chk-chip:has(input:checked) {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      color: var(--blue-text);
+      font-weight: 600;
+    }
+    .chk-chip.locked {
+      background: var(--amber-bg);
+      border-color: var(--amber);
+      color: var(--amber);
+      font-weight: 600;
+      cursor: default;
+    }
+    .chk-chip.locked input { accent-color: var(--amber); cursor: default; }
+    .chk-chip .cnt {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    /* Segmented Button Group */
+    .seg-group {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-surface);
+    }
+    .seg-btn {
+      height: 27px;
+      padding: 0 10px;
+      border: none;
+      border-right: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-sec);
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+    .seg-btn:last-child { border-right: none; }
+    .seg-btn:hover { background: var(--bg-hover); color: var(--text); }
+    .seg-btn.active {
+      background: var(--blue-bg);
+      color: var(--blue-text);
+      font-weight: 600;
+    }
+
+    /* Search Input */
+    .search-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: auto;
+      gap: 6px;
+    }
+    .search-input {
+      height: 27px;
+      width: 210px;
+      padding: 0 24px 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+    .search-input:focus {
+      background: var(--bg-surface);
+      border-color: var(--blue);
+    }
+    .search-clear {
+      position: absolute;
+      right: 5px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 2px 4px;
+      font-size: 11px;
+      display: none;
+    }
+    .search-clear.show { display: block; }
+
+    /* Tags & Status Pills */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tag-nat { background: var(--amber-bg); color: var(--amber); }
+    .tag-north { background: var(--blue-bg); color: var(--blue-text); }
+    .tag-mid { background: var(--teal-bg); color: var(--teal); }
+    .tag-south { background: var(--green-bg); color: var(--green); }
+    .tag-east { background: var(--red-bg); color: var(--red); }
+    .tag-muted { background: var(--bg-subtle); color: var(--text-sec); font-weight: 500; }
+    .tag-live { background: var(--red); color: #fff; }
+    .tag-open { background: var(--green-bg); color: var(--green); }
+    .tag-urgent { background: var(--red-bg); color: var(--red); }
+    .tag-wait { background: var(--amber-bg); color: var(--amber); }
+    .tag-soon { background: var(--blue-bg); color: var(--blue-text); }
+    .tag-yixue { background: var(--indigo-bg); color: var(--indigo); }
+
+    /* Section Group Headers (Gantt & Table) */
+    .sec-bar {
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text);
+    }
+    .sec-bar.nat { background: var(--amber-bg); color: var(--amber); }
+    .sec-bar.reg-pri { background: var(--green-bg); color: var(--green); }
+    .sec-bar.collapsible {
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-sec);
+    }
+    .sec-bar.collapsible:hover { background: var(--bg-hover); color: var(--text); }
+
+    /* Gantt Chart */
+    .gantt-scroll { overflow-x: auto; }
+    .gantt-min { min-width: 920px; }
+    .gantt-head, .gantt-row {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      align-items: center;
+    }
+    .gantt-head {
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sec);
+    }
+    .gantt-months {
+      display: grid;
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .gantt-row {
+      padding: 4px 10px;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .gantt-row:hover { background: var(--bg-hover); }
+    .gantt-row.done-row { opacity: 0.72; }
+    .gantt-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding-right: 10px;
+      overflow: hidden;
+    }
+    .gantt-info-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow: hidden;
+    }
+    .gantt-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .gantt-row:hover .gantt-title { color: var(--blue-text); }
+    .gantt-track {
+      position: relative;
+      height: 22px;
+      border-radius: 3px;
+      background-color: var(--bg-subtle);
+      background-image: linear-gradient(to right, var(--border-light) 1px, transparent 1px);
       background-size: calc(100% / 11) 100%;
     }
+    .today-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1.5px;
+      background: var(--red);
+      z-index: 10;
+      pointer-events: none;
+    }
     .bar-reg {
+      position: absolute;
+      top: 3px;
+      height: 16px;
+      border-radius: 3px;
       background: repeating-linear-gradient(
         45deg,
-        rgba(59, 130, 246, 0.28),
-        rgba(59, 130, 246, 0.28) 6px,
-        rgba(59, 130, 246, 0.50) 6px,
-        rgba(59, 130, 246, 0.50) 12px
+        rgba(26, 115, 232, 0.22),
+        rgba(26, 115, 232, 0.22) 5px,
+        rgba(26, 115, 232, 0.42) 5px,
+        rgba(26, 115, 232, 0.42) 10px
       );
-      border: 1px solid rgba(37, 99, 235, 0.9);
+      border: 1px solid var(--blue);
+      z-index: 15;
     }
-    .bar-reg:hover {
-      filter: brightness(1.12);
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+    .bar-reg-stub {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      width: 5px;
+      height: 16px;
+      border-radius: 0 3px 3px 0;
+      background: var(--blue);
+      opacity: 0.65;
+      z-index: 15;
     }
     .bar-match {
-      background: rgba(16, 185, 129, 0.88);
-      border: 1px solid rgba(5, 150, 105, 1);
-    }
-    .bar-match:hover {
-      filter: brightness(1.1);
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+      position: absolute;
+      top: 3px;
+      height: 16px;
+      border-radius: 3px;
+      background: #1e8e3e;
+      border: 1px solid #137333;
+      z-index: 20;
     }
     .bar-live {
-      background: rgba(239, 68, 68, 0.92);
-      border: 1px solid rgba(185, 28, 28, 1);
-    }
-    .bar-live:hover {
-      filter: brightness(1.1);
-      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.45);
-    }
-    .drawer-backdrop {
-      background: rgba(15, 23, 42, 0.48);
-      backdrop-filter: blur(2px);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--background);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--muted-foreground);
+      position: absolute;
+      top: 3px;
+      height: 16px;
       border-radius: 3px;
-      opacity: 0.5;
+      background: #d93025;
+      border: 1px solid #a50e0e;
+      z-index: 25;
     }
+    .bar-reg:hover, .bar-match:hover, .bar-live:hover {
+      filter: brightness(1.1);
+      transform: scaleY(1.1);
+    }
+
+    /* Dense Buganizer Data Table */
+    .table-scroll { overflow-x: auto; }
+    table.b-table {
+      width: 100%;
+      min-width: 1040px;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .b-table th {
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sec);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .b-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+    .b-table tr.data-row { cursor: pointer; transition: background 0.1s; }
+    .b-table tr.data-row:hover { background: var(--bg-hover); }
+    .b-table tr.done-row { opacity: 0.72; }
+    .star-btn {
+      border: none;
+      background: transparent;
+      padding: 0 2px;
+      font-size: 13px;
+      line-height: 1;
+      color: var(--text-muted);
+    }
+    .star-btn.on { color: #f9ab00; }
+    .row-chk {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--green);
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .row-chk.verified { accent-color: var(--indigo); }
+
+    /* Compact Feedback Bar */
+    .feedback-bar {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feedback-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .inp {
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+    .inp:focus { background: var(--bg-surface); border-color: var(--blue); }
+
+    /* Drawer & Modal */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(32, 33, 36, 0.45);
+      display: none;
+    }
+    .overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(600px, 95vw);
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-drawer);
+      display: flex;
+      flex-direction: column;
+      z-index: 51;
+    }
+    .drawer-head {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .drawer-body {
+      padding: 12px 14px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .kv-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    @media (max-width: 560px) {
+      .kv-grid { grid-template-columns: 1fr; }
+    }
+    .kv-cell {
+      padding: 6px 9px;
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .kv-k { color: var(--text-sec); font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .kv-v { font-weight: 600; text-align: right; word-break: break-word; }
+    .div-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 5px;
+    }
+    .div-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-surface);
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+    }
+    .div-item:hover { background: var(--bg-hover); }
+    .div-item:has(input:checked) {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      color: var(--blue-text);
+      font-weight: 600;
+    }
+    .sub-box {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sub-box.focus-ring { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-bg); }
+    .modal-card {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(460px, 92vw);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-drawer);
+      padding: 14px;
+      z-index: 52;
+    }
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 md:p-6 text-xs transition-colors duration-150">
-  <!-- Top Google Internal Style Header Bar (Moma / Launchcal / Buganizer style) -->
-  <header class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-3.5 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1.5">
-          <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono font-bold text-xs tracking-wide shadow-sm">GO/TW-BADMINTON</span>
-          <span class="hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-semibold">v2.8 VERIFIED</span>
-        </div>
-        <div>
-          <h1 class="text-base font-bold text-[var(--foreground)] flex flex-wrap items-center gap-2">
-            <span>全臺國小羽球盃賽時序追蹤器 (115~116年度 / 往前2個月・往後8個月甘特圖)</span>
-            <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-semibold">🏫 新北市義學國小正式賽程核對版</span>
-          </h1>
-          <p class="text-[var(--muted-foreground)] text-xs mt-0.5">
-            基準日：<span id="refDateDisplay" class="font-mono font-semibold text-[var(--foreground)]">2026-11-11</span> ｜ 觀測時程：<strong class="text-[var(--foreground)]">2026-09 至 2027-07（往前2個月・往後8個月）</strong> ｜ 全國賽固定必選置頂・北區預選・已完賽自動收折
-          </p>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <button id="btnCrawlerModal" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs flex items-center gap-1.5 transition">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>TOOL1 巡邏與FB核對</span>
-        </button>
-        <button id="btnThemeToggle" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition" title="切換深淺色主題">
-          🌓 主題切換
-        </button>
-        <button id="btnExportCsv" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition">
-          📥 匯出完整 CSV
-        </button>
-        <a href="#commentSection" class="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium text-xs transition shadow-sm">
-          💬 留言 / 回報賽程
-        </a>
-      </div>
+<body>
+  <!-- Compact Google Internal Appbar -->
+  <header class="appbar">
+    <div class="appbar-left">
+      <span class="go-link mono">go/tw-badminton</span>
+      <h1 class="app-title">國小羽球賽事追蹤</h1>
+      <div id="kpiStrip" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
     </div>
-
-    <!-- KPI Summary Strip -->
-    <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 mt-4 pt-3 border-t border-[var(--border)]" id="kpiStrip"></div>
+    <div class="appbar-right">
+      <span class="tag tag-muted mono" title="基準日">📅 <span id="refDateDisplay">2026-11-11</span></span>
+      <button id="btnCrawlerModal" type="button" class="btn btn-xs">📡 來源狀態</button>
+      <button id="btnExportCsv" type="button" class="btn btn-xs">📥 CSV</button>
+      <a href="#commentSection" class="btn btn-xs">💬 回報</a>
+      <button id="btnThemeToggle" type="button" class="btn btn-xs" title="深淺色切換">🌓</button>
+    </div>
   </header>
 
-  <!-- Strict Data Integrity & Dual-Click UX Banner -->
-  <div class="bg-[var(--card)] border border-indigo-500/30 rounded-lg px-3.5 py-2.5 mb-3.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-    <div class="flex flex-wrap items-center gap-2 text-xs leading-relaxed">
-      <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono font-bold text-[11px]">STRICT POLICY</span>
-      <span class="text-[var(--muted-foreground)]">
-        ① <strong class="text-[var(--foreground)]">點選甘特圖 🟦 藍色斜線「報名區段」</strong>：檢視比賽地點、可報國小項目清單與<strong class="text-blue-500">最高關聯報名章程網頁</strong>；
-        ② <strong class="text-[var(--foreground)]">點選 🟩/🟥「比賽區段」</strong>：檢視<strong class="text-emerald-500">已公告官方正式賽程表 / 秩序冊</strong>核對後之「義學國小」參賽項目與選手人名（未出正式賽程表一律 🔒 防呆鎖定；可按 <strong class="text-emerald-600 dark:text-emerald-400">＋報名</strong> 標記優先追蹤）。
-      </span>
-    </div>
-    <button id="btnQuickYixue" class="px-2.5 py-1 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/40 hover:bg-indigo-600 hover:text-white font-semibold text-xs transition shrink-0">
-      🏫 僅看義學已核對賽程賽事
-    </button>
-  </div>
-
-  <!-- Filter, Multi-Select Region, Sort & Collapse Controls (TOOL 2 Controls) -->
-  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 mb-3.5 space-y-2.5 shadow-sm">
-    <!-- Row 1: Region Filters (全國必選置頂 + 北區預選 + 多選切換) -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--border)]">
-      <div class="flex flex-wrap items-center gap-1.5" id="regionFilters">
-        <span class="text-[var(--muted-foreground)] font-semibold mr-0.5">🗺️ 分區顯示：</span>
-        <button id="btnNationalPinned" type="button" class="px-2.5 py-1 rounded font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/50 shadow-sm flex items-center gap-1 cursor-default" title="全國指標賽事固定必選，並預設排在最上方置頂顯示">
-          <span>📌 🏆 全國賽 (必選置頂)</span>
-          <span id="cntNational" class="font-mono text-[11px] opacity-80"></span>
-        </button>
-        <button type="button" data-region="北區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
-          <span class="reg-check-icon">✓</span>
-          <span>北區 (基北桃竹宜・預選)</span>
-          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
-        </button>
-        <button type="button" data-region="中區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
-          <span class="reg-check-icon hidden">✓</span>
-          <span>中區 (苗中彰投雲)</span>
-          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
-        </button>
-        <button type="button" data-region="南區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
-          <span class="reg-check-icon hidden">✓</span>
-          <span>南區 (嘉南高屏澎)</span>
-          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
-        </button>
-        <button type="button" data-region="東區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
-          <span class="reg-check-icon hidden">✓</span>
-          <span>東區 (花東)</span>
-          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
-        </button>
-      </div>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <button id="btnSelectAllRegions" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition">
-          🌏 全選全臺各區
-        </button>
-        <button id="btnResetDefaultRegions" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition" title="恢復預設：全國賽(必選) + 北區(預選)">
-          ↺ 預設 (全國+北區)
-        </button>
-      </div>
-    </div>
-
-    <!-- Row 2: Sort Modes (時間 / 地區 / 已報名優先) + Completed Collapse + Filters & Search -->
-    <div class="flex flex-wrap items-center justify-between gap-2.5">
-      <div class="flex flex-wrap items-center gap-1.5" id="sortControls">
-        <span class="text-[var(--muted-foreground)] font-semibold mr-0.5">⇅ 排序方式：</span>
-        <button type="button" data-sort="time" class="sort-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white shadow-sm transition">
-          🕒 時間排序
-        </button>
-        <button type="button" data-sort="region" class="sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition">
-          🗺️ 地區排序
-        </button>
-        <button type="button" data-sort="registered" class="sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition">
-          ✅ 已報名優先 (<span id="regCountBadge">0</span>)
-        </button>
-        <button id="btnToggleCompleted" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition flex items-center gap-1" title="展開或收折已結束之歷史賽事">
-          <span>📁 已完成賽事已收折</span>
-        </button>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-indigo-500/40 bg-indigo-500/5 cursor-pointer select-none">
-          <input id="onlyYixueToggle" type="checkbox" class="accent-indigo-600" />
-          <span class="font-medium text-indigo-600 dark:text-indigo-400">🏫 義學已核對 (<span id="yixueCountBadge">0</span>)</span>
+  <main class="workspace">
+    <!-- Checkbox & Button Filter Matrix -->
+    <section class="panel filter-panel" aria-label="篩選與排序表單">
+      <!-- Row 1: 區域勾選 + 狀態勾選 + 檢視勾選 -->
+      <div class="filter-row">
+        <span class="group-label">區域</span>
+        <label class="chk-chip locked" title="全國賽固定必選並置頂">
+          <input type="checkbox" checked disabled />
+          <span>🏆 全國</span>
+          <span id="cntNational" class="cnt">5</span>
         </label>
-        <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] cursor-pointer select-none">
-          <input id="onlyFavToggle" type="checkbox" class="accent-amber-500" />
-          <span class="font-medium">⭐ 關注 (<span id="favCountBadge">0</span>)</span>
+        <label class="chk-chip">
+          <input type="checkbox" class="reg-chk" value="北區" checked />
+          <span>北區</span>
+          <span class="cnt" data-reg-cnt="北區">0</span>
         </label>
-        <select id="statusFilter" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs">
-          <option value="ALL">所有賽事狀態</option>
-          <option value="比賽中">🔴 激戰進行中 (LIVE)</option>
-          <option value="報名中">🟢 報名進行中 / 即將截止</option>
-          <option value="即將開放">🔵 尚未開放 / 預定行事曆</option>
-          <option value="待開賽">🟡 報名截止・準備開賽</option>
-          <option value="已結束">⚪ 已完賽</option>
-        </select>
-        <input id="searchInput" type="text" placeholder="搜尋盃賽、義學選手姓名、場館、OpenID..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-52 sm:w-56 focus:outline-none focus:border-blue-500" />
-      </div>
-    </div>
-  </section>
+        <label class="chk-chip">
+          <input type="checkbox" class="reg-chk" value="中區" />
+          <span>中區</span>
+          <span class="cnt" data-reg-cnt="中區">0</span>
+        </label>
+        <label class="chk-chip">
+          <input type="checkbox" class="reg-chk" value="南區" />
+          <span>南區</span>
+          <span class="cnt" data-reg-cnt="南區">0</span>
+        </label>
+        <label class="chk-chip">
+          <input type="checkbox" class="reg-chk" value="東區" />
+          <span>東區</span>
+          <span class="cnt" data-reg-cnt="東區">0</span>
+        </label>
+        <button id="btnSelectAllRegions" type="button" class="btn btn-xs">全選</button>
+        <button id="btnResetDefaultRegions" type="button" class="btn btn-xs">預設</button>
 
-  <!-- TOOL 2: Interactive Dual-Segment Gantt Chart Section -->
-  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 overflow-x-auto shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <div class="font-bold text-sm flex flex-wrap items-center gap-2">
-        <span>📊 TOOL 2：時序雙區段互動甘特圖 (Gantt Timeline: 2026/09 – 2027/07｜全國置頂・已完賽可收折)</span>
-        <span class="text-xs font-normal text-[var(--muted-foreground)]">— 點選 🟦 報名條查「章程與可報項目」｜點選 🟩/🟥 比賽條查「義學國小正式賽程名單」</span>
-      </div>
-      <div class="flex flex-wrap items-center gap-4 text-xs">
-        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-reg"></span> 點選查報名章程 &amp; 可報組別</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-match"></span> 點選查義學正式賽程名單</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block w-3.5 h-2.5 rounded-sm bar-live"></span> 今日激戰中 (LIVE)</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block w-0.5 h-3.5 bg-red-500"></span> 今日基準線 (2026-11-11)</span>
-      </div>
-    </div>
+        <span class="v-sep"></span>
+        <span class="group-label">狀態</span>
+        <label class="chk-chip"><input type="checkbox" class="st-chk" value="比賽中" /><span>🔴 LIVE</span></label>
+        <label class="chk-chip"><input type="checkbox" class="st-chk" value="報名中" /><span>🟢 報名中</span></label>
+        <label class="chk-chip"><input type="checkbox" class="st-chk" value="待開賽" /><span>🟡 待開賽</span></label>
+        <label class="chk-chip"><input type="checkbox" class="st-chk" value="即將開放" /><span>🔵 未開放</span></label>
 
-    <div class="min-w-[940px]">
-      <!-- Month Header -->
-      <div class="grid grid-cols-12 border-b border-[var(--border)] pb-1.5 font-mono text-[var(--muted-foreground)]">
-        <div class="col-span-4 pl-2 font-sans font-semibold text-[var(--foreground)] flex items-center justify-between pr-3">
-          <span>分區 / 報名標記 / 賽事名稱 (點擊檢視詳情)</span>
-          <span class="text-[11px] text-[var(--muted-foreground)]">賽程狀態 / 倒數</span>
+        <span class="v-sep"></span>
+        <span class="group-label">顯示</span>
+        <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
+        <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>明細表</span></label>
+        <label class="chk-chip"><input id="chkCollapseDone" type="checkbox" checked /><span>收折已完賽 (<span id="doneCntBadge">0</span>)</span></label>
+      </div>
+
+      <!-- Row 2: 排序按鈕 + 條件勾選 + 組別勾選 + 搜尋 -->
+      <div class="filter-row">
+        <span class="group-label">排序</span>
+        <div class="seg-group" role="group" aria-label="排序方式">
+          <button type="button" data-sort="time" class="seg-btn sort-btn active">🕒 時間</button>
+          <button type="button" data-sort="region" class="seg-btn sort-btn">🗺️ 地區</button>
+          <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名優先 (<span id="regCountBadge">0</span>)</button>
         </div>
-        <div class="col-span-8 grid text-center" style="display:grid;grid-template-columns:repeat(11,minmax(0,1fr));">
-          <span>26/09</span><span>26/10</span>
-          <span class="text-red-500 font-bold bg-red-500/10 rounded">26/11</span>
-          <span>26/12</span><span>27/01</span><span>27/02</span><span>27/03</span><span>27/04</span><span>27/05</span><span>27/06</span><span>27/07</span>
+
+        <span class="v-sep"></span>
+        <span class="group-label">條件</span>
+        <label class="chk-chip"><input id="onlyRegToggle" type="checkbox" /><span>✅ 已報名</span></label>
+        <label class="chk-chip"><input id="onlyYixueToggle" type="checkbox" /><span>🏫 義學 (<span id="yixueCountBadge">0</span>)</span></label>
+        <label class="chk-chip"><input id="onlyUrgentToggle" type="checkbox" /><span>🔥 10日截止</span></label>
+        <label class="chk-chip"><input id="onlyFavToggle" type="checkbox" /><span>⭐ 關注 (<span id="favCountBadge">0</span>)</span></label>
+        <label class="chk-chip"><input id="hideRestrictedToggle" type="checkbox" /><span>排除外縣市限報</span></label>
+
+        <span class="v-sep"></span>
+        <span class="group-label">項目</span>
+        <label class="chk-chip"><input type="checkbox" class="type-chk" value="團體" /><span>團體</span></label>
+        <label class="chk-chip"><input type="checkbox" class="type-chk" value="單打" /><span>單打</span></label>
+        <label class="chk-chip"><input type="checkbox" class="type-chk" value="雙打" /><span>雙打</span></label>
+        <label class="chk-chip"><input type="checkbox" class="type-chk" value="親子" /><span>親子</span></label>
+
+        <div class="search-wrap">
+          <button id="btnClearFilters" type="button" class="btn btn-xs hidden">✕ 重設篩選</button>
+          <div style="position:relative;display:inline-flex;align-items:center;">
+            <input id="searchInput" type="text" class="search-input" placeholder="🔍 關鍵字 / 選手 / 場館" />
+            <button id="btnClearSearch" type="button" class="search-clear" title="清除">✕</button>
+          </div>
         </div>
       </div>
+    </section>
 
-      <!-- Gantt Rows -->
-      <div id="ganttContainer" class="divide-y divide-[var(--border)]"></div>
-    </div>
-  </section>
-
-  <!-- TOOL 2 & 3: Detailed Structured Table -->
-  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 overflow-x-auto shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <div>
-        <h2 class="font-bold text-sm">📋 全臺國小羽球賽事報名章程、FB 社團核對與義學賽程明細表</h2>
-        <p class="text-[var(--muted-foreground)] text-xs mt-0.5">全國賽必選置頂、已完成賽事支援一鍵收折展開；點擊「＋報名」可標記已報名賽事供優先排序（正式選手人名仍嚴守官方賽程表防呆鎖定）</p>
+    <!-- Gantt Chart Panel -->
+    <section id="ganttSection" class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <span>📊 時序甘特圖</span>
+          <span class="tag tag-muted">🟦 章程/組別</span>
+          <span class="tag tag-muted">🟩 義學名單</span>
+          <span class="tag tag-muted">🟥 LIVE</span>
+        </div>
+        <span id="ganttCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
       </div>
-      <div class="text-xs text-[var(--muted-foreground)] font-mono" id="tableCountInfo">顯示賽事</div>
-    </div>
-    <table class="w-full text-left border-collapse min-w-[1100px]">
-      <thead>
-        <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] font-semibold bg-[var(--background)]/50">
-          <th class="py-2 px-2 w-20 text-center">關注 / 報名</th>
-          <th class="py-2 px-2">區域</th>
-          <th class="py-2 px-2">縣市/場館</th>
-          <th class="py-2 px-2">賽事名稱 (點擊總覽)</th>
-          <th class="py-2 px-2">義學國小正式賽程 / 核對名單</th>
-          <th class="py-2 px-2 font-mono">報名區間 (點查章程)</th>
-          <th class="py-2 px-2 font-mono">比賽日期 (點查名單)</th>
-          <th class="py-2 px-2">狀態 / 倒數</th>
-          <th class="py-2 px-2">最高關聯報名章程</th>
-          <th class="py-2 px-2 text-right">操作</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody" class="divide-y divide-[var(--border)]"></tbody>
-    </table>
-  </section>
-
-  <!-- Comment & Feedback Board -->
-  <section id="commentSection" class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mt-4 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <div>
-        <h2 class="font-bold text-sm">💬 賽事情報補充 &amp; 義學正式賽程回報板 (Issue &amp; Tip Collector)</h2>
-        <p class="text-[var(--muted-foreground)] text-xs">歡迎教練與家長貼上最新公布的「官方正式比賽賽程表連結」或 FB 社團新盃賽情報，AI 核對賽程表無誤後即更新義學參賽人名！</p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker/issues/1" target="_blank" rel="noopener" class="px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-xs transition shadow-sm">
-          🌐 前往 GitHub 公開共編留言串 (#1) ↗
-        </a>
-        <button id="btnExportComments" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition">
-          📥 匯出本機留言紀錄 (CSV)
-        </button>
-      </div>
-    </div>
-
-    <!-- New Comment Form -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4 p-3 rounded bg-[var(--background)] border border-[var(--border)]">
-      <div class="md:col-span-2">
-        <label class="block text-[var(--muted-foreground)] mb-1">稱呼 / 身份</label>
-        <input id="cAuthor" type="text" placeholder="例：義學家長 / 林教練" class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]" />
-      </div>
-      <div class="md:col-span-2">
-        <label class="block text-[var(--muted-foreground)] mb-1">留言分類</label>
-        <select id="cType" class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]">
-          <option value="賽程名單">📋 義學正式賽程表回報</option>
-          <option value="情報補充">📣 賽事情報/FB社團補充</option>
-          <option value="日期勘誤">🛠️ 章程/日期勘誤</option>
-          <option value="功能建議">💡 網頁改善建議</option>
-        </select>
-      </div>
-      <div class="md:col-span-6">
-        <label class="block text-[var(--muted-foreground)] mb-1">留言內容（請附上正式賽程表網址或章程連結）</label>
-        <input id="cContent" type="text" placeholder="例：第四屆樂穎盃官方賽程表已出，附上連結供核對義學國小參賽名單..." class="w-full px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)]" />
-      </div>
-      <div class="md:col-span-2 flex items-end">
-        <button id="btnSubmitComment" class="w-full px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium transition">
-          送出本機筆記
-        </button>
-      </div>
-    </div>
-
-    <!-- Comment Thread List -->
-    <div id="commentList" class="space-y-2"></div>
-  </section>
-
-  <!-- TOOL 3: Tournament Detail Slide-over Drawer (Supports 'all' | 'reg' | 'match' focus modes) -->
-  <div id="detailDrawerOverlay" class="fixed inset-0 z-50 hidden">
-    <div id="detailDrawerBackdrop" class="fixed inset-0 drawer-backdrop"></div>
-    <div class="fixed inset-y-0 right-0 max-w-full flex pl-8">
-      <div class="w-screen max-w-2xl bg-[var(--card)] border-l border-[var(--border)] shadow-2xl flex flex-col justify-between overflow-y-auto">
-        <!-- Drawer Header -->
-        <div class="p-4 border-b border-[var(--border)] sticky top-0 bg-[var(--card)] z-10 space-y-2.5">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="flex flex-wrap items-center gap-1.5 mb-1" id="drawerBadges"></div>
-              <h3 id="drawerTitle" class="text-base font-bold text-[var(--foreground)] leading-snug">賽事名稱</h3>
-              <p id="drawerSubtitle" class="text-xs text-[var(--muted-foreground)] mt-0.5 font-mono"></p>
+      <div class="gantt-scroll">
+        <div class="gantt-min">
+          <div class="gantt-head">
+            <div style="display:flex;justify-content:space-between;padding-right:10px;">
+              <span>☆ / 已報 / 區域 / 賽事</span>
+              <span>狀態</span>
             </div>
-            <button id="btnCloseDrawer" class="p-1.5 rounded border border-[var(--border)] hover:bg-[var(--hover-bg)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-mono text-xs shrink-0">
-              ✕ ESC
-            </button>
+            <div class="gantt-months">
+              <span>26/09</span><span>26/10</span>
+              <span style="color:var(--red);font-weight:700;">26/11</span>
+              <span>26/12</span><span>27/01</span><span>27/02</span><span>27/03</span><span>27/04</span><span>27/05</span><span>27/06</span><span>27/07</span>
+            </div>
           </div>
-          <!-- Drawer Mode Switcher Tabs -->
-          <div class="flex flex-wrap items-center gap-1.5 pt-1" id="drawerModeTabs"></div>
+          <div id="ganttContainer"></div>
         </div>
-
-        <!-- Drawer Body -->
-        <div id="drawerBody" class="p-4 space-y-4 flex-1"></div>
-
-        <!-- Drawer Footer Actions -->
-        <div id="drawerFooter" class="p-4 border-t border-[var(--border)] sticky bottom-0 bg-[var(--card)] flex flex-wrap items-center justify-between gap-2"></div>
       </div>
-    </div>
+    </section>
+
+    <!-- Dense Data Table Panel -->
+    <section id="tableSection" class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <span>📋 賽事明細表</span>
+        </div>
+        <span id="tableCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="b-table">
+          <thead>
+            <tr>
+              <th style="width:30px;text-align:center;">☆</th>
+              <th style="width:42px;text-align:center;">已報</th>
+              <th style="width:62px;">區域</th>
+              <th>賽事名稱</th>
+              <th style="width:128px;">項目</th>
+              <th style="width:145px;">地點</th>
+              <th style="width:118px;">報名截止</th>
+              <th style="width:108px;">比賽日期</th>
+              <th style="width:190px;">義學名單 / 賽程狀態</th>
+              <th style="width:140px;text-align:right;">快速連結</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Compact 1-Line Feedback Bar -->
+    <section id="commentSection" class="panel feedback-bar">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
+        <div class="feedback-form" style="flex:1;">
+          <span class="group-label">💬 快速回報</span>
+          <label class="chk-chip"><input type="radio" name="cType" value="賽程名單" checked /><span>賽程表</span></label>
+          <label class="chk-chip"><input type="radio" name="cType" value="情報補充" /><span>新盃賽</span></label>
+          <label class="chk-chip"><input type="radio" name="cType" value="日期勘誤" /><span>勘誤</span></label>
+          <input id="cAuthor" type="text" class="inp" style="width:105px;" placeholder="稱呼 (選填)" />
+          <input id="cContent" type="text" class="inp" style="flex:1;min-width:190px;" placeholder="貼上正式賽程表網址或盃賽關鍵字..." />
+          <button id="btnSubmitComment" type="button" class="btn btn-primary">送出</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="btnToggleComments" type="button" class="btn btn-xs">▸ 紀錄 (<span id="commentCountBadge">0</span>)</button>
+          <button id="btnExportComments" type="button" class="btn btn-xs">匯出</button>
+          <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker/issues/1" target="_blank" rel="noopener" class="btn btn-xs">GitHub #1 ↗</a>
+        </div>
+      </div>
+      <div id="commentList" class="hidden" style="display:flex;flex-direction:column;gap:4px;padding-top:6px;border-top:1px solid var(--border-light);"></div>
+    </section>
+  </main>
+
+  <!-- Slide-over Detail Drawer -->
+  <div id="detailDrawerOverlay" class="overlay">
+    <aside class="drawer" onclick="event.stopPropagation()">
+      <div class="drawer-head">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div id="drawerBadges" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+            <h3 id="drawerTitle" style="margin:0;font-size:15px;font-weight:700;">賽事</h3>
+          </div>
+          <button id="btnCloseDrawer" type="button" class="btn btn-xs mono">✕ ESC</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;">
+          <div id="drawerModeTabs" class="seg-group"></div>
+          <div id="drawerQuickToggles" style="display:flex;align-items:center;gap:5px;"></div>
+        </div>
+      </div>
+      <div id="drawerBody" class="drawer-body"></div>
+    </aside>
   </div>
 
-  <!-- TOOL 1: Crawler, MY Livescore API & FB Cross-Check Modal -->
-  <div id="crawlerModalOverlay" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-    <div id="crawlerModalBackdrop" class="fixed inset-0 drawer-backdrop"></div>
-    <div class="relative w-full max-w-2xl bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-2xl p-5 z-10 space-y-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono font-bold">TOOL 1</span>
-          <h3 class="text-sm font-bold">網路賽事自動巡邏、專屬章程鎖定與 FB 社團交叉核對中心 (v2.7)</h3>
-        </div>
-        <button id="btnCloseCrawlerModal" class="px-2 py-1 rounded border border-[var(--border)] hover:bg-[var(--hover-bg)] font-mono">✕</button>
+  <!-- Compact Source Status Modal -->
+  <div id="crawlerModalOverlay" class="overlay">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border-light);">
+        <strong style="font-size:13px;">📡 資料源同步狀態 (<span id="crawlerTotalCount">50</span>場)</strong>
+        <button id="btnCloseCrawlerModal" type="button" class="btn btn-xs mono">✕</button>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div class="p-3 rounded border border-[var(--border)] bg-[var(--background)]">
-          <div class="text-[var(--muted-foreground)]">排程頻率 (GitHub Actions)</div>
-          <div class="font-mono font-bold text-sm mt-0.5 text-emerald-500">每日 08:00 &amp; 20:00 (TST)</div>
-        </div>
-        <div class="p-3 rounded border border-[var(--border)] bg-[var(--background)]">
-          <div class="text-[var(--muted-foreground)]">觀測時程區間 (-2m ~ +8m)</div>
-          <div class="font-mono font-bold text-sm mt-0.5 text-blue-500">2026/09 ～ 2027/07 (11個月)</div>
-        </div>
-        <div class="p-3 rounded border border-[var(--border)] bg-[var(--background)]">
-          <div class="text-[var(--muted-foreground)]">目前收錄核對賽事</div>
-          <div class="font-mono font-bold text-sm mt-0.5" id="crawlerTotalCount">50 場國小相關盃賽</div>
-        </div>
+      <div style="display:grid;grid-template-columns:1fr;gap:5px;margin:10px 0;font-size:12px;">
+        <div class="kv-cell"><span>中華羽協 (id=226 / 116行事曆)</span><span class="tag tag-open mono">✓ OK</span></div>
+        <div class="kv-cell"><span>MY Livescore OpenID API</span><span class="tag tag-open mono">✓ OK</span></div>
+        <div class="kv-cell"><span>LAPGO / EF-Info / 詮宇專頁</span><span class="tag tag-open mono">✓ OK</span></div>
+        <div class="kv-cell"><span>義學國小榮譽榜 &amp; 秀山賽務網</span><span class="tag tag-open mono">✓ OK</span></div>
+        <div class="kv-cell"><span>FB 羽球社團交叉核對</span><span class="tag tag-open mono">✓ OK</span></div>
       </div>
-
-      <div>
-        <div class="font-semibold mb-2">📡 監測與交叉核對資料源 (Patrol &amp; FB Cross-Check Targets)</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>1. 中華羽協 (國小盃 id=226 / 116年行事曆 id=213)</span>
-            <span class="text-emerald-500 font-mono">● 200 OK</span>
-          </div>
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>2. MY Livescore 專屬附件 API (links.php?id=OpenID)</span>
-            <span class="text-emerald-500 font-mono">● 200 OK</span>
-          </div>
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>3. LAPGO 各賽事專屬報名頁 (/web/賽事代號)</span>
-            <span class="text-emerald-500 font-mono">● 200 OK</span>
-          </div>
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>4. 新北市泰山區義學國小榮譽榜 &amp; 秀山國小賽務網</span>
-            <span class="text-emerald-500 font-mono">● 200 OK</span>
-          </div>
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>5. FB「全台羽球交流賽 / 全國青少年國小羽球資訊」社團</span>
-            <span class="text-emerald-500 font-mono">● 已交叉核對</span>
-          </div>
-          <div class="p-2.5 rounded border border-[var(--border)] flex items-center justify-between">
-            <span>6. 各縣市教育局公告 / 羽委會官網競賽規程 PDF</span>
-            <span class="text-emerald-500 font-mono">● 200 OK</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-3 rounded bg-[var(--background)] border border-[var(--border)] font-mono text-[11px] space-y-1">
-        <div class="text-[var(--muted-foreground)]">// 最新巡邏與 FB 社團交叉核對日誌 (v2.7 Verified Sync Log):</div>
-        <div>[2026-11-11 17:15] ✓ 時程區間更新為「往前 2 個月、往後 8 個月」（2026-09-01 ～ 2027-07-31 共 11 個月）：移除 2026/05～08 已逾觀測窗之過期賽事，並依中華羽協 116 年度行事曆 PDF 與歷年固定檔期補齊 2027/06～07 暑期前哨與分齡賽事（久樘國小盃、Super Kids、港都/臺北群岳盃、羽協暑期育樂營、第二次全國青少年U15錦標賽、葛瑪蘭全國羽球賽）</div>
-        <div>[2026-11-11 16:40] ✓ 複查《115年全國國小盃羽球錦標賽》中華羽協專區 (id=226)：11/05 報名結果與 11/06 抽籤結果已公告（賽程表尚未公布），確認本屆義學國小「未報名參賽」，標記為「⚪ 本屆義學國小未報名參賽」</div>
-        <div>[2026-11-11 12:15] ✓ 嚴格清查觀測區間內義學名單：僅保留 5 場已確認官方正式賽程表/秩序冊之賽事人名（今日激戰《新北市中小學對抗賽》、本週末《2026生麗羽你同行》、《城市夏季盃》、《中秋華江盃》、《羽霸盃》），未出賽程表賽事全數防呆鎖定</div>
-        <div>[2026-11-11 12:15] ✓ 100% 綁定最高關聯報名章程網址（go.mylivescore.link/?opid=OpenID、專屬子網域與官方規程 PDF），並與 FB 社團完成交叉核對</div>
-      </div>
-
-      <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
-        <a href="https://www.yses.ntpc.edu.tw/p/403-1000-29-1.php" target="_blank" rel="noopener" class="px-3 py-1.5 rounded border border-indigo-500/40 text-indigo-500 hover:bg-indigo-500/10 font-medium">
-          🏫 查看義學國小校網榮譽榜 ↗
-        </a>
-        <div class="flex items-center gap-2">
-          <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker" target="_blank" rel="noopener" class="px-3 py-1.5 rounded border border-[var(--border)] hover:bg-[var(--hover-bg)] font-medium">
-            開啟 GitHub Repo
-          </a>
-          <button id="btnConfirmCrawlerModal" class="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">
-            完成並關閉
-          </button>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;">
+        <a href="https://www.yses.ntpc.edu.tw/p/403-1000-29-1.php" target="_blank" rel="noopener" class="btn btn-xs">🏫 義學榮譽榜 ↗</a>
+        <div style="display:flex;gap:6px;">
+          <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker" target="_blank" rel="noopener" class="btn btn-xs">GitHub Repo ↗</a>
+          <button id="btnConfirmCrawlerModal" type="button" class="btn btn-xs btn-primary">關閉</button>
         </div>
       </div>
     </div>
@@ -438,10 +918,6 @@
     const TIMELINE_END = new Date("2027-07-31T23:59:59");
     const TOTAL_MS = TIMELINE_END - TIMELINE_START;
 
-    // 嚴格防呆三大鐵則 (v2.7)：
-    // 1. 確定有官方正式「比賽賽程表 / 籤表 / 秩序冊」並核對無誤，才能把義學國小人名填寫上去 (yixueEntries)。未出賽程表 (hasSchedule: false) 一律空陣列且鎖定輸入！
-    // 2. 報名章程 (url / docUrl) 100% 保留最高度相關專屬頁 (opid / 獨立子網域 / 報名專頁 / 官方 PDF)，零通用首頁。
-    // 3. 每筆賽事皆附上 FB 社團 / 官方粉專交叉核對紀錄 (fbCheck)。
     const INITIAL_EVENTS = [
       // ==================== 往前 2 個月 (2026/09 ~ 2026/10) ====================
       {
@@ -1981,37 +2457,134 @@
       }
     ];
 
-    let events = [...INITIAL_EVENTS];
-    // 全國賽固定必選置頂；預設勾選「北區」（支援多選北/中/南/東）
     const OPTIONAL_REGIONS = ["北區", "中區", "南區", "東區"];
+    let events = [...INITIAL_EVENTS];
     let selectedRegions = new Set(["北區"]);
+    let selectedStatuses = new Set();
+    let selectedTypes = new Set();
     let currentSortMode = "time"; // 'time' | 'region' | 'registered'
-    let completedCollapsed = true; // 完成的賽事預設自動收折
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
+    let commentsExpanded = false;
+
     let favorites = JSON.parse(localStorage.getItem("tw_badminton_favs_v1") || "[]");
     let manualRegisteredIds = JSON.parse(localStorage.getItem("tw_badminton_reg_ids_v28") || "[]");
-    // 儲存使用者在「確認有正式賽程表」後手動補充或更新的義學名單與賽程網址
+    let checkedDivisions = JSON.parse(localStorage.getItem("tw_badminton_div_checks_v29") || "{}");
     let customRosters = JSON.parse(localStorage.getItem("tw_badminton_yixue_rosters_v26") || "{}");
+
+    if (localStorage.getItem("tw_badminton_theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+    document.getElementById("btnThemeToggle").addEventListener("click", () => {
+      document.documentElement.classList.toggle("dark");
+      localStorage.setItem("tw_badminton_theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Concise Keyword Extractors
+    function shortTitle(t) {
+      return String(t || "").replace(/\s*[\(（].*?[\)）]\s*/g, "").trim();
+    }
+    function shortVenue(v) {
+      return String(v || "")
+        .replace(/縣・|市・/g, "・")
+        .replace(/\s*\(.*?\)/g, "")
+        .replace(/國民運動中心/g, "運動中心")
+        .trim();
+    }
+    function getEventTypes(ev) {
+      const src = `${ev.grades || ""} ${ev.eventsList || ""} ${ev.title || ""}`;
+      const list = [];
+      if (/團/.test(src)) list.push("團體");
+      if (/單/.test(src)) list.push("單打");
+      if (/雙/.test(src)) list.push("雙打");
+      if (/親子/.test(src)) list.push("親子");
+      if (/師生/.test(src)) list.push("師生");
+      if (!list.length && /營/.test(src)) list.push("育樂營");
+      return list;
+    }
+    function shortScoring(s) {
+      const out = [];
+      if (/25\s*分/.test(s)) out.push("單局25分");
+      else if (/21\s*分/.test(s)) out.push(/三局/.test(s) ? "三局21分" : "單局21分");
+      else if (/31\s*分/.test(s)) out.push("單局31分");
+      if (/循環/.test(s)) out.push("循環");
+      if (/淘汰/.test(s)) out.push("單淘汰");
+      return out.length ? out.join(" · ") : String(s || "").slice(0, 16);
+    }
+    function shortEligibility(ev) {
+      const ys = ev.yixueStatus || "";
+      if (/非跨縣市|離島縣內/.test(ys)) {
+        const m = ys.match(/\((.*?)\)/);
+        return m ? m[1] : "限本縣市學籍";
+      }
+      const el = ev.eligibility || "";
+      const tags = [];
+      if (/謝絕.*?(前八|前四|甲組)/.test(el)) tags.push("限非前八");
+      else if (/限就讀|限設籍/.test(el)) tags.push("縣市學籍限報");
+      else tags.push("全國可報");
+      if (/跨校/.test(el)) tags.push("可跨校");
+      return tags.join(" · ");
+    }
+    function shortShuttle(s) {
+      return String(s || "").replace(/（.*?）|\(.*?\)/g, "").replace(/比賽指定用球|指定比賽級羽球/g, "比賽球").trim();
+    }
+    function shortFee(f) {
+      return String(f || "").replace(/（.*?）|\(.*?\)/g, "").replace(/NT\$/g, "$").trim();
+    }
+    function isRestrictedOtherCounty(ev) {
+      return /非跨縣市|離島縣內/.test(ev.yixueStatus || "");
+    }
+    function shortRange(s, e) {
+      if (!s || !e) return s || "";
+      if (s === e) return s.slice(5);
+      if (s.slice(0, 7) === e.slice(0, 7)) return `${s.slice(5)}~${e.slice(8)}`;
+      return `${s.slice(5)}~${e.slice(5)}`;
+    }
+
+    function daysBetween(d1Str, d2Str) {
+      const d1 = new Date(d1Str + "T00:00:00");
+      const d2 = new Date(d2Str + "T00:00:00");
+      return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    }
+
+    function computeStatus(ev) {
+      if (REF_TODAY >= ev.matchStart && REF_TODAY <= ev.matchEnd) return "比賽中";
+      if (REF_TODAY > ev.matchEnd) return "已結束";
+      if (REF_TODAY >= ev.regStart && REF_TODAY <= ev.regEnd) return "報名中";
+      if (REF_TODAY < ev.regStart) return "即將開放";
+      return "待開賽";
+    }
 
     function getEffectiveScheduleInfo(ev) {
       const custom = customRosters[ev.id] || {};
       const hasSchedule = Boolean(ev.hasSchedule || custom.scheduleUrl);
       const scheduleUrl = custom.scheduleUrl || ev.scheduleUrl || "";
-      const scheduleLabel = custom.scheduleUrl ? "使用者驗證提供之官方正式賽程表" : (ev.scheduleLabel || "");
-      // 嚴格防呆：若無正式賽程表 (hasSchedule === false)，絕不回傳任何選手人名！
+      const scheduleLabel = custom.scheduleUrl ? "手動驗證賽程表" : (ev.scheduleLabel || "官方賽程表");
       const verifiedEntries = hasSchedule ? (ev.yixueEntries || []) : [];
       const customNote = hasSchedule ? (custom.roster || "") : "";
       const summaryParts = [
         ...verifiedEntries.map(r => `${r.event}：${r.players}`),
         ...(customNote ? [customNote] : [])
       ];
+      const playerNamesOnly = [
+        ...verifiedEntries.map(r => r.players.replace(/（.*?）|\(.*?\)/g, "").trim()),
+        ...(customNote ? [customNote] : [])
+      ].join("、");
       return {
         hasSchedule,
         scheduleUrl,
         scheduleLabel,
         verifiedEntries,
         customNote,
-        rosterText: summaryParts.join(" ｜ ")
+        rosterText: summaryParts.join(" ｜ "),
+        shortRoster: playerNamesOnly
       };
     }
 
@@ -2031,14 +2604,11 @@
     }
 
     function toggleRegistered(id, e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      if (e) e.stopPropagation();
       const ev = events.find(x => x.id === id);
       if (!ev) return;
       if (isYixueRelevant(ev)) {
-        alert("此賽事已由官方正式賽程表核對確認義學國小參賽，系統已自動列入「已報名」優先清單！");
+        renderAll();
         return;
       }
       if (manualRegisteredIds.includes(id)) {
@@ -2048,128 +2618,6 @@
       }
       localStorage.setItem("tw_badminton_reg_ids_v28", JSON.stringify(manualRegisteredIds));
       renderAll();
-    }
-
-    function toggleCompletedSection(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      completedCollapsed = !completedCollapsed;
-      renderAll();
-    }
-
-    // Theme Initialization
-    if (localStorage.getItem("tw_badminton_theme") === "dark") {
-      document.documentElement.classList.add("dark");
-    }
-
-    document.getElementById("btnThemeToggle").addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
-      localStorage.setItem("tw_badminton_theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
-    });
-
-    function daysBetween(d1Str, d2Str) {
-      const d1 = new Date(d1Str + "T00:00:00");
-      const d2 = new Date(d2Str + "T00:00:00");
-      return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-    }
-
-    function computeStatus(ev) {
-      if (REF_TODAY >= ev.matchStart && REF_TODAY <= ev.matchEnd) return "比賽中";
-      if (REF_TODAY > ev.matchEnd) return "已結束";
-      if (REF_TODAY >= ev.regStart && REF_TODAY <= ev.regEnd) return "報名中";
-      if (REF_TODAY < ev.regStart) return "即將開放";
-      return "待開賽";
-    }
-
-    function countdownBadge(ev) {
-      const st = computeStatus(ev);
-      if (st === "比賽中") {
-        return `<span class="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono text-[11px] font-bold animate-pulse">🔴 今日激戰中</span>`;
-      }
-      if (st === "報名中") {
-        const left = daysBetween(REF_TODAY, ev.regEnd);
-        if (left <= 10) {
-          return `<span class="px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 border border-red-500/40 font-mono text-[11px] font-bold animate-pulse">🔥 剩 ${left} 天截止</span>`;
-        }
-        return `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 font-mono text-[11px]">報名剩 ${left} 天</span>`;
-      }
-      if (st === "即將開放") {
-        const wait = daysBetween(REF_TODAY, ev.regStart);
-        if (wait <= 14) {
-          return `<span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-500 border border-blue-500/40 font-mono text-[11px] font-semibold">${wait} 天後開放</span>`;
-        }
-        return `<span class="text-[11px] font-mono text-[var(--muted-foreground)]">${ev.regStart.slice(5)} 開放</span>`;
-      }
-      if (st === "待開賽") {
-        const toMatch = daysBetween(REF_TODAY, ev.matchStart);
-        if (toMatch >= 0 && toMatch <= 14) {
-          return `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 font-mono text-[11px] font-semibold">⚡ ${toMatch} 天後開打</span>`;
-        }
-        return `<span class="text-[11px] font-mono text-amber-500">待開賽</span>`;
-      }
-      return `<span class="text-[11px] font-mono text-[var(--muted-foreground)]">已完賽</span>`;
-    }
-
-    function statusBadge(status) {
-      const map = {
-        "比賽中": "bg-red-500/15 text-red-500 border-red-500/40 font-bold",
-        "報名中": "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40",
-        "即將開放": "bg-blue-500/15 text-blue-500 border-blue-500/40",
-        "待開賽": "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40",
-        "已結束": "bg-gray-500/15 text-[var(--muted-foreground)] border-[var(--border)]"
-      };
-      return `<span class="px-2 py-0.5 rounded border text-xs font-medium ${map[status] || ""}">${status}</span>`;
-    }
-
-    function regionBadge(reg) {
-      const map = {
-        "全國": "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40",
-        "北區": "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/40",
-        "中區": "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/40",
-        "南區": "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/40",
-        "東區": "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
-      };
-      const prefix = reg === "全國" ? "🏆 " : "";
-      return `<span class="px-2 py-0.5 rounded border text-xs font-semibold ${map[reg] || ""}">${prefix}${reg}</span>`;
-    }
-
-    function yixueMiniBadge(ev) {
-      const info = getEffectiveScheduleInfo(ev);
-      const regState = getRegistrationState(ev);
-      if (info.verifiedEntries.length > 0 || info.customNote) {
-        return `<span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-semibold text-[10px] shrink-0" title="已報名參賽（已依官方正式賽程表核對義學國小名單）">🏫 義學已核對(${info.verifiedEntries.length || 1}組)</span>`;
-      }
-      if (regState.isManual) {
-        return `<span onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-semibold text-[10px] shrink-0 cursor-pointer hover:bg-emerald-700 transition" title="已手動標記「已報名」（點擊可取消標記；正式選手人名仍待賽程表公布解鎖）">✅ 已報名</span>`;
-      }
-      if (ev.yixueNotEntered) {
-        return `<span class="px-1.5 py-0.5 rounded bg-gray-500/10 text-[var(--muted-foreground)] border border-[var(--border)] font-medium text-[10px] shrink-0" title="已核對確認本屆義學國小未報名參賽">⚪ 義學未報名</span>`;
-      }
-      return "";
-    }
-
-    function pctPos(dateStr) {
-      const d = new Date(dateStr + "T00:00:00");
-      const clamped = Math.max(TIMELINE_START.getTime(), Math.min(TIMELINE_END.getTime(), d.getTime()));
-      return ((clamped - TIMELINE_START.getTime()) / TOTAL_MS) * 100;
-    }
-
-    function buildGoogleCalUrl(ev, mode = "match") {
-      const info = getEffectiveScheduleInfo(ev);
-      const title = encodeURIComponent(mode === "reg" ? `【報名截止提醒】${ev.title}` : `【羽球比賽】${ev.title}`);
-      const startStr = (mode === "reg" ? ev.regStart : ev.matchStart).replace(/-/g, "");
-      const endDateObj = new Date((mode === "reg" ? ev.regEnd : ev.matchEnd) + "T00:00:00");
-      endDateObj.setDate(endDateObj.getDate() + 1);
-      const endStr = `${endDateObj.getFullYear()}${String(endDateObj.getMonth() + 1).padStart(2, "0")}${String(endDateObj.getDate()).padStart(2, "0")}`;
-      const details = encodeURIComponent(
-        `賽事名稱：${ev.title}\n組別項目：${ev.grades} (${ev.eventsList})\n比賽場館：${ev.venue} (${ev.address})\n指定用球：${ev.shuttlecock}\n報名期間：${ev.regStart} ~ ${ev.regEnd}\n最高關聯章程網址：${ev.url}` +
-        (info.scheduleUrl ? `\n正式賽程表：${info.scheduleUrl}` : "") +
-        (info.rosterText ? `\n義學國小核對名單：${info.rosterText}` : "")
-      );
-      const location = encodeURIComponent(`${ev.venue} ${ev.address}`);
-      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
     }
 
     function toggleFav(id, e) {
@@ -2183,18 +2631,98 @@
       renderAll();
     }
 
+    function toggleDivisionCheck(evId, idx) {
+      const cur = checkedDivisions[evId] || [];
+      if (cur.includes(idx)) {
+        checkedDivisions[evId] = cur.filter(x => x !== idx);
+      } else {
+        checkedDivisions[evId] = [...cur, idx];
+      }
+      localStorage.setItem("tw_badminton_div_checks_v29", JSON.stringify(checkedDivisions));
+    }
+
+    function toggleCompletedSection(e) {
+      if (e) e.stopPropagation();
+      const chk = document.getElementById("chkCollapseDone");
+      chk.checked = !chk.checked;
+      renderAll();
+    }
+
+    function regionTag(reg) {
+      const cls = {
+        "全國": "tag-nat",
+        "北區": "tag-north",
+        "中區": "tag-mid",
+        "南區": "tag-south",
+        "東區": "tag-east"
+      }[reg] || "tag-muted";
+      return `<span class="tag ${cls}">${reg === "全國" ? "🏆全國" : reg}</span>`;
+    }
+
+    function statusTag(ev) {
+      const st = computeStatus(ev);
+      if (st === "比賽中") return `<span class="tag tag-live mono">🔴 LIVE</span>`;
+      if (st === "報名中") {
+        const left = daysBetween(REF_TODAY, ev.regEnd);
+        if (left <= 10) return `<span class="tag tag-urgent mono">🔥 剩${left}d</span>`;
+        return `<span class="tag tag-open mono">剩${left}d</span>`;
+      }
+      if (st === "待開賽") {
+        const d = daysBetween(REF_TODAY, ev.matchStart);
+        return `<span class="tag tag-wait mono">${d <= 14 ? `⚡${d}d開打` : "待開賽"}</span>`;
+      }
+      if (st === "即將開放") {
+        return `<span class="tag tag-soon mono">${ev.regStart.slice(5)}開放</span>`;
+      }
+      return `<span class="tag tag-muted mono">完賽</span>`;
+    }
+
+    function yixueShortCell(ev) {
+      const info = getEffectiveScheduleInfo(ev);
+      const regState = getRegistrationState(ev);
+      if (info.verifiedEntries.length > 0 || info.customNote) {
+        return `<span class="tag tag-yixue" title="${escapeHtml(info.rosterText)}">🏫 義學(${info.verifiedEntries.length || 1}組)</span>`;
+      }
+      if (regState.isManual) {
+        return `<span class="tag tag-open">✅ 已報名</span>`;
+      }
+      if (ev.yixueNotEntered) {
+        return `<span class="tag tag-muted">⚪ 未報</span>`;
+      }
+      if (isRestrictedOtherCounty(ev)) {
+        return `<span class="tag tag-muted">${escapeHtml(shortEligibility(ev))}</span>`;
+      }
+      if (info.hasSchedule) {
+        return `<span class="tag tag-soon">📋 賽程已出</span>`;
+      }
+      return `<span class="mono" style="font-size:11px;color:var(--text-muted);">🔒 ${ev.drawDate ? ev.drawDate.slice(5) : "待公布"}</span>`;
+    }
+
+    function pctPos(dateStr) {
+      const d = new Date(dateStr + "T00:00:00");
+      const clamped = Math.max(TIMELINE_START.getTime(), Math.min(TIMELINE_END.getTime(), d.getTime()));
+      return ((clamped - TIMELINE_START.getTime()) / TOTAL_MS) * 100;
+    }
+
+    function buildGoogleCalUrl(ev, mode = "match") {
+      const title = encodeURIComponent(mode === "reg" ? `[報名截止] ${shortTitle(ev.title)}` : `[比賽] ${shortTitle(ev.title)}`);
+      const startStr = (mode === "reg" ? ev.regStart : ev.matchStart).replace(/-/g, "");
+      const endDateObj = new Date((mode === "reg" ? ev.regEnd : ev.matchEnd) + "T00:00:00");
+      endDateObj.setDate(endDateObj.getDate() + 1);
+      const endStr = `${endDateObj.getFullYear()}${String(endDateObj.getMonth() + 1).padStart(2, "0")}${String(endDateObj.getDate()).padStart(2, "0")}`;
+      const details = encodeURIComponent(`章程：${ev.url}`);
+      const location = encodeURIComponent(`${ev.venue} ${ev.address}`);
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+    }
+
     function saveYixueRoster(id) {
       const ev = events.find(x => x.id === id);
       if (!ev) return;
       const info = getEffectiveScheduleInfo(ev);
-      if (!info.hasSchedule) {
-        alert("防呆保護：必須先確認官方已公告正式比賽賽程表，才能填寫義學國小人名！");
-        return;
-      }
+      if (!info.hasSchedule) return;
       const inputEl = document.getElementById("yixueRosterInput");
       if (!inputEl) return;
-      const val = inputEl.value.trim();
-      customRosters[id] = { ...(customRosters[id] || {}), roster: val };
+      customRosters[id] = { ...(customRosters[id] || {}), roster: inputEl.value.trim() };
       localStorage.setItem("tw_badminton_yixue_rosters_v26", JSON.stringify(customRosters));
       renderAll();
       openDetailDrawer(id, currentDrawerMode);
@@ -2205,21 +2733,13 @@
       if (!urlInput) return;
       const sUrl = urlInput.value.trim();
       if (!sUrl || !/^https?:\/\//i.test(sUrl)) {
-        alert("請輸入有效的官方正式賽程表網址 (http:// 或 https:// 開頭) 以解鎖名單填寫欄位。");
+        alert("請貼上有效網址 (http/https)");
         return;
       }
       customRosters[id] = { ...(customRosters[id] || {}), scheduleUrl: sUrl };
       localStorage.setItem("tw_badminton_yixue_rosters_v26", JSON.stringify(customRosters));
       renderAll();
       openDetailDrawer(id, "match");
-    }
-
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
     }
 
     function openDetailDrawer(id, mode = "all", evt = null) {
@@ -2230,306 +2750,188 @@
       const ev = events.find(x => x.id === id);
       if (!ev) return;
       currentDrawerMode = mode;
-      const st = computeStatus(ev);
       const isFav = favorites.includes(ev.id);
+      const regState = getRegistrationState(ev);
       const info = getEffectiveScheduleInfo(ev);
+      const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
+      const fbSearchUrl = `https://www.facebook.com/search/top/?q=${encodeURIComponent(shortTitle(ev.title))}`;
 
       document.getElementById("drawerBadges").innerHTML = `
-        ${regionBadge(ev.region)}
-        ${statusBadge(st)}
-        ${countdownBadge(ev)}
-        ${yixueMiniBadge(ev)}
-        <span class="px-2 py-0.5 rounded bg-[var(--background)] border border-[var(--border)] font-mono text-[11px] text-[var(--muted-foreground)]">ID: ${ev.id.toUpperCase()}</span>
+        ${regionTag(ev.region)}
+        ${statusTag(ev)}
+        ${getEventTypes(ev).map(t => `<span class="tag tag-muted">${t}</span>`).join("")}
+        <span class="tag tag-muted mono">${ev.id.toUpperCase()}</span>
       `;
-      document.getElementById("drawerTitle").textContent = ev.title;
-      document.getElementById("drawerSubtitle").textContent = `📍 ${ev.venue}（${ev.address}）｜ 主辦：${ev.organizer}`;
+      document.getElementById("drawerTitle").textContent = shortTitle(ev.title);
 
-      const tabBtnClass = (m, activeColor) =>
-        currentDrawerMode === m
-          ? `px-3 py-1.5 rounded font-semibold text-xs text-white ${activeColor} shadow-sm transition`
-          : `px-3 py-1.5 rounded font-medium text-xs border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] text-[var(--foreground)] transition`;
+      document.getElementById("drawerModeTabs").innerHTML = [
+        ["all", "總覽"],
+        ["reg", "🟦 章程・組別"],
+        ["match", "🟩 義學名單"]
+      ].map(([m, label]) => `
+        <button type="button" onclick="openDetailDrawer('${ev.id}', '${m}')" class="seg-btn ${currentDrawerMode === m ? 'active' : ''}">${label}</button>
+      `).join("");
 
-      document.getElementById("drawerModeTabs").innerHTML = `
-        <button onclick="openDetailDrawer('${ev.id}', 'all')" class="${tabBtnClass('all', 'bg-slate-700 dark:bg-slate-600')}">📋 完整總覽</button>
-        <button onclick="openDetailDrawer('${ev.id}', 'reg')" class="${tabBtnClass('reg', 'bg-blue-600')}">🟦 報名章程 &amp; 可報國小組別</button>
-        <button onclick="openDetailDrawer('${ev.id}', 'match')" class="${tabBtnClass('match', 'bg-emerald-600')}">🏫 義學國小正式賽程 &amp; 選手名單</button>
+      document.getElementById("drawerQuickToggles").innerHTML = `
+        <label class="chk-chip ${regState.isVerified ? 'locked' : ''}" onclick="event.stopPropagation()">
+          <input type="checkbox" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onchange="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" />
+          <span>${regState.isVerified ? '已報名(核對)' : '已報名'}</span>
+        </label>
+        <label class="chk-chip" onclick="event.stopPropagation()">
+          <input type="checkbox" ${isFav ? 'checked' : ''} onchange="toggleFav('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" />
+          <span>⭐ 關注</span>
+        </label>
       `;
 
-      const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
-      const fbSearchUrl = `https://www.facebook.com/search/top/?q=${encodeURIComponent(ev.title.replace(/\(.*?\)/g, "").trim())}`;
+      // Action Buttons Row
+      const linksBarHtml = `
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <a href="${ev.url}" target="_blank" rel="noopener" class="btn btn-primary">🔗 報名章程 ↗</a>
+          ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="btn">📄 規程PDF ↗</a>` : ""}
+          ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="btn">📊 賽程表 ↗</a>` : ""}
+          <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" rel="noopener" class="btn">📍 導航 ↗</a>
+          <a href="${buildGoogleCalUrl(ev, 'reg')}" target="_blank" rel="noopener" class="btn">📅 報名日曆</a>
+          <a href="${buildGoogleCalUrl(ev, 'match')}" target="_blank" rel="noopener" class="btn">📅 比賽日曆</a>
+          <a href="${fbSearchUrl}" target="_blank" rel="noopener" class="btn">📘 FB查驗 ↗</a>
+        </div>
+      `;
 
-      // 區塊 A：義學國小正式賽程表 & 參賽選手名單 (防呆保護)
-      const verifiedTableHtml = info.verifiedEntries.length > 0 ? `
-        <div class="overflow-hidden rounded border border-indigo-500/30 bg-[var(--card)]">
-          <table class="w-full text-left border-collapse text-xs">
+      // Key-Value Keyword Grid
+      const kvHtml = `
+        <div class="kv-grid">
+          <div class="kv-cell"><span class="kv-k">報名區間</span><span class="kv-v mono">${shortRange(ev.regStart, ev.regEnd)}</span></div>
+          <div class="kv-cell"><span class="kv-k">比賽日期</span><span class="kv-v mono">${shortRange(ev.matchStart, ev.matchEnd)}</span></div>
+          <div class="kv-cell"><span class="kv-k">抽籤/賽程</span><span class="kv-v mono">${escapeHtml(ev.drawDate ? ev.drawDate.slice(5) : "-")}</span></div>
+          <div class="kv-cell"><span class="kv-k">比賽地點</span><span class="kv-v">${escapeHtml(shortVenue(ev.venue))}</span></div>
+          <div class="kv-cell"><span class="kv-k">賽制計分</span><span class="kv-v">${escapeHtml(shortScoring(ev.scoring))}</span></div>
+          <div class="kv-cell"><span class="kv-k">報名資格</span><span class="kv-v">${escapeHtml(shortEligibility(ev))}</span></div>
+          <div class="kv-cell"><span class="kv-k">指定用球</span><span class="kv-v">${escapeHtml(shortShuttle(ev.shuttlecock))}</span></div>
+          <div class="kv-cell"><span class="kv-k">報名費用</span><span class="kv-v mono">${escapeHtml(shortFee(ev.fee))}</span></div>
+        </div>
+      `;
+
+      // Checkable Divisions Form
+      const divisionsList = (ev.divisions && ev.divisions.length) ? ev.divisions : [ev.grades];
+      const savedDivs = checkedDivisions[ev.id] || [];
+      const divisionsBoxHtml = `
+        <div class="sub-box ${currentDrawerMode === 'reg' ? 'focus-ring' : ''}">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <strong style="font-size:12px;">🟦 可報組別勾選單</strong>
+            <span class="tag tag-open">✓ 專屬網址 · FB已核對</span>
+          </div>
+          <div class="div-list">
+            ${divisionsList.map((d, idx) => `
+              <label class="div-item">
+                <input type="checkbox" ${savedDivs.includes(idx) ? 'checked' : ''} onchange="toggleDivisionCheck('${ev.id}', ${idx})" />
+                <span>${escapeHtml(d)}</span>
+              </label>
+            `).join("")}
+          </div>
+        </div>
+      `;
+
+      // Yi-Xue Official Schedule Box (Strict Rule #1 Preserved, Zero Verbose Text)
+      let yixueBoxHtml = "";
+      if (ev.yixueNotEntered && info.verifiedEntries.length === 0 && !info.customNote) {
+        yixueBoxHtml = `
+          <div class="sub-box ${currentDrawerMode === 'match' ? 'focus-ring' : ''}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <strong style="font-size:12px;">🏫 義學國小參賽名單</strong>
+              <span class="tag tag-muted">⚪ 本屆未報名 (已確認)</span>
+            </div>
+          </div>
+        `;
+      } else if (info.hasSchedule) {
+        const rowsHtml = info.verifiedEntries.length > 0 ? `
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
             <thead>
-              <tr class="bg-indigo-500/10 border-b border-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-semibold">
-                <th class="py-2 px-2.5 w-5/12">正式賽程組別 / 籤位</th>
-                <th class="py-2 px-2.5">新北市義學國小 參賽選手人名</th>
+              <tr style="border-bottom:1px solid var(--border);color:var(--text-sec);">
+                <th style="padding:4px 6px;text-align:left;width:42%;">組別 / 籤位</th>
+                <th style="padding:4px 6px;text-align:left;">選手</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--border)]">
-              ${info.verifiedEntries.map(row => `
-                <tr>
-                  <td class="py-2 px-2.5 font-semibold text-[var(--foreground)] align-top">${escapeHtml(row.event)}</td>
-                  <td class="py-2 px-2.5 font-medium text-indigo-600 dark:text-indigo-300 leading-relaxed">${escapeHtml(row.players)}</td>
+            <tbody>
+              ${info.verifiedEntries.map(r => `
+                <tr style="border-bottom:1px solid var(--border-light);">
+                  <td style="padding:5px 6px;font-weight:600;">${escapeHtml(r.event)}</td>
+                  <td style="padding:5px 6px;color:var(--blue-text);font-weight:500;">${escapeHtml(r.players)}</td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
-        </div>
-      ` : "";
-
-      const yixueSectionHtml = (ev.yixueNotEntered && info.verifiedEntries.length === 0 && !info.customNote) ? `
-        <div class="p-3.5 rounded-lg border-2 ${currentDrawerMode === 'match' ? 'border-slate-500/60' : 'border-[var(--border)]'} bg-[var(--background)] space-y-2">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="font-bold text-xs flex items-center gap-1.5 text-[var(--foreground)]">
-              <span>🏫 新北市泰山區義學國小・參賽狀態核對確認</span>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-gray-500/15 text-[var(--muted-foreground)] border border-[var(--border)] font-mono text-[11px] font-semibold">⚪ 本屆未報名參賽 (已確認)</span>
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
-            已交叉核對官方報名結果 / 抽籤結果與球隊資訊確認：<strong class="text-[var(--foreground)]">本屆《${escapeHtml(ev.title)}》義學國小未報名參賽</strong>，因此無義學出賽名單。（若需查閱全國各校報名結果與抽籤結果，請點擊下方「開啟專屬章程頁 ↗」前往主辦官網專區）。
-          </p>
-        </div>
-      ` : info.hasSchedule ? `
-        <div class="p-3.5 rounded-lg border-2 ${currentDrawerMode === 'match' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-indigo-500/40'} bg-indigo-500/5 space-y-2.5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="font-bold text-xs flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-              <span>🏫 新北市泰山區義學國小・正式比賽賽程與選手名單</span>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 font-mono text-[11px] font-semibold">✅ 官方賽程表已公告</span>
-          </div>
-          <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded bg-[var(--card)] border border-[var(--border)]">
-            <span class="text-[11px] text-[var(--muted-foreground)] truncate max-w-[360px]">📄 賽程依據：<strong class="text-[var(--foreground)]">${escapeHtml(info.scheduleLabel)}</strong></span>
-            <a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[11px] shrink-0">
-              📊 開啟官方賽程表 / 秩序冊 ↗
-            </a>
-          </div>
-          ${verifiedTableHtml}
-          ${info.customNote ? `
-            <div class="p-2.5 rounded bg-[var(--card)] border border-indigo-500/30 text-xs">
-              <div class="text-[11px] font-semibold text-indigo-500 mb-0.5">📝 補充核對紀錄：</div>
-              <div class="font-medium text-[var(--foreground)]">${escapeHtml(info.customNote)}</div>
-            </div>
-          ` : (!verifiedTableHtml ? `
-            <div class="p-2.5 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-600 dark:text-amber-400 leading-relaxed">
-              ⚠️ 官方賽程表已公布（如上方連結），系統嚴守<strong>「確定核對賽程表才填寫義學人名、絕不預猜名單」</strong>原則。請點擊上方按鈕查閱賽程表後，於下方補充義學國小出賽組別與人名：
-            </div>
-          ` : "")}
-          <div class="flex gap-1.5 pt-1">
-            <input id="yixueRosterInput" type="text" value="${escapeHtml(info.customNote)}" placeholder="依官方賽程表補充或更新義學國小參賽組別與人名..." class="flex-1 px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-xs" />
-            <button onclick="saveYixueRoster('${ev.id}')" class="px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-xs shrink-0">
-              儲存補充名單
-            </button>
-          </div>
-        </div>
-      ` : `
-        <div class="p-3.5 rounded-lg border-2 ${currentDrawerMode === 'match' ? 'border-amber-500/60' : 'border-[var(--border)]'} bg-[var(--background)] space-y-2">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="font-bold text-xs flex items-center gap-1.5 text-[var(--foreground)]">
-              <span>🏫 新北市泰山區義學國小・參賽名單防呆鎖定</span>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-gray-500/15 text-[var(--muted-foreground)] border border-[var(--border)] font-mono text-[11px]">🔒 尚未公告正式賽程表</span>
-          </div>
-          <p class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
-            嚴格遵守名單準確性規範：<strong class="text-[var(--foreground)]">確定官方公布正式比賽賽程表後，才可填寫義學國小選手人名</strong>（預計抽籤/賽程日：<span class="font-mono font-semibold text-amber-500">${escapeHtml(ev.drawDate || "依官網公告")}</span>），絕不提前預填臆測名單。
-          </p>
-          <div class="flex flex-wrap gap-1.5 pt-1">
-            <input disabled type="text" value="" placeholder="🔒 待官方正式賽程表公布後自動解鎖人名填寫..." class="flex-1 px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--hover-bg)] text-[var(--muted-foreground)] cursor-not-allowed text-xs" />
-          </div>
-          <details class="text-[11px] text-[var(--muted-foreground)] pt-0.5">
-            <summary class="cursor-pointer hover:text-blue-500 font-medium">主辦單位已提前公布正式賽程表？貼上官方賽程表網址立即解鎖 ▾</summary>
-            <div class="flex gap-1.5 mt-2">
-              <input id="newScheduleUrlInput" type="url" placeholder="貼上官方正式賽程表網址 (https://...)" class="flex-1 px-2 py-1 rounded border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-xs" />
-              <button onclick="unlockWithScheduleUrl('${ev.id}')" class="px-2.5 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium text-xs shrink-0">驗證解鎖</button>
-            </div>
-          </details>
-        </div>
-      `;
-
-      // 區塊 B：可報名國小項目清單 + 最高關聯報名章程 + FB 社團核對
-      const divisionsList = (ev.divisions && ev.divisions.length) ? ev.divisions : [ev.grades + " — " + ev.eventsList];
-      const regAndFbSectionHtml = `
-        <div class="p-3.5 rounded-lg border-2 ${currentDrawerMode === 'reg' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-blue-500/30'} bg-[var(--accent-subtle)] space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="font-bold text-xs text-blue-600 dark:text-blue-400">🟦 報名時間、比賽地點、可報國小項目清單 &amp; 最高關聯章程</span>
-            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold">100% SPECIFIC URL</span>
-          </div>
-
-          <!-- 可報名之國小項目清單 (Divisions) -->
-          <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)] space-y-1.5">
-            <div class="font-semibold text-[11px] text-[var(--muted-foreground)]">🏸 可以報名的國小組別與項目清單：</div>
-            <ul class="grid grid-cols-1 gap-1 text-xs">
-              ${divisionsList.map(d => `<li class="py-1 px-2 rounded bg-[var(--background)] border border-[var(--border)] font-medium text-[var(--foreground)]">✅ ${escapeHtml(d)}</li>`).join("")}
-            </ul>
-          </div>
-
-          <!-- 最高關聯章程連結 -->
-          <div class="space-y-1.5 text-xs">
-            <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded bg-[var(--card)] border border-[var(--border)]">
-              <div class="truncate max-w-[360px]">
-                <div class="font-semibold text-[var(--foreground)]">📌 最高關聯專屬報名 / 章程主頁 (${escapeHtml(ev.platform)})</div>
-                <div class="font-mono text-[11px] text-blue-500 truncate">${escapeHtml(ev.url)}</div>
+        ` : "";
+        yixueBoxHtml = `
+          <div class="sub-box ${currentDrawerMode === 'match' ? 'focus-ring' : ''}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+              <strong style="font-size:12px;">🏫 義學國小正式賽程名單</strong>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="tag tag-open">✅ 賽程已出</span>
+                <a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="btn btn-xs btn-primary">📊 賽程表 ↗</a>
               </div>
-              <a href="${ev.url}" target="_blank" rel="noopener" class="px-2.5 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold text-[11px] shrink-0">
-                開啟專屬章程頁 ↗
-              </a>
             </div>
-            ${ev.docUrl ? `
-              <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded bg-[var(--card)] border border-[var(--border)]">
-                <div class="truncate max-w-[360px]">
-                  <div class="font-semibold text-[var(--foreground)]">📑 官方競賽規程 PDF / 第二驗證入口</div>
-                  <div class="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 truncate">${escapeHtml(ev.docUrl)}</div>
-                </div>
-                <a href="${ev.docUrl}" target="_blank" rel="noopener" class="px-2.5 py-1 rounded border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-[11px] shrink-0">
-                  開啟規程 / 附件 ↗
-                </a>
-              </div>
-            ` : ""}
-          </div>
-
-          <!-- FB 社團交叉核對 -->
-          <div class="p-2.5 rounded bg-[var(--card)] border border-[var(--border)] flex flex-wrap items-start justify-between gap-2">
-            <div class="space-y-1 flex-1 min-w-[220px]">
-              <div class="font-semibold text-[11px] text-sky-600 dark:text-sky-400">📘 FB 羽球社團 / 官方粉專交叉核對紀錄：</div>
-              <p class="text-[11px] text-[var(--foreground)] leading-relaxed">${escapeHtml(ev.fbCheck || "已與 FB 全台羽球交流賽社團完成交叉核對。")}</p>
-            </div>
-            <a href="${fbSearchUrl}" target="_blank" rel="noopener" class="px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 text-[11px] font-medium shrink-0">
-              📘 FB 社團即時查驗 ↗
-            </a>
-          </div>
-        </div>
-      `;
-
-      const metadataCardHtml = `
-        <div class="border border-[var(--border)] rounded-lg divide-y divide-[var(--border)]">
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">🎯 國小參賽年級組別</div>
-            <div class="col-span-8 font-semibold text-[var(--foreground)]">${escapeHtml(ev.grades)}</div>
-          </div>
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">⚠️ 資格與名次限制</div>
-            <div class="col-span-8 text-[var(--foreground)]">${escapeHtml(ev.eligibility)}</div>
-          </div>
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">📐 賽制與計分規則</div>
-            <div class="col-span-8 text-[var(--foreground)]">${escapeHtml(ev.scoring)}</div>
-          </div>
-          <div class="p-3 grid grid-cols-12 gap-2 bg-[var(--accent-subtle)]">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">🪶 比賽指定用球</div>
-            <div class="col-span-8 font-semibold text-blue-600 dark:text-blue-400">${escapeHtml(ev.shuttlecock)}</div>
-          </div>
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">💰 報名費用與贈品</div>
-            <div class="col-span-8 font-mono text-[var(--foreground)]">${escapeHtml(ev.fee)}</div>
-          </div>
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">🗺️ 比賽地點與導航</div>
-            <div class="col-span-8 flex flex-wrap items-center justify-between gap-2">
-              <span>${escapeHtml(ev.venue)}（${escapeHtml(ev.address)}）</span>
-              <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" rel="noopener" class="px-2 py-0.5 rounded border border-blue-500/40 text-blue-500 hover:bg-blue-500/10 text-[11px] font-medium">
-                📍 Google Maps 導航
-              </a>
+            ${rowsHtml}
+            <div style="display:flex;gap:6px;">
+              <input id="yixueRosterInput" type="text" class="inp" style="flex:1;" value="${escapeHtml(info.customNote)}" placeholder="依官方賽程表補充組別與姓名..." />
+              <button type="button" onclick="saveYixueRoster('${ev.id}')" class="btn btn-primary">儲存</button>
             </div>
           </div>
-          <div class="p-3 grid grid-cols-12 gap-2">
-            <div class="col-span-4 text-[var(--muted-foreground)] font-medium">💡 教練/家長備戰備註</div>
-            <div class="col-span-8 text-[var(--foreground)] leading-relaxed">${escapeHtml(ev.notes)}</div>
-          </div>
-        </div>
-      `;
-
-      const timelineStripHtml = `
-        <div class="grid grid-cols-3 gap-2 p-3 rounded-lg bg-[var(--background)] border border-[var(--border)]">
-          <div>
-            <div class="text-[11px] text-[var(--muted-foreground)]">🟦 報名起訖期間</div>
-            <div class="font-mono font-bold text-blue-500 mt-0.5">${ev.regStart} ~ ${ev.regEnd.slice(5)}</div>
-          </div>
-          <div>
-            <div class="text-[11px] text-[var(--muted-foreground)]">🎲 抽籤 / 賽程公告日</div>
-            <div class="font-mono font-bold text-amber-500 mt-0.5">${escapeHtml(ev.drawDate || "依官網公告")}</div>
-          </div>
-          <div>
-            <div class="text-[11px] text-[var(--muted-foreground)]">🟩 正式比賽日期</div>
-            <div class="font-mono font-bold text-emerald-500 mt-0.5">${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</div>
-          </div>
-        </div>
-      `;
-
-      let orderedSections = "";
-      if (currentDrawerMode === "reg") {
-        orderedSections = `${timelineStripHtml}${regAndFbSectionHtml}${metadataCardHtml}${yixueSectionHtml}`;
-      } else if (currentDrawerMode === "match") {
-        orderedSections = `${timelineStripHtml}${yixueSectionHtml}${regAndFbSectionHtml}${metadataCardHtml}`;
+        `;
       } else {
-        orderedSections = `${timelineStripHtml}${yixueSectionHtml}${regAndFbSectionHtml}${metadataCardHtml}`;
+        yixueBoxHtml = `
+          <div class="sub-box ${currentDrawerMode === 'match' ? 'focus-ring' : ''}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <strong style="font-size:12px;">🏫 義學國小正式賽程名單</strong>
+              <span class="tag tag-muted mono">🔒 待賽程 (${escapeHtml(ev.drawDate ? ev.drawDate.slice(5) : "未定")})</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input id="newScheduleUrlInput" type="url" class="inp" style="flex:1;" placeholder="貼上已公告之官方賽程表網址解鎖 (https://...)" />
+              <button type="button" onclick="unlockWithScheduleUrl('${ev.id}')" class="btn">解鎖</button>
+            </div>
+          </div>
+        `;
       }
 
-      document.getElementById("drawerBody").innerHTML = orderedSections;
+      if (currentDrawerMode === "reg") {
+        document.getElementById("drawerBody").innerHTML = `${linksBarHtml}${divisionsBoxHtml}${kvHtml}${yixueBoxHtml}`;
+      } else if (currentDrawerMode === "match") {
+        document.getElementById("drawerBody").innerHTML = `${linksBarHtml}${yixueBoxHtml}${kvHtml}${divisionsBoxHtml}`;
+      } else {
+        document.getElementById("drawerBody").innerHTML = `${linksBarHtml}${yixueBoxHtml}${divisionsBoxHtml}${kvHtml}`;
+      }
 
-      const regState = getRegistrationState(ev);
-      const regActionBtnHtml = regState.isVerified
-        ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-3 py-1.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold">🏫 官方賽程已確認參賽</button>`
-        : regState.isManual
-          ? `<button onclick="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-semibold transition">✅ 已標記報名 (點擊取消)</button>`
-          : `<button onclick="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white font-medium transition">＋ 標記為已報名</button>`;
-
-      document.getElementById("drawerFooter").innerHTML = `
-        <div class="flex flex-wrap items-center gap-2">
-          <button onclick="toggleFav('${ev.id}'); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium">
-            ${isFav ? "⭐ 已關注" : "☆ 關注"}
-          </button>
-          ${regActionBtnHtml}
-          <a href="${buildGoogleCalUrl(ev, 'reg')}" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium">
-            📅 報名提醒加日曆
-          </a>
-          <a href="${buildGoogleCalUrl(ev, 'match')}" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium">
-            📅 比賽日期加日曆
-          </a>
-        </div>
-        <a href="${ev.url}" target="_blank" rel="noopener" class="px-4 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow-sm">
-          🔗 開啟最高關聯報名章程 ↗
-        </a>
-      `;
-
-      const overlay = document.getElementById("detailDrawerOverlay");
-      overlay.classList.remove("hidden");
-      document.getElementById("drawerBody").parentElement.scrollTop = 0;
+      document.getElementById("detailDrawerOverlay").classList.add("open");
+      document.getElementById("drawerBody").scrollTop = 0;
     }
 
     function closeDetailDrawer() {
-      document.getElementById("detailDrawerOverlay").classList.add("hidden");
+      document.getElementById("detailDrawerOverlay").classList.remove("open");
     }
-
     document.getElementById("btnCloseDrawer").addEventListener("click", closeDetailDrawer);
-    document.getElementById("detailDrawerBackdrop").addEventListener("click", closeDetailDrawer);
+    document.getElementById("detailDrawerOverlay").addEventListener("click", closeDetailDrawer);
 
-    // Crawler Modal handlers
     document.getElementById("btnCrawlerModal").addEventListener("click", () => {
-      document.getElementById("crawlerModalOverlay").classList.remove("hidden");
+      document.getElementById("crawlerModalOverlay").classList.add("open");
     });
     document.getElementById("btnCloseCrawlerModal").addEventListener("click", () => {
-      document.getElementById("crawlerModalOverlay").classList.add("hidden");
+      document.getElementById("crawlerModalOverlay").classList.remove("open");
     });
     document.getElementById("btnConfirmCrawlerModal").addEventListener("click", () => {
-      document.getElementById("crawlerModalOverlay").classList.add("hidden");
+      document.getElementById("crawlerModalOverlay").classList.remove("open");
     });
-    document.getElementById("crawlerModalBackdrop").addEventListener("click", () => {
-      document.getElementById("crawlerModalOverlay").classList.add("hidden");
+    document.getElementById("crawlerModalOverlay").addEventListener("click", () => {
+      document.getElementById("crawlerModalOverlay").classList.remove("open");
     });
-
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeDetailDrawer();
-        document.getElementById("crawlerModalOverlay").classList.add("hidden");
+        document.getElementById("crawlerModalOverlay").classList.remove("open");
       }
     });
 
-    function renderGanttRow(ev, todayLeft, isCompletedRow = false) {
+    function renderGanttRow(ev, todayLeft, isDone) {
       const rLeft = pctPos(ev.regStart);
       const rRight = pctPos(ev.regEnd);
-      const rWidth = Math.max(1.3, rRight - rLeft);
+      const rWidth = Math.max(1.2, rRight - rLeft);
       const regEndedBeforeStart = new Date(ev.regEnd + "T23:59:59") < TIMELINE_START;
 
       const mLeft = pctPos(ev.matchStart);
@@ -2538,237 +2940,185 @@
       const isFav = favorites.includes(ev.id);
       const regState = getRegistrationState(ev);
       const st = computeStatus(ev);
-      const matchBarClass = st === "比賽中" ? "bar-live animate-pulse" : (isCompletedRow ? "bar-match opacity-70" : "bar-match");
-      const rowToneClass = isCompletedRow ? "bg-[var(--background)]/40 opacity-85" : "";
+      const matchClass = st === "比賽中" ? "bar-live" : "bar-match";
 
-      const quickRegBtn = (!regState.isRegistered && !ev.yixueNotEntered && !isCompletedRow)
-        ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1 py-0.5 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 text-[10px] font-medium shrink-0 opacity-70 group-hover:opacity-100 transition" title="標記為已報名（用於已報名優先排序）">＋報</button>`
-        : "";
-
-      const regSegmentHtml = regEndedBeforeStart
-        ? `<div
-            onclick="openDetailDrawer('${ev.id}', 'reg', event)"
-            ondblclick="openDetailDrawer('${ev.id}', 'reg', event)"
-            oncontextmenu="openDetailDrawer('${ev.id}', 'reg', event)"
-            class="absolute top-1 h-4 w-1.5 rounded-r-sm bg-blue-500/50 border border-blue-600 z-20 cursor-pointer transition hover:w-2.5"
-            style="left:0%;"
-            title="🟦【報名已於8月截止・點選查看報名章程 & 可報組別】報名期間：${ev.regStart} ~ ${ev.regEnd}"
-          ></div>`
-        : `<div
-            onclick="openDetailDrawer('${ev.id}', 'reg', event)"
-            ondblclick="openDetailDrawer('${ev.id}', 'reg', event)"
-            oncontextmenu="openDetailDrawer('${ev.id}', 'reg', event)"
-            class="absolute top-1 h-4 rounded-sm bar-reg z-20 cursor-pointer transition ${isCompletedRow ? 'opacity-70' : ''}"
-            style="left:${rLeft}%;width:${rWidth}%;"
-            title="🟦【點選查看報名章程 & 可報國小組別】報名期間：${ev.regStart} ~ ${ev.regEnd}"
-          ></div>`;
+      const regBar = regEndedBeforeStart
+        ? `<div class="bar-reg-stub" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名：${ev.regStart}~${ev.regEnd}"></div>`
+        : `<div class="bar-reg" style="left:${rLeft}%;width:${rWidth}%;" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名：${ev.regStart}~${ev.regEnd}"></div>`;
 
       return `
-        <div onclick="openDetailDrawer('${ev.id}', 'all')" class="grid grid-cols-12 items-center py-2 px-1 hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group ${rowToneClass}">
-          <div class="col-span-4 pr-3 flex items-center justify-between gap-2 overflow-hidden">
-            <div class="flex items-center gap-1.5 truncate">
-              <button onclick="toggleFav('${ev.id}', event)" class="text-sm leading-none hover:scale-110 transition shrink-0" title="關注此賽事">${isFav ? "⭐" : "☆"}</button>
-              ${quickRegBtn}
-              ${regionBadge(ev.region)}
-              ${yixueMiniBadge(ev)}
-              <span class="truncate font-medium group-hover:text-blue-500 transition-colors" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</span>
+        <div class="gantt-row ${isDone ? 'done-row' : ''}" onclick="openDetailDrawer('${ev.id}', 'all')">
+          <div class="gantt-info">
+            <div class="gantt-info-left">
+              <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)" title="關注">${isFav ? "★" : "☆"}</button>
+              <input type="checkbox" class="row-chk ${regState.isVerified ? 'verified' : ''}" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onclick="toggleRegistered('${ev.id}', event)" title="${regState.isVerified ? '義學官方賽程已核對參賽' : '勾選已報名'}" />
+              ${regionTag(ev.region)}
+              <span class="gantt-title" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev.title))}</span>
             </div>
-            <div class="shrink-0">${countdownBadge(ev)}</div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+              ${regState.isVerified ? `<span class="tag tag-yixue">義學</span>` : (regState.isManual ? `<span class="tag tag-open">已報</span>` : "")}
+              ${statusTag(ev)}
+            </div>
           </div>
-          <div class="col-span-8 relative h-6 gantt-grid rounded bg-[var(--background)]/50">
-            <div class="absolute top-0 bottom-0 w-0.5 bg-red-500/80 z-10 pointer-events-none" style="left:${todayLeft}%;" title="今日 (${REF_TODAY})"></div>
-            <!-- 🟦 報名時間區段：支援單擊/雙擊/右鍵直接開啟「報名章程與可報國小項目清單」 -->
-            ${regSegmentHtml}
-            <!-- 🟩/🟥 比賽時間區段：支援單擊/雙擊/右鍵直接開啟「義學國小正式賽程表與選手名單」 -->
-            <div
-              onclick="openDetailDrawer('${ev.id}', 'match', event)"
-              ondblclick="openDetailDrawer('${ev.id}', 'match', event)"
-              oncontextmenu="openDetailDrawer('${ev.id}', 'match', event)"
-              class="absolute top-1 h-4 rounded-sm ${matchBarClass} z-30 cursor-pointer transition"
-              style="left:${mLeft}%;width:${mWidth}%;"
-              title="🏫【點選查看義學國小正式賽程與參賽名單】比賽期間：${ev.matchStart} ~ ${ev.matchEnd}"
-            ></div>
+          <div class="gantt-track">
+            <div class="today-line" style="left:${todayLeft}%;"></div>
+            ${regBar}
+            <div class="${matchClass}" style="left:${mLeft}%;width:${mWidth}%;" onclick="openDetailDrawer('${ev.id}', 'match', event)" title="比賽：${ev.matchStart}~${ev.matchEnd}"></div>
           </div>
         </div>
       `;
     }
 
-    function renderYixueTableCell(ev) {
-      const info = getEffectiveScheduleInfo(ev);
-      const regState = getRegistrationState(ev);
-      if (info.verifiedEntries.length > 0 || info.customNote) {
-        return `
-          <div onclick="openDetailDrawer('${ev.id}', 'match', event)" class="max-w-[240px] cursor-pointer hover:opacity-90">
-            <span class="inline-block px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-semibold mb-0.5">✅ 正式賽程已核對 (${info.verifiedEntries.length || 1}組)</span>
-            <div class="text-[11px] font-medium text-[var(--foreground)] truncate" title="${escapeHtml(info.rosterText)}">${escapeHtml(info.rosterText)}</div>
-          </div>
-        `;
-      }
-      if (regState.isManual) {
-        return `
-          <div onclick="openDetailDrawer('${ev.id}', 'match', event)" class="max-w-[240px] cursor-pointer">
-            <span class="inline-block px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-semibold mb-0.5">✅ 已標記報名</span>
-            <div class="text-[10px] text-[var(--muted-foreground)] font-mono">${escapeHtml(ev.yixueStatus || `🔒 待賽程表 (${ev.drawDate ? ev.drawDate.slice(5, 10) : "未定"})`)}</div>
-          </div>
-        `;
-      }
-      if (ev.yixueNotEntered) {
-        return `<span onclick="openDetailDrawer('${ev.id}', 'match', event)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-500/10 border border-[var(--border)] text-[11px] text-[var(--muted-foreground)] cursor-pointer hover:bg-[var(--hover-bg)]" title="已核對官方報名與抽籤結果確認：本屆義學國小未報名參賽">⚪ 本屆義學未報名 (已確認)</span>`;
-      }
-      if (info.hasSchedule) {
-        if (ev.yixueStatus && ev.yixueStatus.includes("非跨縣市")) {
-          return `<span class="text-[11px] text-[var(--muted-foreground)]">外縣市校際限制</span>`;
-        }
-        return `
-          <div onclick="openDetailDrawer('${ev.id}', 'match', event)" class="flex flex-col gap-0.5 max-w-[230px] cursor-pointer">
-            <span class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">${escapeHtml(ev.yixueStatus || "📋 賽程表已公告")}</span>
-            <span class="text-[10px] text-[var(--muted-foreground)] underline">點選開啟賽程表核對登錄</span>
-          </div>
-        `;
-      }
-      if (ev.yixueStatus && ev.yixueStatus.includes("非跨縣市")) {
-        return `<span class="text-[11px] text-[var(--muted-foreground)]">外縣市校際限制</span>`;
-      }
-      return `<span onclick="openDetailDrawer('${ev.id}', 'match', event)" class="text-[11px] text-[var(--muted-foreground)] font-mono cursor-pointer hover:text-amber-500" title="尚未公告正式比賽賽程表，防呆鎖定禁止預填選手姓名">${escapeHtml(ev.yixueStatus || `🔒 待賽程表 (${ev.drawDate ? ev.drawDate.slice(5, 10) : "未定"})`)}</span>`;
-    }
-
-    function renderTableRow(ev, isCompletedRow = false) {
-      const st = computeStatus(ev);
+    function renderTableRow(ev, isDone) {
       const isFav = favorites.includes(ev.id);
-      const info = getEffectiveScheduleInfo(ev);
       const regState = getRegistrationState(ev);
-      const rowToneClass = isCompletedRow ? "bg-[var(--background)]/40 opacity-85" : "";
-
-      const regToggleCellBtn = regState.isVerified
-        ? `<span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-semibold" title="官方正式賽程表已核對義學參賽">已報</span>`
-        : regState.isManual
-          ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-semibold hover:bg-emerald-700 transition" title="點擊取消已報名標記">✓已報</button>`
-          : `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 text-[10px] font-medium transition" title="標記為已報名（供已報名優先排序使用）">＋報</button>`;
+      const info = getEffectiveScheduleInfo(ev);
+      const types = getEventTypes(ev);
+      const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
 
       return `
-        <tr onclick="openDetailDrawer('${ev.id}', 'all')" class="hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group ${rowToneClass}">
-          <td class="py-2.5 px-2 text-center whitespace-nowrap" onclick="event.stopPropagation()">
-            <div class="inline-flex items-center gap-1.5">
-              <button onclick="toggleFav('${ev.id}', event)" class="text-sm hover:scale-125 transition" title="關注賽事">${isFav ? "⭐" : "☆"}</button>
-              ${regToggleCellBtn}
+        <tr class="data-row ${isDone ? 'done-row' : ''}" onclick="openDetailDrawer('${ev.id}', 'all')">
+          <td style="text-align:center;" onclick="event.stopPropagation()">
+            <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)">${isFav ? "★" : "☆"}</button>
+          </td>
+          <td style="text-align:center;" onclick="event.stopPropagation()">
+            <input type="checkbox" class="row-chk ${regState.isVerified ? 'verified' : ''}" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onchange="toggleRegistered('${ev.id}', event)" title="${regState.isVerified ? '義學官方賽程已核對' : '勾選已報名'}" />
+          </td>
+          <td>${regionTag(ev.region)}</td>
+          <td style="font-weight:600;">${escapeHtml(shortTitle(ev.title))}</td>
+          <td>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;">
+              ${types.map(t => `<span class="tag tag-muted">${t}</span>`).join("")}
             </div>
           </td>
-          <td class="py-2.5 px-2 whitespace-nowrap">${regionBadge(ev.region)}</td>
-          <td class="py-2.5 px-2 whitespace-nowrap text-[var(--muted-foreground)]">${escapeHtml(ev.venue)}</td>
-          <td class="py-2.5 px-2 font-semibold group-hover:text-blue-500 transition-colors">${escapeHtml(ev.title)}</td>
-          <td class="py-2.5 px-2">${renderYixueTableCell(ev)}</td>
-          <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'reg', event)">
-            <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition" title="點選查看報名章程與可報組別">🟦 ${ev.regStart} ~ ${ev.regEnd.slice(5)}</span>
-          </td>
-          <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'match', event)">
-            <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-emerald-500/20 transition" title="點選查看義學國小正式賽程名單">🏫 ${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</span>
-          </td>
-          <td class="py-2.5 px-2 whitespace-nowrap">
-            <div class="flex items-center gap-1.5">
-              ${statusBadge(st)}
-              ${countdownBadge(ev)}
+          <td style="color:var(--text-sec);white-space:nowrap;">${escapeHtml(shortVenue(ev.venue))}</td>
+          <td class="mono" style="white-space:nowrap;" onclick="openDetailDrawer('${ev.id}', 'reg', event)">
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span>${ev.regEnd.slice(5)}</span>
+              ${statusTag(ev)}
             </div>
           </td>
-          <td class="py-2.5 px-2 whitespace-nowrap" onclick="event.stopPropagation()">
-            <div class="flex items-center gap-1.5">
-              <a href="${ev.url}" target="_blank" rel="noopener" class="text-blue-500 hover:underline font-medium text-[11px]" title="${escapeHtml(ev.url)}">
-                🔗 ${escapeHtml(ev.platform.split(" ")[0])}專頁 ↗
-              </a>
-              ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono hover:bg-emerald-600 hover:text-white transition" title="官方競賽規程或第二驗證頁">規程</a>` : ""}
-              ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-[10px] font-mono hover:bg-indigo-600 hover:text-white transition" title="官方正式比賽賽程表">賽程</a>` : ""}
+          <td class="mono" style="white-space:nowrap;font-weight:500;" onclick="openDetailDrawer('${ev.id}', 'match', event)">
+            ${shortRange(ev.matchStart, ev.matchEnd)}
+          </td>
+          <td onclick="openDetailDrawer('${ev.id}', 'match', event)">
+            <div style="display:flex;align-items:center;gap:5px;max-width:210px;">
+              ${yixueShortCell(ev)}
+              ${info.shortRoster ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-sec);" title="${escapeHtml(info.rosterText)}">${escapeHtml(info.shortRoster)}</span>` : ""}
             </div>
           </td>
-          <td class="py-2.5 px-2 whitespace-nowrap text-right" onclick="event.stopPropagation()">
-            <button onclick="openDetailDrawer('${ev.id}', 'all')" class="px-2 py-1 rounded bg-blue-600/10 text-blue-500 border border-blue-500/30 hover:bg-blue-600 hover:text-white font-medium text-[11px] transition">
-              詳情與核對
-            </button>
+          <td style="text-align:right;white-space:nowrap;" onclick="event.stopPropagation()">
+            <div style="display:inline-flex;gap:3px;">
+              <a href="${ev.url}" target="_blank" rel="noopener" class="btn btn-xs">章程</a>
+              ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="btn btn-xs">規程</a>` : ""}
+              ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="btn btn-xs">賽程</a>` : ""}
+              <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" rel="noopener" class="btn btn-xs" title="導航">📍</a>
+            </div>
           </td>
         </tr>
       `;
     }
 
     function renderAll() {
-      const statusVal = document.getElementById("statusFilter").value;
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
-      const onlyFav = document.getElementById("onlyFavToggle").checked;
+      document.getElementById("btnClearSearch").classList.toggle("show", Boolean(q));
+
+      const onlyReg = document.getElementById("onlyRegToggle").checked;
       const onlyYixue = document.getElementById("onlyYixueToggle").checked;
+      const onlyUrgent = document.getElementById("onlyUrgentToggle").checked;
+      const onlyFav = document.getElementById("onlyFavToggle").checked;
+      const hideRestricted = document.getElementById("hideRestrictedToggle").checked;
+      const showGantt = document.getElementById("chkShowGantt").checked;
+      const showTable = document.getElementById("chkShowTable").checked;
+      const collapseDone = document.getElementById("chkCollapseDone").checked;
 
-      // Update Region Button States & Counts
+      document.getElementById("ganttSection").classList.toggle("hidden", !showGantt);
+      document.getElementById("tableSection").classList.toggle("hidden", !showTable);
+
+      // Sync Region Checkboxes & Counts
       const regionTotals = { "全國": 0, "北區": 0, "中區": 0, "南區": 0, "東區": 0 };
-      events.forEach(ev => {
-        regionTotals[ev.region] = (regionTotals[ev.region] || 0) + 1;
+      events.forEach(e => { regionTotals[e.region] = (regionTotals[e.region] || 0) + 1; });
+      document.getElementById("cntNational").textContent = regionTotals["全國"] || 0;
+      document.querySelectorAll(".reg-chk").forEach(chk => {
+        chk.checked = selectedRegions.has(chk.value);
       });
-      document.getElementById("cntNational").textContent = `(${regionTotals["全國"] || 0})`;
-      document.querySelectorAll(".reg-toggle-btn").forEach(btn => {
-        const reg = btn.getAttribute("data-region");
-        const isActive = selectedRegions.has(reg);
-        const checkIcon = btn.querySelector(".reg-check-icon");
-        const cntEl = btn.querySelector(".reg-cnt");
-        if (cntEl) cntEl.textContent = `(${regionTotals[reg] || 0})`;
-        if (checkIcon) checkIcon.classList.toggle("hidden", !isActive);
-        btn.className = isActive
-          ? "reg-toggle-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white border border-blue-600 shadow-sm transition flex items-center gap-1"
-          : "reg-toggle-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] text-[var(--foreground)] transition flex items-center gap-1";
+      document.querySelectorAll("[data-reg-cnt]").forEach(el => {
+        el.textContent = regionTotals[el.getAttribute("data-reg-cnt")] || 0;
       });
 
-      const isAllSelected = OPTIONAL_REGIONS.every(r => selectedRegions.has(r));
-      const isDefaultSelected = selectedRegions.size === 1 && selectedRegions.has("北區");
-      document.getElementById("btnSelectAllRegions").className = isAllSelected
-        ? "px-2.5 py-1 rounded border border-blue-600 bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold text-xs transition"
-        : "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition";
-      document.getElementById("btnResetDefaultRegions").className = isDefaultSelected
-        ? "px-2.5 py-1 rounded border border-blue-600/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold text-xs transition"
-        : "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition";
-
-      // Update Sort Button States & Counts
-      const totalRegisteredCount = events.filter(ev => getRegistrationState(ev).isRegistered).length;
-      document.getElementById("regCountBadge").textContent = totalRegisteredCount;
+      // Sync Sort Buttons
+      const totalRegCount = events.filter(e => getRegistrationState(e).isRegistered).length;
+      document.getElementById("regCountBadge").textContent = totalRegCount;
       document.querySelectorAll(".sort-btn").forEach(btn => {
-        const mode = btn.getAttribute("data-sort");
-        const active = mode === currentSortMode;
-        btn.className = active
-          ? "sort-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white shadow-sm transition"
-          : "sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition";
+        btn.classList.toggle("active", btn.getAttribute("data-sort") === currentSortMode);
       });
 
-      const yixueRelevantTotal = events.filter(isYixueRelevant).length;
+      // Counts & KPIs
+      const counts = { total: events.length, live: 0, open: 0, urgent: 0, yixue: 0 };
+      events.forEach(e => {
+        const s = computeStatus(e);
+        if (isYixueRelevant(e)) counts.yixue++;
+        if (s === "比賽中") counts.live++;
+        if (s === "報名中") {
+          counts.open++;
+          if (daysBetween(REF_TODAY, e.regEnd) <= 10) counts.urgent++;
+        }
+      });
       document.getElementById("favCountBadge").textContent = favorites.length;
-      document.getElementById("yixueCountBadge").textContent = yixueRelevantTotal;
-      document.getElementById("crawlerTotalCount").textContent = `${events.length} 場國小相關盃賽`;
+      document.getElementById("yixueCountBadge").textContent = counts.yixue;
+      document.getElementById("crawlerTotalCount").textContent = events.length;
 
-      // Filter Events (全國賽固定必選顯示！)
+      document.getElementById("kpiStrip").innerHTML = `
+        <button type="button" class="stat-chip" onclick="resetAllFilters()" title="重設檢視">全部 <b>${counts.total}</b></button>
+        <button type="button" class="stat-chip ${selectedStatuses.has('比賽中') ? 'active' : ''}" onclick="quickToggleStatus('比賽中')">🔴 LIVE <b>${counts.live}</b></button>
+        <button type="button" class="stat-chip ${selectedStatuses.has('報名中') ? 'active' : ''}" onclick="quickToggleStatus('報名中')">🟢 報名中 <b>${counts.open}</b></button>
+        <button type="button" class="stat-chip ${onlyUrgent ? 'active' : ''}" onclick="document.getElementById('onlyUrgentToggle').click()">🔥 10日截止 <b>${counts.urgent}</b></button>
+        <button type="button" class="stat-chip ${onlyYixue ? 'active' : ''}" onclick="document.getElementById('onlyYixueToggle').click()">🏫 義學 <b>${counts.yixue}</b></button>
+      `;
+
+      const hasCustomFilters = Boolean(
+        q || onlyReg || onlyYixue || onlyUrgent || onlyFav || hideRestricted ||
+        selectedStatuses.size > 0 || selectedTypes.size > 0 ||
+        !(selectedRegions.size === 1 && selectedRegions.has("北區"))
+      );
+      document.getElementById("btnClearFilters").classList.toggle("hidden", !hasCustomFilters);
+
+      // Filter Logic (全國固定必選)
       const filtered = events.filter(ev => {
         const st = computeStatus(ev);
         const info = getEffectiveScheduleInfo(ev);
         if (ev.region !== "全國" && !selectedRegions.has(ev.region)) return false;
-        if (statusVal !== "ALL" && st !== statusVal) return false;
-        if (onlyFav && !favorites.includes(ev.id)) return false;
+        if (selectedStatuses.size > 0 && !selectedStatuses.has(st)) return false;
+        if (selectedTypes.size > 0) {
+          const evTypes = getEventTypes(ev);
+          if (![...selectedTypes].some(t => evTypes.includes(t))) return false;
+        }
+        if (onlyReg && !getRegistrationState(ev).isRegistered) return false;
         if (onlyYixue && !isYixueRelevant(ev)) return false;
+        if (onlyUrgent && !(st === "報名中" && daysBetween(REF_TODAY, ev.regEnd) <= 10)) return false;
+        if (onlyFav && !favorites.includes(ev.id)) return false;
+        if (hideRestricted && isRestrictedOtherCounty(ev)) return false;
         if (q) {
-          const hay = `${ev.title} ${ev.venue} ${ev.region} ${ev.grades} ${ev.shuttlecock} ${ev.platform} ${ev.url} ${info.rosterText} ${ev.fbCheck}`.toLowerCase();
+          const hay = `${ev.title} ${ev.venue} ${ev.region} ${ev.grades} ${ev.shuttlecock} ${ev.platform} ${ev.url} ${info.rosterText}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;
       });
 
-      // Split into Active/Upcoming vs Completed (已完成賽事)
       const activeEvents = filtered.filter(ev => computeStatus(ev) !== "已結束");
       const completedEvents = filtered.filter(ev => computeStatus(ev) === "已結束");
+      document.getElementById("doneCntBadge").textContent = completedEvents.length;
 
       // Comparators
       const REGION_RANK = { "全國": 0, "北區": 1, "中區": 2, "南區": 3, "東區": 4 };
       const compareByTime = (a, b) =>
-        a.matchStart.localeCompare(b.matchStart) ||
-        a.regEnd.localeCompare(b.regEnd) ||
-        a.id.localeCompare(b.id);
-      const compareByRegionThenTime = (a, b) =>
-        ((REGION_RANK[a.region] ?? 99) - (REGION_RANK[b.region] ?? 99)) ||
-        compareByTime(a, b);
-      const isExplicitlySkipped = (ev) =>
-        Boolean(ev.yixueNotEntered || (ev.yixueStatus && ev.yixueStatus.includes("非跨縣市")));
-      const compareByRegPriority = (a, b) => {
-        const ra = getRegistrationState(a).isRegistered ? 0 : (isExplicitlySkipped(a) ? 2 : 1);
-        const rb = getRegistrationState(b).isRegistered ? 0 : (isExplicitlySkipped(b) ? 2 : 1);
+        a.matchStart.localeCompare(b.matchStart) || a.regEnd.localeCompare(b.regEnd) || a.id.localeCompare(b.id);
+      const compareByRegion = (a, b) =>
+        ((REGION_RANK[a.region] ?? 99) - (REGION_RANK[b.region] ?? 99)) || compareByTime(a, b);
+      const isSkipped = (ev) => Boolean(ev.yixueNotEntered || isRestrictedOtherCounty(ev));
+      const compareByReg = (a, b) => {
+        const ra = getRegistrationState(a).isRegistered ? 0 : (isSkipped(a) ? 2 : 1);
+        const rb = getRegistrationState(b).isRegistered ? 0 : (isSkipped(b) ? 2 : 1);
         if (ra !== rb) return ra - rb;
         const na = a.region === "全國" ? 0 : 1;
         const nb = b.region === "全國" ? 0 : 1;
@@ -2776,364 +3126,224 @@
         return compareByTime(a, b);
       };
 
-      // Sort Completed Events according to currentSortMode
-      const sortedCompleted = [...completedEvents].sort(
-        currentSortMode === "registered"
-          ? compareByRegPriority
-          : currentSortMode === "region"
-            ? compareByRegionThenTime
-            : compareByTime
+      const sortedDone = [...completedEvents].sort(
+        currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
       );
-      const completedRegCount = sortedCompleted.filter(ev => getRegistrationState(ev).isRegistered).length;
-      const forceExpandCompleted = statusVal === "已結束" || (activeEvents.length === 0 && sortedCompleted.length > 0);
-      const isCompletedOpen = !completedCollapsed || forceExpandCompleted;
+      const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
+      const autoOpenDone = activeEvents.length === 0 && sortedDone.length > 0;
+      const isDoneOpen = !collapseDone || autoOpenDone;
 
-      // Update Top Completed Collapse Button
-      const btnComp = document.getElementById("btnToggleCompleted");
-      if (sortedCompleted.length === 0) {
-        btnComp.innerHTML = `<span>📁 已完賽 (0場)</span>`;
-        btnComp.className = "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] font-medium text-xs transition flex items-center gap-1";
-      } else if (isCompletedOpen) {
-        btnComp.innerHTML = `<span>📂 收折已完成賽事 (${sortedCompleted.length}場) ▲</span>`;
-        btnComp.className = "px-2.5 py-1 rounded border border-slate-500/50 bg-slate-500/10 text-[var(--foreground)] font-semibold text-xs transition flex items-center gap-1";
-      } else {
-        btnComp.innerHTML = `<span>📁 已完賽已收折 (${sortedCompleted.length}場) ▾</span>`;
-        btnComp.className = "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] text-[var(--foreground)] font-medium text-xs transition flex items-center gap-1";
-      }
+      const summaryTxt = `進行 ${activeEvents.length} · 已完賽 ${sortedDone.length} (${isDoneOpen ? "展開" : "收折"})`;
+      document.getElementById("ganttCountInfo").textContent = summaryTxt;
+      document.getElementById("tableCountInfo").textContent = summaryTxt;
 
-      document.getElementById("tableCountInfo").textContent =
-        `進行中/未開賽 ${activeEvents.length} 筆 ＋ 已完賽 ${sortedCompleted.length} 筆（${isCompletedOpen ? "已展開" : "已收折"}）｜全站共 ${events.length} 場`;
-
-      // KPI Strip
-      const counts = { total: events.length, live: 0, open: 0, upcoming: 0, ready: 0, yixueVerified: 0, urgent: 0 };
-      events.forEach(e => {
-        const s = computeStatus(e);
-        const info = getEffectiveScheduleInfo(e);
-        if (info.verifiedEntries.length > 0 || info.customNote) counts.yixueVerified++;
-        if (s === "比賽中") counts.live++;
-        else if (s === "報名中") {
-          counts.open++;
-          if (daysBetween(REF_TODAY, e.regEnd) <= 10) counts.urgent++;
-        } else if (s === "即將開放") counts.upcoming++;
-        else if (s === "待開賽") counts.ready++;
-      });
-
-      document.getElementById("kpiStrip").innerHTML = `
-        <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)]">
-          <div class="text-[var(--muted-foreground)]">收錄核對賽事 (100%專屬頁)</div>
-          <div class="text-base font-bold font-mono mt-0.5">${counts.total} 場</div>
-        </div>
-        <div class="p-2.5 rounded bg-indigo-500/5 border border-indigo-500/30">
-          <div class="text-indigo-600 dark:text-indigo-400 font-semibold">🏫 義學正式賽程已核對</div>
-          <div class="text-base font-bold font-mono mt-0.5 text-indigo-600 dark:text-indigo-400">${counts.yixueVerified} 場 <span class="text-[11px] font-normal text-[var(--muted-foreground)]">(零預猜名單)</span></div>
-        </div>
-        <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)]">
-          <div class="text-emerald-600 dark:text-emerald-400 font-medium">🟢 報名進行中</div>
-          <div class="text-base font-bold font-mono mt-0.5">${counts.open} 場</div>
-        </div>
-        <div class="p-2.5 rounded bg-[var(--background)] border border-red-500/30">
-          <div class="text-red-500 font-medium">🔥 10天內截止 / 今日激戰</div>
-          <div class="text-base font-bold font-mono mt-0.5 text-red-500">${counts.urgent} 截止 / ${counts.live} 開打</div>
-        </div>
-        <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)]">
-          <div class="text-amber-600 dark:text-amber-400 font-medium">🟡 報名截止・待開賽</div>
-          <div class="text-base font-bold font-mono mt-0.5">${counts.ready} 場</div>
-        </div>
-        <div class="p-2.5 rounded bg-[var(--background)] border border-[var(--border)]">
-          <div class="text-blue-500 font-medium">🔵 即將開放報名</div>
-          <div class="text-base font-bold font-mono mt-0.5">${counts.upcoming} 場</div>
-        </div>
-      `;
-
-      // Build Active Groups based on Sort Mode (全國賽置頂於最上方；已報名優先時已報名排第一、全國賽排第二)
-      const selectedRegionNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r));
-      const regionSummaryLabel = selectedRegionNames.length > 0 ? selectedRegionNames.join("＋") : "未勾選地方分區";
-      let activeGroups = [];
-
+      // Active Groups
+      const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
+      let groups = [];
       if (currentSortMode === "registered") {
-        const regActive = activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime);
-        const unregNational = activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime);
-        const unregRegional = activeEvents
-          .filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國")
-          .sort((a, b) => (Number(isExplicitlySkipped(a)) - Number(isExplicitlySkipped(b))) || compareByTime(a, b));
-
-        activeGroups = [
-          {
-            label: "✅ 已報名參賽賽事（已報名優先置頂）",
-            headerStyle: "bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-300",
-            items: regActive
-          },
-          {
-            label: "🏆 全國指標大賽（固定必選置頂）",
-            headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300",
-            items: unregNational
-          },
-          {
-            label: `📅 其他待報名／觀望賽事（${regionSummaryLabel}・依時間排序）`,
-            headerStyle: "bg-[var(--background)]/90 border-l-4 border-blue-500 text-[var(--foreground)]",
-            items: unregRegional
-          }
+        groups = [
+          { label: "✅ 已報名優先", cls: "reg-pri", items: activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
+          { label: `📅 其他賽事 (${regNames})`, cls: "", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
         ];
       } else if (currentSortMode === "region") {
-        const regionDefs = [
-          { key: "全國", label: "🏆 全國指標大賽（固定必選置頂）", headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300" },
-          { key: "北區", label: "🌊 北區賽事（基隆 / 臺北 / 新北 / 桃園 / 新竹 / 宜蘭）", headerStyle: "bg-sky-500/10 border-l-4 border-sky-500 text-[var(--foreground)]" },
-          { key: "中區", label: "⛰️ 中區賽事（苗栗 / 臺中 / 彰化 / 南投 / 雲林）", headerStyle: "bg-teal-500/10 border-l-4 border-teal-500 text-[var(--foreground)]" },
-          { key: "南區", label: "☀️ 南區賽事（嘉義 / 臺南 / 高雄 / 屏東 / 澎湖）", headerStyle: "bg-orange-500/10 border-l-4 border-orange-500 text-[var(--foreground)]" },
-          { key: "東區", label: "🌾 東區賽事（花蓮 / 臺東）", headerStyle: "bg-rose-500/10 border-l-4 border-rose-500 text-[var(--foreground)]" }
+        groups = [
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: "北區", cls: "", items: activeEvents.filter(e => e.region === "北區").sort(compareByTime) },
+          { label: "中區", cls: "", items: activeEvents.filter(e => e.region === "中區").sort(compareByTime) },
+          { label: "南區", cls: "", items: activeEvents.filter(e => e.region === "南區").sort(compareByTime) },
+          { label: "東區", cls: "", items: activeEvents.filter(e => e.region === "東區").sort(compareByTime) }
         ];
-        activeGroups = regionDefs.map(rg => ({
-          label: rg.label,
-          headerStyle: rg.headerStyle,
-          items: activeEvents.filter(e => e.region === rg.key).sort(compareByTime)
-        }));
       } else {
-        // Default: 'time' (時間排序 — 全國賽放到最上面必選置頂，下方依時間排序各已選地區)
-        const nationalActive = activeEvents.filter(e => e.region === "全國").sort(compareByTime);
-        const regionalActive = activeEvents.filter(e => e.region !== "全國").sort(compareByTime);
-        activeGroups = [
-          {
-            label: "🏆 全國指標大賽（固定必選置頂・依時間排序）",
-            headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300",
-            items: nationalActive
-          },
-          {
-            label: `🕒 已選地區進行中／未開賽賽事（${regionSummaryLabel}・依比賽時間排序）`,
-            headerStyle: "bg-[var(--background)]/90 border-l-4 border-blue-500 text-[var(--foreground)]",
-            items: regionalActive
-          }
+        groups = [
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: activeEvents.filter(e => e.region !== "全國").sort(compareByTime) }
         ];
       }
-
-      const nonEmptyActiveGroups = activeGroups.filter(g => g.items.length > 0);
+      const nonEmptyGroups = groups.filter(g => g.items.length > 0);
       const todayLeft = pctPos(REF_TODAY);
 
-      // Completed Collapsible Section HTML for Gantt & Table
-      const completedSummaryNote = completedRegCount > 0 ? `｜含 ${completedRegCount} 場義學已核對/已報名戰績` : "";
-      const searchMatchHint = (q && !isCompletedOpen && sortedCompleted.length > 0)
-        ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 font-semibold text-[11px]">🔍 含 ${sortedCompleted.length} 筆搜尋符合</span>`
-        : "";
+      if (filtered.length === 0) {
+        document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
+        document.getElementById("tableBody").innerHTML = `<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
+        return;
+      }
 
-      const ganttCompletedHtml = sortedCompleted.length > 0 ? `
-        <div onclick="toggleCompletedSection(event)" class="px-2.5 py-2 bg-[var(--background)] hover:bg-[var(--hover-bg)] border-l-4 border-slate-400 cursor-pointer flex flex-wrap items-center justify-between gap-2 select-none transition">
-          <div class="flex flex-wrap items-center gap-2 font-bold text-xs text-[var(--muted-foreground)]">
-            <span>${isCompletedOpen ? "📂" : "📁"} 已完成賽事歸檔區（共 ${sortedCompleted.length} 場${completedSummaryNote}）</span>
-            ${searchMatchHint}
-          </div>
-          <span class="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--card)] text-[11px] font-semibold text-[var(--foreground)]">
-            ${isCompletedOpen ? "點擊收折歷史賽事 ▲" : "點擊展開歷史賽事 ▾"}
-          </span>
+      const doneNote = doneRegCount > 0 ? ` · 義學${doneRegCount}` : "";
+      const ganttDoneHtml = sortedDone.length > 0 ? `
+        <div class="sec-bar collapsible" onclick="toggleCompletedSection(event)">
+          <span>${isDoneOpen ? "▾" : "▸"} 已完賽 (${sortedDone.length}${doneNote})</span>
+          <span class="mono" style="font-size:11px;">${isDoneOpen ? "收折" : "展開"}</span>
         </div>
-        ${isCompletedOpen ? sortedCompleted.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
+        ${isDoneOpen ? sortedDone.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
       ` : "";
 
-      const tableCompletedHtml = sortedCompleted.length > 0 ? `
-        <tr onclick="toggleCompletedSection(event)" class="bg-[var(--background)] hover:bg-[var(--hover-bg)] cursor-pointer select-none transition">
-          <td colspan="10" class="py-2 px-3 border-l-4 border-slate-400">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex flex-wrap items-center gap-2 font-bold text-xs text-[var(--muted-foreground)]">
-                <span>${isCompletedOpen ? "📂" : "📁"} 已完成賽事歸檔區（共 ${sortedCompleted.length} 場${completedSummaryNote}）</span>
-                ${searchMatchHint}
-              </div>
-              <span class="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--card)] text-[11px] font-semibold text-[var(--foreground)]">
-                ${isCompletedOpen ? "點擊收折歷史賽事 ▲" : "點擊展開歷史賽事 ▾"}
-              </span>
+      const tableDoneHtml = sortedDone.length > 0 ? `
+        <tr onclick="toggleCompletedSection(event)" style="cursor:pointer;">
+          <td colspan="10" style="padding:0;">
+            <div class="sec-bar collapsible">
+              <span>${isDoneOpen ? "▾" : "▸"} 已完賽 (${sortedDone.length}${doneNote})</span>
+              <span class="mono" style="font-size:11px;">${isDoneOpen ? "收折" : "展開"}</span>
             </div>
           </td>
         </tr>
-        ${isCompletedOpen ? sortedCompleted.map(ev => renderTableRow(ev, true)).join("") : ""}
+        ${isDoneOpen ? sortedDone.map(ev => renderTableRow(ev, true)).join("") : ""}
       ` : "";
 
-      // Render Gantt
-      if (filtered.length === 0) {
-        document.getElementById("ganttContainer").innerHTML = `<div class="py-8 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事，請調整上方篩選器</div>`;
-        document.getElementById("tableBody").innerHTML = `<tr><td colspan="10" class="py-8 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事，請調整上方篩選器</td></tr>`;
-      } else {
-        const ganttActiveHtml = nonEmptyActiveGroups.map(g => `
-          <div class="${g.headerStyle} px-2.5 py-1.5 font-bold text-xs flex items-center justify-between">
-            <span>${g.label}</span>
-            <span class="font-mono text-[11px] opacity-80">共 ${g.items.length} 場</span>
-          </div>
-          ${g.items.map(ev => renderGanttRow(ev, todayLeft, false)).join("")}
-        `).join("");
-        document.getElementById("ganttContainer").innerHTML = ganttActiveHtml + ganttCompletedHtml;
+      document.getElementById("ganttContainer").innerHTML = nonEmptyGroups.map(g => `
+        <div class="sec-bar ${g.cls}">
+          <span>${g.label}</span>
+          <span class="mono" style="font-size:11px;">${g.items.length}</span>
+        </div>
+        ${g.items.map(ev => renderGanttRow(ev, todayLeft, false)).join("")}
+      `).join("") + ganttDoneHtml;
 
-        const tableActiveHtml = nonEmptyActiveGroups.map(g => `
-          <tr class="${g.headerStyle}">
-            <td colspan="10" class="py-1.5 px-3 font-bold text-xs">
-              <div class="flex items-center justify-between">
-                <span>${g.label}</span>
-                <span class="font-mono text-[11px] opacity-80">共 ${g.items.length} 場</span>
-              </div>
-            </td>
-          </tr>
-          ${g.items.map(ev => renderTableRow(ev, false)).join("")}
-        `).join("");
-        document.getElementById("tableBody").innerHTML = tableActiveHtml + tableCompletedHtml;
-      }
+      document.getElementById("tableBody").innerHTML = nonEmptyGroups.map(g => `
+        <tr>
+          <td colspan="10" style="padding:0;">
+            <div class="sec-bar ${g.cls}">
+              <span>${g.label}</span>
+              <span class="mono" style="font-size:11px;">${g.items.length}</span>
+            </div>
+          </td>
+        </tr>
+        ${g.items.map(ev => renderTableRow(ev, false)).join("")}
+      `).join("") + tableDoneHtml;
     }
 
-    // Event Listeners: Multi-Select Regions (全國必選 + 北區預選)
-    document.getElementById("btnNationalPinned").addEventListener("click", () => {
-      const btn = document.getElementById("btnNationalPinned");
-      btn.classList.add("ring-2", "ring-amber-500");
-      setTimeout(() => btn.classList.remove("ring-2", "ring-amber-500"), 500);
-    });
+    function quickToggleStatus(st) {
+      if (selectedStatuses.has(st)) selectedStatuses.delete(st);
+      else selectedStatuses.add(st);
+      document.querySelectorAll(".st-chk").forEach(c => { c.checked = selectedStatuses.has(c.value); });
+      renderAll();
+    }
 
-    document.querySelectorAll(".reg-toggle-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const reg = btn.getAttribute("data-region");
-        if (selectedRegions.has(reg)) {
-          selectedRegions.delete(reg);
-        } else {
-          selectedRegions.add(reg);
-        }
+    function resetAllFilters() {
+      selectedRegions = new Set(["北區"]);
+      selectedStatuses.clear();
+      selectedTypes.clear();
+      document.querySelectorAll(".st-chk, .type-chk").forEach(c => { c.checked = false; });
+      document.getElementById("onlyRegToggle").checked = false;
+      document.getElementById("onlyYixueToggle").checked = false;
+      document.getElementById("onlyUrgentToggle").checked = false;
+      document.getElementById("onlyFavToggle").checked = false;
+      document.getElementById("hideRestrictedToggle").checked = false;
+      document.getElementById("searchInput").value = "";
+      renderAll();
+    }
+
+    // Bindings
+    document.querySelectorAll(".reg-chk").forEach(chk => {
+      chk.addEventListener("change", () => {
+        if (chk.checked) selectedRegions.add(chk.value);
+        else selectedRegions.delete(chk.value);
         renderAll();
       });
     });
-
     document.getElementById("btnSelectAllRegions").addEventListener("click", () => {
       OPTIONAL_REGIONS.forEach(r => selectedRegions.add(r));
       renderAll();
     });
-
     document.getElementById("btnResetDefaultRegions").addEventListener("click", () => {
       selectedRegions = new Set(["北區"]);
       renderAll();
     });
-
-    // Event Listeners: Sort Modes & Completed Collapse
+    document.querySelectorAll(".st-chk").forEach(chk => {
+      chk.addEventListener("change", () => {
+        if (chk.checked) selectedStatuses.add(chk.value);
+        else selectedStatuses.delete(chk.value);
+        renderAll();
+      });
+    });
+    document.querySelectorAll(".type-chk").forEach(chk => {
+      chk.addEventListener("change", () => {
+        if (chk.checked) selectedTypes.add(chk.value);
+        else selectedTypes.delete(chk.value);
+        renderAll();
+      });
+    });
     document.querySelectorAll(".sort-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         currentSortMode = btn.getAttribute("data-sort");
         renderAll();
       });
     });
-
-    document.getElementById("btnToggleCompleted").addEventListener("click", toggleCompletedSection);
-
-    document.getElementById("btnQuickYixue").addEventListener("click", () => {
-      const chk = document.getElementById("onlyYixueToggle");
-      chk.checked = !chk.checked;
+    ["onlyRegToggle", "onlyYixueToggle", "onlyUrgentToggle", "onlyFavToggle", "hideRestrictedToggle", "chkShowGantt", "chkShowTable", "chkCollapseDone"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderAll);
+    });
+    document.getElementById("searchInput").addEventListener("input", renderAll);
+    document.getElementById("btnClearSearch").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
       renderAll();
     });
+    document.getElementById("btnClearFilters").addEventListener("click", resetAllFilters);
 
-    document.getElementById("statusFilter").addEventListener("change", renderAll);
-    document.getElementById("searchInput").addEventListener("input", renderAll);
-    document.getElementById("onlyFavToggle").addEventListener("change", renderAll);
-    document.getElementById("onlyYixueToggle").addEventListener("change", renderAll);
-
-    // Comments & Feedback Logic
+    // Compact Feedback Notes
     const INITIAL_COMMENTS = [
-      {
-        time: "2026-11-11 17:15",
-        author: "系統資料核對員 (v2.7)",
-        type: "功能建議",
-        content: "已將甘特圖與賽事觀測時程調整為「往前 2 個月 ～ 往後 8 個月」（2026/09 ～ 2027/07 共 11 個月）：清理 2026/08 以前已逾觀測窗之過期賽事，並依中華羽協 116 年度工作計畫行事曆 PDF 與固定年度檔期補齊 2027/06 ～ 2027/07 暑期賽事（久樘國小盃、Super Kids、港都/臺北群岳盃、羽協暑期育樂營、第二次全國青少年U15錦標賽、葛瑪蘭全國羽球賽），全區間共收錄 50 場國小相關盃賽（含 5 場義學國小已公告正式賽程核對賽事）！"
-      },
-      {
-        time: "2026-11-11 16:40",
-        author: "系統資料核對員 (v2.6.1)",
-        type: "賽程名單",
-        content: "已複查《115年全國國小盃羽球錦標賽》中華羽協官網專區 (id=226)：11/05 報名結果與 11/06 抽籤結果已公告（正式賽程表尚未公布），經與校網及 FB 社團確認本屆義學國小「未報名參賽」，已更新標記為「⚪ 本屆義學國小未報名參賽 (已確認)」！"
-      },
-      {
-        time: "2026-11-11 12:15",
-        author: "系統資料核對員 (v2.6)",
-        type: "賽程名單",
-        content: "防呆規範提醒：1. 點選甘特圖🟦藍色區段可查看報名章程與可報國小組別，點選🟩/🟥比賽區段可查看義學國小正式賽程名單；2. 嚴格僅保留已公告正式賽程表/秩序冊之義學名單，未出賽程表賽事全數防呆鎖定；3. 全站 100% 採用最高關聯報名網址並完成 FB 羽球社團核對（注意：高雄市長盃明天 11/12 報名截止）！"
-      }
+      { time: "2026-11-11", author: "系統", type: "賽程名單", content: "v2.9 精簡介面・全國必選置頂・北區預選・已完賽收折" }
     ];
-    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v27") || "null") || [...INITIAL_COMMENTS];
+    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v29") || "null") || [...INITIAL_COMMENTS];
 
     function renderComments() {
-      const typeColors = {
-        "賽程名單": "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/40",
-        "情報補充": "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40",
-        "日期勘誤": "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40",
-        "功能建議": "bg-blue-500/15 text-blue-500 border-blue-500/40"
-      };
-      document.getElementById("commentList").innerHTML = comments.map((c, idx) => `
-        <div class="p-2.5 rounded border border-[var(--border)] bg-[var(--background)]/50 flex flex-wrap items-start justify-between gap-2">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded border text-xs font-medium ${typeColors[c.type] || ""}">${escapeHtml(c.type)}</span>
-              <span class="font-bold text-[var(--foreground)]">${escapeHtml(c.author)}</span>
-              <span class="font-mono text-[var(--muted-foreground)]">#${idx + 1} · ${escapeHtml(c.time)}</span>
-            </div>
-            <p class="text-[var(--foreground)] pl-1 leading-relaxed">${escapeHtml(c.content)}</p>
-          </div>
+      document.getElementById("commentCountBadge").textContent = comments.length;
+      const listEl = document.getElementById("commentList");
+      listEl.classList.toggle("hidden", !commentsExpanded);
+      document.getElementById("btnToggleComments").innerHTML = `${commentsExpanded ? "▾" : "▸"} 紀錄 (<span id="commentCountBadge">${comments.length}</span>)`;
+      listEl.innerHTML = comments.map(c => `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;background:var(--bg-subtle);font-size:11.5px;">
+          <span class="tag tag-muted">${escapeHtml(c.type)}</span>
+          <strong>${escapeHtml(c.author)}</strong>
+          <span class="mono" style="color:var(--text-muted);font-size:11px;">${escapeHtml(c.time)}</span>
+          <span style="flex:1;">${escapeHtml(c.content)}</span>
         </div>
       `).join("");
     }
 
+    document.getElementById("btnToggleComments").addEventListener("click", () => {
+      commentsExpanded = !commentsExpanded;
+      renderComments();
+    });
+
     document.getElementById("btnSubmitComment").addEventListener("click", () => {
       const content = document.getElementById("cContent").value.trim();
       if (!content) return;
-      const author = document.getElementById("cAuthor").value.trim() || "熱心球友/義學家長";
-      const type = document.getElementById("cType").value;
+      const author = document.getElementById("cAuthor").value.trim() || "球友";
+      const checkedRadio = document.querySelector("input[name='cType']:checked");
+      const type = checkedRadio ? checkedRadio.value : "賽程名單";
       const now = new Date();
-      const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       comments.unshift({ time: timeStr, author, type, content });
-      localStorage.setItem("tw_badminton_comments_v27", JSON.stringify(comments));
+      localStorage.setItem("tw_badminton_comments_v29", JSON.stringify(comments));
       document.getElementById("cContent").value = "";
+      commentsExpanded = true;
       renderComments();
     });
 
     document.getElementById("btnExportComments").addEventListener("click", () => {
-      const headers = ["留言時間", "稱呼/身份", "分類", "留言內容"];
       const rows = comments.map(c => [c.time, `"${c.author}"`, c.type, `"${c.content.replace(/"/g, '""')}"`]);
-      const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
+      const csv = "\uFEFF時間,稱呼,分類,內容\n" + rows.map(r => r.join(",")).join("\n");
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `tw_badminton_comments_${REF_TODAY}.csv`;
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+      a.download = `badminton_notes_${REF_TODAY}.csv`;
       a.click();
-      URL.revokeObjectURL(url);
     });
 
-    // Export Full Tournament CSV (including FB Check & Verified Yi-Xue Roster)
     document.getElementById("btnExportCsv").addEventListener("click", () => {
-      const headers = [
-        "區域", "賽事名稱", "比賽場館", "地址", "報名開始", "報名截止",
-        "抽籤/賽程日", "比賽開始", "比賽結束", "狀態", "是否已出正式賽程表",
-        "義學國小核對名單", "參賽年級", "競賽項目", "指定用球", "報名費",
-        "最高關聯章程網址", "官方規程PDF", "正式賽程表網址", "FB社團核對紀錄"
-      ];
+      const headers = ["區域", "已報名", "賽事", "地點", "報名起", "報名迄", "比賽起", "比賽迄", "狀態", "義學名單", "章程網址", "賽程網址"];
       const rows = events.map(e => {
         const info = getEffectiveScheduleInfo(e);
+        const reg = getRegistrationState(e).isRegistered ? "是" : "否";
         return [
-          e.region,
-          `"${e.title.replace(/"/g, '""')}"`,
-          `"${e.venue}"`,
-          `"${e.address}"`,
-          e.regStart,
-          e.regEnd,
-          `"${e.drawDate || ""}"`,
-          e.matchStart,
-          e.matchEnd,
-          computeStatus(e),
-          info.hasSchedule ? "是" : "否(防呆鎖定)",
-          `"${info.rosterText.replace(/"/g, '""')}"`,
-          `"${e.grades}"`,
-          `"${e.eventsList}"`,
-          `"${e.shuttlecock}"`,
-          `"${e.fee}"`,
-          e.url,
-          e.docUrl || "",
-          info.scheduleUrl || "",
-          `"${(e.fbCheck || "").replace(/"/g, '""')}"`
+          e.region, reg, `"${shortTitle(e.title).replace(/"/g, '""')}"`, `"${shortVenue(e.venue)}"`,
+          e.regStart, e.regEnd, e.matchStart, e.matchEnd, computeStatus(e),
+          `"${info.rosterText.replace(/"/g, '""')}"`, e.url, info.scheduleUrl || ""
         ];
       });
       const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `tw_elementary_badminton_${REF_TODAY}_v27.csv`;
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+      a.download = `tw_badminton_${REF_TODAY}_v29.csv`;
       a.click();
-      URL.revokeObjectURL(url);
     });
 
     renderAll();
