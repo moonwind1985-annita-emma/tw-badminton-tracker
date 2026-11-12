@@ -803,7 +803,7 @@
         <div class="gantt-min">
           <div class="gantt-head">
             <div style="display:flex;justify-content:space-between;padding-right:10px;">
-              <span>☆ / 已報 / 區域 / 賽事</span>
+              <span>☆ / 區域 / 賽事</span>
               <span>狀態</span>
             </div>
             <div class="gantt-months">
@@ -830,7 +830,6 @@
           <thead>
             <tr>
               <th style="width:30px;text-align:center;">☆</th>
-              <th style="width:42px;text-align:center;">已報</th>
               <th style="width:62px;">區域</th>
               <th>賽事名稱</th>
               <th style="width:128px;">項目</th>
@@ -2773,14 +2772,11 @@
       `).join("");
 
       document.getElementById("drawerQuickToggles").innerHTML = `
-        <label class="chk-chip ${regState.isVerified ? 'locked' : ''}" onclick="event.stopPropagation()">
-          <input type="checkbox" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onchange="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" />
-          <span>${regState.isVerified ? '已報名(核對)' : '已報名'}</span>
-        </label>
-        <label class="chk-chip" onclick="event.stopPropagation()">
-          <input type="checkbox" ${isFav ? 'checked' : ''} onchange="toggleFav('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" />
-          <span>⭐ 關注</span>
-        </label>
+        ${regState.isVerified
+          ? `<span class="tag tag-yixue">🏫 義學已參賽</span>`
+          : `<button type="button" class="btn btn-xs ${regState.isRegistered ? 'btn-active' : ''}" onclick="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');">${regState.isRegistered ? '✓ 已標記報名' : '＋標記已報'}</button>`
+        }
+        <button type="button" class="btn btn-xs ${isFav ? 'btn-active' : ''}" onclick="toggleFav('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');">${isFav ? '★ 已關注' : '☆ 關注'}</button>
       `;
 
       // Action Buttons Row
@@ -2810,22 +2806,16 @@
         </div>
       `;
 
-      // Checkable Divisions Form
+      // Concise Divisions Keyword Tags
       const divisionsList = (ev.divisions && ev.divisions.length) ? ev.divisions : [ev.grades];
-      const savedDivs = checkedDivisions[ev.id] || [];
       const divisionsBoxHtml = `
         <div class="sub-box ${currentDrawerMode === 'reg' ? 'focus-ring' : ''}">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <strong style="font-size:12px;">🟦 可報組別勾選單</strong>
+            <strong style="font-size:12px;">🟦 可報組別</strong>
             <span class="tag tag-open">✓ 專屬網址 · FB已核對</span>
           </div>
-          <div class="div-list">
-            ${divisionsList.map((d, idx) => `
-              <label class="div-item">
-                <input type="checkbox" ${savedDivs.includes(idx) ? 'checked' : ''} onchange="toggleDivisionCheck('${ev.id}', ${idx})" />
-                <span>${escapeHtml(d)}</span>
-              </label>
-            `).join("")}
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            ${divisionsList.map(d => `<span class="tag tag-muted" style="padding:3px 8px;font-size:12px;">${escapeHtml(d)}</span>`).join("")}
           </div>
         </div>
       `;
@@ -2951,7 +2941,6 @@
           <div class="gantt-info">
             <div class="gantt-info-left">
               <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)" title="關注">${isFav ? "★" : "☆"}</button>
-              <input type="checkbox" class="row-chk ${regState.isVerified ? 'verified' : ''}" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onclick="toggleRegistered('${ev.id}', event)" title="${regState.isVerified ? '義學官方賽程已核對參賽' : '勾選已報名'}" />
               ${regionTag(ev.region)}
               <span class="gantt-title" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev.title))}</span>
             </div>
@@ -2971,7 +2960,6 @@
 
     function renderTableRow(ev, isDone) {
       const isFav = favorites.includes(ev.id);
-      const regState = getRegistrationState(ev);
       const info = getEffectiveScheduleInfo(ev);
       const types = getEventTypes(ev);
       const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
@@ -2980,9 +2968,6 @@
         <tr class="data-row ${isDone ? 'done-row' : ''}" onclick="openDetailDrawer('${ev.id}', 'all')">
           <td style="text-align:center;" onclick="event.stopPropagation()">
             <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)">${isFav ? "★" : "☆"}</button>
-          </td>
-          <td style="text-align:center;" onclick="event.stopPropagation()">
-            <input type="checkbox" class="row-chk ${regState.isVerified ? 'verified' : ''}" ${regState.isRegistered ? 'checked' : ''} ${regState.isVerified ? 'disabled' : ''} onchange="toggleRegistered('${ev.id}', event)" title="${regState.isVerified ? '義學官方賽程已核對' : '勾選已報名'}" />
           </td>
           <td>${regionTag(ev.region)}</td>
           <td style="font-weight:600;">${escapeHtml(shortTitle(ev.title))}</td>
@@ -3165,7 +3150,7 @@
 
       if (filtered.length === 0) {
         document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
-        document.getElementById("tableBody").innerHTML = `<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
+        document.getElementById("tableBody").innerHTML = `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
         return;
       }
 
@@ -3180,7 +3165,7 @@
 
       const tableDoneHtml = sortedDone.length > 0 ? `
         <tr onclick="toggleCompletedSection(event)" style="cursor:pointer;">
-          <td colspan="10" style="padding:0;">
+          <td colspan="9" style="padding:0;">
             <div class="sec-bar collapsible">
               <span>${isDoneOpen ? "▾" : "▸"} 已完賽 (${sortedDone.length}${doneNote})</span>
               <span class="mono" style="font-size:11px;">${isDoneOpen ? "收折" : "展開"}</span>
@@ -3200,7 +3185,7 @@
 
       document.getElementById("tableBody").innerHTML = nonEmptyGroups.map(g => `
         <tr>
-          <td colspan="10" style="padding:0;">
+          <td colspan="9" style="padding:0;">
             <div class="sec-bar ${g.cls}">
               <span>${g.label}</span>
               <span class="mono" style="font-size:11px;">${g.items.length}</span>
