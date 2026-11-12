@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TW-ElemBadminton Tracker v2.7 // 全臺國小羽球賽事時序（往前2個月・往後8個月）、專屬章程、FB核對與義學正式賽程追蹤</title>
-  <meta name="description" content="全臺國小羽球盃賽時序追蹤器 v2.7 — 涵蓋往前2個月至往後8個月（2026/09～2027/07）北中南東與全國賽事雙區段互動甘特圖、最高關聯報名章程、FB社團交叉核對與新北市義學國小正式賽程名單防呆管理。" />
+  <title>TW-ElemBadminton Tracker v2.8 // 全臺國小羽球賽事時序（全國必選置頂・北區預選・已完賽收折・三維排序）</title>
+  <meta name="description" content="全臺國小羽球盃賽時序追蹤器 v2.8 — 全國賽必選置頂、北區預選多區切換、已完成賽事收折歸檔，支援時間排序、地區排序、已報名優先排序與義學國小正式賽程防呆管理。" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -84,7 +84,7 @@
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-1.5">
           <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono font-bold text-xs tracking-wide shadow-sm">GO/TW-BADMINTON</span>
-          <span class="hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-semibold">v2.7 VERIFIED</span>
+          <span class="hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-semibold">v2.8 VERIFIED</span>
         </div>
         <div>
           <h1 class="text-base font-bold text-[var(--foreground)] flex flex-wrap items-center gap-2">
@@ -92,7 +92,7 @@
             <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-[11px] font-semibold">🏫 新北市義學國小正式賽程核對版</span>
           </h1>
           <p class="text-[var(--muted-foreground)] text-xs mt-0.5">
-            基準日：<span id="refDateDisplay" class="font-mono font-semibold text-[var(--foreground)]">2026-11-11</span> ｜ 觀測時程：<strong class="text-[var(--foreground)]">2026-09 至 2027-07（往前2個月・往後8個月）</strong> ｜ 已交叉核對：中華羽協、MY Livescore OpenID、LAPGO、義學國小校網與 FB 羽球社團
+            基準日：<span id="refDateDisplay" class="font-mono font-semibold text-[var(--foreground)]">2026-11-11</span> ｜ 觀測時程：<strong class="text-[var(--foreground)]">2026-09 至 2027-07（往前2個月・往後8個月）</strong> ｜ 全國賽固定必選置頂・北區預選・已完賽自動收折
           </p>
         </div>
       </div>
@@ -123,7 +123,7 @@
       <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono font-bold text-[11px]">STRICT POLICY</span>
       <span class="text-[var(--muted-foreground)]">
         ① <strong class="text-[var(--foreground)]">點選甘特圖 🟦 藍色斜線「報名區段」</strong>：檢視比賽地點、可報國小項目清單與<strong class="text-blue-500">最高關聯報名章程網頁</strong>；
-        ② <strong class="text-[var(--foreground)]">點選 🟩/🟥「比賽區段」</strong>：檢視<strong class="text-emerald-500">已公告官方正式賽程表 / 秩序冊</strong>核對後之「義學國小」參賽項目與選手人名（未出正式賽程表一律 🔒 防呆鎖定絕不預填臆測名單）。
+        ② <strong class="text-[var(--foreground)]">點選 🟩/🟥「比賽區段」</strong>：檢視<strong class="text-emerald-500">已公告官方正式賽程表 / 秩序冊</strong>核對後之「義學國小」參賽項目與選手人名（未出正式賽程表一律 🔒 防呆鎖定；可按 <strong class="text-emerald-600 dark:text-emerald-400">＋報名</strong> 標記優先追蹤）。
       </span>
     </div>
     <button id="btnQuickYixue" class="px-2.5 py-1 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/40 hover:bg-indigo-600 hover:text-white font-semibold text-xs transition shrink-0">
@@ -131,40 +131,84 @@
     </button>
   </div>
 
-  <!-- Filter & Search Controls (TOOL 2 Controls) -->
-  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 mb-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-    <div class="flex flex-wrap items-center gap-1.5" id="regionFilters">
-      <span class="text-[var(--muted-foreground)] font-medium mr-1">分區篩選：</span>
-      <button data-region="ALL" class="reg-btn px-2.5 py-1 rounded font-medium bg-blue-600 text-white transition">全部地區</button>
-      <button data-region="全國" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition">全國賽</button>
-      <button data-region="北區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition">北區 (基北桃竹宜)</button>
-      <button data-region="中區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition">中區 (苗中彰投雲)</button>
-      <button data-region="南區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition">南區 (嘉南高屏澎)</button>
-      <button data-region="東區" class="reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition">東區 (花東)</button>
+  <!-- Filter, Multi-Select Region, Sort & Collapse Controls (TOOL 2 Controls) -->
+  <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 mb-3.5 space-y-2.5 shadow-sm">
+    <!-- Row 1: Region Filters (全國必選置頂 + 北區預選 + 多選切換) -->
+    <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--border)]">
+      <div class="flex flex-wrap items-center gap-1.5" id="regionFilters">
+        <span class="text-[var(--muted-foreground)] font-semibold mr-0.5">🗺️ 分區顯示：</span>
+        <button id="btnNationalPinned" type="button" class="px-2.5 py-1 rounded font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/50 shadow-sm flex items-center gap-1 cursor-default" title="全國指標賽事固定必選，並預設排在最上方置頂顯示">
+          <span>📌 🏆 全國賽 (必選置頂)</span>
+          <span id="cntNational" class="font-mono text-[11px] opacity-80"></span>
+        </button>
+        <button type="button" data-region="北區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
+          <span class="reg-check-icon">✓</span>
+          <span>北區 (基北桃竹宜・預選)</span>
+          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
+        </button>
+        <button type="button" data-region="中區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
+          <span class="reg-check-icon hidden">✓</span>
+          <span>中區 (苗中彰投雲)</span>
+          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
+        </button>
+        <button type="button" data-region="南區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
+          <span class="reg-check-icon hidden">✓</span>
+          <span>南區 (嘉南高屏澎)</span>
+          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
+        </button>
+        <button type="button" data-region="東區" class="reg-toggle-btn px-2.5 py-1 rounded font-medium transition flex items-center gap-1">
+          <span class="reg-check-icon hidden">✓</span>
+          <span>東區 (花東)</span>
+          <span class="reg-cnt font-mono text-[11px] opacity-80"></span>
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button id="btnSelectAllRegions" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition">
+          🌏 全選全臺各區
+        </button>
+        <button id="btnResetDefaultRegions" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition" title="恢復預設：全國賽(必選) + 北區(預選)">
+          ↺ 預設 (全國+北區)
+        </button>
+      </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] cursor-pointer select-none">
-        <input id="groupByRegionToggle" type="checkbox" class="accent-blue-600" />
-        <span class="font-medium">依北中南東分組顯示</span>
-      </label>
-      <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-indigo-500/40 bg-indigo-500/5 cursor-pointer select-none">
-        <input id="onlyYixueToggle" type="checkbox" class="accent-indigo-600" />
-        <span class="font-medium text-indigo-600 dark:text-indigo-400">🏫 義學已核對賽程 (<span id="yixueCountBadge">0</span>)</span>
-      </label>
-      <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] cursor-pointer select-none">
-        <input id="onlyFavToggle" type="checkbox" class="accent-amber-500" />
-        <span class="font-medium">⭐ 僅看關注 (<span id="favCountBadge">0</span>)</span>
-      </label>
-      <select id="statusFilter" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs">
-        <option value="ALL">所有賽事狀態</option>
-        <option value="比賽中">🔴 激戰進行中 (LIVE)</option>
-        <option value="報名中">🟢 報名進行中 / 即將截止</option>
-        <option value="即將開放">🔵 尚未開放 / 預定行事曆</option>
-        <option value="待開賽">🟡 報名截止・準備開賽</option>
-        <option value="已結束">⚪ 已完賽</option>
-      </select>
-      <input id="searchInput" type="text" placeholder="搜尋盃賽、義學選手姓名、場館、OpenID..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-56 focus:outline-none focus:border-blue-500" />
+    <!-- Row 2: Sort Modes (時間 / 地區 / 已報名優先) + Completed Collapse + Filters & Search -->
+    <div class="flex flex-wrap items-center justify-between gap-2.5">
+      <div class="flex flex-wrap items-center gap-1.5" id="sortControls">
+        <span class="text-[var(--muted-foreground)] font-semibold mr-0.5">⇅ 排序方式：</span>
+        <button type="button" data-sort="time" class="sort-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white shadow-sm transition">
+          🕒 時間排序
+        </button>
+        <button type="button" data-sort="region" class="sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition">
+          🗺️ 地區排序
+        </button>
+        <button type="button" data-sort="registered" class="sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition">
+          ✅ 已報名優先 (<span id="regCountBadge">0</span>)
+        </button>
+        <button id="btnToggleCompleted" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition flex items-center gap-1" title="展開或收折已結束之歷史賽事">
+          <span>📁 已完成賽事已收折</span>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-indigo-500/40 bg-indigo-500/5 cursor-pointer select-none">
+          <input id="onlyYixueToggle" type="checkbox" class="accent-indigo-600" />
+          <span class="font-medium text-indigo-600 dark:text-indigo-400">🏫 義學已核對 (<span id="yixueCountBadge">0</span>)</span>
+        </label>
+        <label class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] cursor-pointer select-none">
+          <input id="onlyFavToggle" type="checkbox" class="accent-amber-500" />
+          <span class="font-medium">⭐ 關注 (<span id="favCountBadge">0</span>)</span>
+        </label>
+        <select id="statusFilter" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs">
+          <option value="ALL">所有賽事狀態</option>
+          <option value="比賽中">🔴 激戰進行中 (LIVE)</option>
+          <option value="報名中">🟢 報名進行中 / 即將截止</option>
+          <option value="即將開放">🔵 尚未開放 / 預定行事曆</option>
+          <option value="待開賽">🟡 報名截止・準備開賽</option>
+          <option value="已結束">⚪ 已完賽</option>
+        </select>
+        <input id="searchInput" type="text" placeholder="搜尋盃賽、義學選手姓名、場館、OpenID..." class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-xs w-52 sm:w-56 focus:outline-none focus:border-blue-500" />
+      </div>
     </div>
   </section>
 
@@ -172,7 +216,7 @@
   <section class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 mb-4 overflow-x-auto shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
       <div class="font-bold text-sm flex flex-wrap items-center gap-2">
-        <span>📊 TOOL 2：時序雙區段互動甘特圖 (Gantt Timeline: 2026/09 – 2027/07｜往前2個月・往後8個月)</span>
+        <span>📊 TOOL 2：時序雙區段互動甘特圖 (Gantt Timeline: 2026/09 – 2027/07｜全國置頂・已完賽可收折)</span>
         <span class="text-xs font-normal text-[var(--muted-foreground)]">— 點選 🟦 報名條查「章程與可報項目」｜點選 🟩/🟥 比賽條查「義學國小正式賽程名單」</span>
       </div>
       <div class="flex flex-wrap items-center gap-4 text-xs">
@@ -187,7 +231,7 @@
       <!-- Month Header -->
       <div class="grid grid-cols-12 border-b border-[var(--border)] pb-1.5 font-mono text-[var(--muted-foreground)]">
         <div class="col-span-4 pl-2 font-sans font-semibold text-[var(--foreground)] flex items-center justify-between pr-3">
-          <span>分區 / 賽事名稱 (點擊檢視完整詳情)</span>
+          <span>分區 / 報名標記 / 賽事名稱 (點擊檢視詳情)</span>
           <span class="text-[11px] text-[var(--muted-foreground)]">賽程狀態 / 倒數</span>
         </div>
         <div class="col-span-8 grid text-center" style="display:grid;grid-template-columns:repeat(11,minmax(0,1fr));">
@@ -207,14 +251,14 @@
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
       <div>
         <h2 class="font-bold text-sm">📋 全臺國小羽球賽事報名章程、FB 社團核對與義學賽程明細表</h2>
-        <p class="text-[var(--muted-foreground)] text-xs mt-0.5">100% 採用最高關聯賽事專屬頁 (`opid` / 子網域 / 專頁) 與官方規程 PDF；僅已公告正式比賽賽程表並核對無誤之賽事顯示義學國小參賽人名</p>
+        <p class="text-[var(--muted-foreground)] text-xs mt-0.5">全國賽必選置頂、已完成賽事支援一鍵收折展開；點擊「＋報名」可標記已報名賽事供優先排序（正式選手人名仍嚴守官方賽程表防呆鎖定）</p>
       </div>
       <div class="text-xs text-[var(--muted-foreground)] font-mono" id="tableCountInfo">顯示賽事</div>
     </div>
-    <table class="w-full text-left border-collapse min-w-[1080px]">
+    <table class="w-full text-left border-collapse min-w-[1100px]">
       <thead>
         <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] font-semibold bg-[var(--background)]/50">
-          <th class="py-2 px-2 w-8 text-center">關注</th>
+          <th class="py-2 px-2 w-20 text-center">關注 / 報名</th>
           <th class="py-2 px-2">區域</th>
           <th class="py-2 px-2">縣市/場館</th>
           <th class="py-2 px-2">賽事名稱 (點擊總覽)</th>
@@ -1938,9 +1982,14 @@
     ];
 
     let events = [...INITIAL_EVENTS];
-    let currentRegion = "ALL";
+    // 全國賽固定必選置頂；預設勾選「北區」（支援多選北/中/南/東）
+    const OPTIONAL_REGIONS = ["北區", "中區", "南區", "東區"];
+    let selectedRegions = new Set(["北區"]);
+    let currentSortMode = "time"; // 'time' | 'region' | 'registered'
+    let completedCollapsed = true; // 完成的賽事預設自動收折
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
     let favorites = JSON.parse(localStorage.getItem("tw_badminton_favs_v1") || "[]");
+    let manualRegisteredIds = JSON.parse(localStorage.getItem("tw_badminton_reg_ids_v28") || "[]");
     // 儲存使用者在「確認有正式賽程表」後手動補充或更新的義學名單與賽程網址
     let customRosters = JSON.parse(localStorage.getItem("tw_badminton_yixue_rosters_v26") || "{}");
 
@@ -1969,6 +2018,45 @@
     function isYixueRelevant(ev) {
       const info = getEffectiveScheduleInfo(ev);
       return Boolean(info.verifiedEntries.length > 0 || info.customNote);
+    }
+
+    function getRegistrationState(ev) {
+      const verified = isYixueRelevant(ev);
+      const manual = manualRegisteredIds.includes(ev.id);
+      return {
+        isRegistered: verified || manual,
+        isVerified: verified,
+        isManual: manual && !verified
+      };
+    }
+
+    function toggleRegistered(id, e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const ev = events.find(x => x.id === id);
+      if (!ev) return;
+      if (isYixueRelevant(ev)) {
+        alert("此賽事已由官方正式賽程表核對確認義學國小參賽，系統已自動列入「已報名」優先清單！");
+        return;
+      }
+      if (manualRegisteredIds.includes(id)) {
+        manualRegisteredIds = manualRegisteredIds.filter(x => x !== id);
+      } else {
+        manualRegisteredIds.push(id);
+      }
+      localStorage.setItem("tw_badminton_reg_ids_v28", JSON.stringify(manualRegisteredIds));
+      renderAll();
+    }
+
+    function toggleCompletedSection(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      completedCollapsed = !completedCollapsed;
+      renderAll();
     }
 
     // Theme Initialization
@@ -2037,19 +2125,24 @@
 
     function regionBadge(reg) {
       const map = {
-        "全國": "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/40",
+        "全國": "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40",
         "北區": "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/40",
         "中區": "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/40",
         "南區": "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/40",
         "東區": "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
       };
-      return `<span class="px-2 py-0.5 rounded border text-xs font-semibold ${map[reg] || ""}">${reg}</span>`;
+      const prefix = reg === "全國" ? "🏆 " : "";
+      return `<span class="px-2 py-0.5 rounded border text-xs font-semibold ${map[reg] || ""}">${prefix}${reg}</span>`;
     }
 
     function yixueMiniBadge(ev) {
       const info = getEffectiveScheduleInfo(ev);
+      const regState = getRegistrationState(ev);
       if (info.verifiedEntries.length > 0 || info.customNote) {
-        return `<span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-semibold text-[10px] shrink-0" title="已依官方正式賽程表核對義學國小名單">🏫 義學已核對(${info.verifiedEntries.length || 1}組)</span>`;
+        return `<span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-semibold text-[10px] shrink-0" title="已報名參賽（已依官方正式賽程表核對義學國小名單）">🏫 義學已核對(${info.verifiedEntries.length || 1}組)</span>`;
+      }
+      if (regState.isManual) {
+        return `<span onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-semibold text-[10px] shrink-0 cursor-pointer hover:bg-emerald-700 transition" title="已手動標記「已報名」（點擊可取消標記；正式選手人名仍待賽程表公布解鎖）">✅ 已報名</span>`;
       }
       if (ev.yixueNotEntered) {
         return `<span class="px-1.5 py-0.5 rounded bg-gray-500/10 text-[var(--muted-foreground)] border border-[var(--border)] font-medium text-[10px] shrink-0" title="已核對確認本屆義學國小未報名參賽">⚪ 義學未報名</span>`;
@@ -2375,11 +2468,19 @@
 
       document.getElementById("drawerBody").innerHTML = orderedSections;
 
+      const regState = getRegistrationState(ev);
+      const regActionBtnHtml = regState.isVerified
+        ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-3 py-1.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold">🏫 官方賽程已確認參賽</button>`
+        : regState.isManual
+          ? `<button onclick="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-semibold transition">✅ 已標記報名 (點擊取消)</button>`
+          : `<button onclick="toggleRegistered('${ev.id}', event); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white font-medium transition">＋ 標記為已報名</button>`;
+
       document.getElementById("drawerFooter").innerHTML = `
         <div class="flex flex-wrap items-center gap-2">
           <button onclick="toggleFav('${ev.id}'); openDetailDrawer('${ev.id}', '${currentDrawerMode}');" class="px-3 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium">
-            ${isFav ? "⭐ 已加入關注清單" : "☆ 加入關注清單"}
+            ${isFav ? "⭐ 已關注" : "☆ 關注"}
           </button>
+          ${regActionBtnHtml}
           <a href="${buildGoogleCalUrl(ev, 'reg')}" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium">
             📅 報名提醒加日曆
           </a>
@@ -2425,7 +2526,7 @@
       }
     });
 
-    function renderGanttRow(ev, todayLeft) {
+    function renderGanttRow(ev, todayLeft, isCompletedRow = false) {
       const rLeft = pctPos(ev.regStart);
       const rRight = pctPos(ev.regEnd);
       const rWidth = Math.max(1.3, rRight - rLeft);
@@ -2435,8 +2536,14 @@
       const mRight = pctPos(ev.matchEnd);
       const mWidth = Math.max(1.1, mRight - mLeft);
       const isFav = favorites.includes(ev.id);
+      const regState = getRegistrationState(ev);
       const st = computeStatus(ev);
-      const matchBarClass = st === "比賽中" ? "bar-live animate-pulse" : "bar-match";
+      const matchBarClass = st === "比賽中" ? "bar-live animate-pulse" : (isCompletedRow ? "bar-match opacity-70" : "bar-match");
+      const rowToneClass = isCompletedRow ? "bg-[var(--background)]/40 opacity-85" : "";
+
+      const quickRegBtn = (!regState.isRegistered && !ev.yixueNotEntered && !isCompletedRow)
+        ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1 py-0.5 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 text-[10px] font-medium shrink-0 opacity-70 group-hover:opacity-100 transition" title="標記為已報名（用於已報名優先排序）">＋報</button>`
+        : "";
 
       const regSegmentHtml = regEndedBeforeStart
         ? `<div
@@ -2451,16 +2558,17 @@
             onclick="openDetailDrawer('${ev.id}', 'reg', event)"
             ondblclick="openDetailDrawer('${ev.id}', 'reg', event)"
             oncontextmenu="openDetailDrawer('${ev.id}', 'reg', event)"
-            class="absolute top-1 h-4 rounded-sm bar-reg z-20 cursor-pointer transition"
+            class="absolute top-1 h-4 rounded-sm bar-reg z-20 cursor-pointer transition ${isCompletedRow ? 'opacity-70' : ''}"
             style="left:${rLeft}%;width:${rWidth}%;"
             title="🟦【點選查看報名章程 & 可報國小組別】報名期間：${ev.regStart} ~ ${ev.regEnd}"
           ></div>`;
 
       return `
-        <div onclick="openDetailDrawer('${ev.id}', 'all')" class="grid grid-cols-12 items-center py-2 px-1 hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group">
+        <div onclick="openDetailDrawer('${ev.id}', 'all')" class="grid grid-cols-12 items-center py-2 px-1 hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group ${rowToneClass}">
           <div class="col-span-4 pr-3 flex items-center justify-between gap-2 overflow-hidden">
             <div class="flex items-center gap-1.5 truncate">
-              <button onclick="toggleFav('${ev.id}', event)" class="text-sm leading-none hover:scale-110 transition" title="關注此賽事">${isFav ? "⭐" : "☆"}</button>
+              <button onclick="toggleFav('${ev.id}', event)" class="text-sm leading-none hover:scale-110 transition shrink-0" title="關注此賽事">${isFav ? "⭐" : "☆"}</button>
+              ${quickRegBtn}
               ${regionBadge(ev.region)}
               ${yixueMiniBadge(ev)}
               <span class="truncate font-medium group-hover:text-blue-500 transition-colors" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</span>
@@ -2487,11 +2595,20 @@
 
     function renderYixueTableCell(ev) {
       const info = getEffectiveScheduleInfo(ev);
+      const regState = getRegistrationState(ev);
       if (info.verifiedEntries.length > 0 || info.customNote) {
         return `
           <div onclick="openDetailDrawer('${ev.id}', 'match', event)" class="max-w-[240px] cursor-pointer hover:opacity-90">
             <span class="inline-block px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-semibold mb-0.5">✅ 正式賽程已核對 (${info.verifiedEntries.length || 1}組)</span>
             <div class="text-[11px] font-medium text-[var(--foreground)] truncate" title="${escapeHtml(info.rosterText)}">${escapeHtml(info.rosterText)}</div>
+          </div>
+        `;
+      }
+      if (regState.isManual) {
+        return `
+          <div onclick="openDetailDrawer('${ev.id}', 'match', event)" class="max-w-[240px] cursor-pointer">
+            <span class="inline-block px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-semibold mb-0.5">✅ 已標記報名</span>
+            <div class="text-[10px] text-[var(--muted-foreground)] font-mono">${escapeHtml(ev.yixueStatus || `🔒 待賽程表 (${ev.drawDate ? ev.drawDate.slice(5, 10) : "未定"})`)}</div>
           </div>
         `;
       }
@@ -2515,23 +2632,115 @@
       return `<span onclick="openDetailDrawer('${ev.id}', 'match', event)" class="text-[11px] text-[var(--muted-foreground)] font-mono cursor-pointer hover:text-amber-500" title="尚未公告正式比賽賽程表，防呆鎖定禁止預填選手姓名">${escapeHtml(ev.yixueStatus || `🔒 待賽程表 (${ev.drawDate ? ev.drawDate.slice(5, 10) : "未定"})`)}</span>`;
     }
 
+    function renderTableRow(ev, isCompletedRow = false) {
+      const st = computeStatus(ev);
+      const isFav = favorites.includes(ev.id);
+      const info = getEffectiveScheduleInfo(ev);
+      const regState = getRegistrationState(ev);
+      const rowToneClass = isCompletedRow ? "bg-[var(--background)]/40 opacity-85" : "";
+
+      const regToggleCellBtn = regState.isVerified
+        ? `<span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-semibold" title="官方正式賽程表已核對義學參賽">已報</span>`
+        : regState.isManual
+          ? `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-semibold hover:bg-emerald-700 transition" title="點擊取消已報名標記">✓已報</button>`
+          : `<button onclick="toggleRegistered('${ev.id}', event)" class="px-1.5 py-0.5 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 text-[10px] font-medium transition" title="標記為已報名（供已報名優先排序使用）">＋報</button>`;
+
+      return `
+        <tr onclick="openDetailDrawer('${ev.id}', 'all')" class="hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group ${rowToneClass}">
+          <td class="py-2.5 px-2 text-center whitespace-nowrap" onclick="event.stopPropagation()">
+            <div class="inline-flex items-center gap-1.5">
+              <button onclick="toggleFav('${ev.id}', event)" class="text-sm hover:scale-125 transition" title="關注賽事">${isFav ? "⭐" : "☆"}</button>
+              ${regToggleCellBtn}
+            </div>
+          </td>
+          <td class="py-2.5 px-2 whitespace-nowrap">${regionBadge(ev.region)}</td>
+          <td class="py-2.5 px-2 whitespace-nowrap text-[var(--muted-foreground)]">${escapeHtml(ev.venue)}</td>
+          <td class="py-2.5 px-2 font-semibold group-hover:text-blue-500 transition-colors">${escapeHtml(ev.title)}</td>
+          <td class="py-2.5 px-2">${renderYixueTableCell(ev)}</td>
+          <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'reg', event)">
+            <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition" title="點選查看報名章程與可報組別">🟦 ${ev.regStart} ~ ${ev.regEnd.slice(5)}</span>
+          </td>
+          <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'match', event)">
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-emerald-500/20 transition" title="點選查看義學國小正式賽程名單">🏫 ${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</span>
+          </td>
+          <td class="py-2.5 px-2 whitespace-nowrap">
+            <div class="flex items-center gap-1.5">
+              ${statusBadge(st)}
+              ${countdownBadge(ev)}
+            </div>
+          </td>
+          <td class="py-2.5 px-2 whitespace-nowrap" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-1.5">
+              <a href="${ev.url}" target="_blank" rel="noopener" class="text-blue-500 hover:underline font-medium text-[11px]" title="${escapeHtml(ev.url)}">
+                🔗 ${escapeHtml(ev.platform.split(" ")[0])}專頁 ↗
+              </a>
+              ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono hover:bg-emerald-600 hover:text-white transition" title="官方競賽規程或第二驗證頁">規程</a>` : ""}
+              ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-[10px] font-mono hover:bg-indigo-600 hover:text-white transition" title="官方正式比賽賽程表">賽程</a>` : ""}
+            </div>
+          </td>
+          <td class="py-2.5 px-2 whitespace-nowrap text-right" onclick="event.stopPropagation()">
+            <button onclick="openDetailDrawer('${ev.id}', 'all')" class="px-2 py-1 rounded bg-blue-600/10 text-blue-500 border border-blue-500/30 hover:bg-blue-600 hover:text-white font-medium text-[11px] transition">
+              詳情與核對
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
     function renderAll() {
       const statusVal = document.getElementById("statusFilter").value;
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
-      const groupByRegion = document.getElementById("groupByRegionToggle").checked;
       const onlyFav = document.getElementById("onlyFavToggle").checked;
       const onlyYixue = document.getElementById("onlyYixueToggle").checked;
+
+      // Update Region Button States & Counts
+      const regionTotals = { "全國": 0, "北區": 0, "中區": 0, "南區": 0, "東區": 0 };
+      events.forEach(ev => {
+        regionTotals[ev.region] = (regionTotals[ev.region] || 0) + 1;
+      });
+      document.getElementById("cntNational").textContent = `(${regionTotals["全國"] || 0})`;
+      document.querySelectorAll(".reg-toggle-btn").forEach(btn => {
+        const reg = btn.getAttribute("data-region");
+        const isActive = selectedRegions.has(reg);
+        const checkIcon = btn.querySelector(".reg-check-icon");
+        const cntEl = btn.querySelector(".reg-cnt");
+        if (cntEl) cntEl.textContent = `(${regionTotals[reg] || 0})`;
+        if (checkIcon) checkIcon.classList.toggle("hidden", !isActive);
+        btn.className = isActive
+          ? "reg-toggle-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white border border-blue-600 shadow-sm transition flex items-center gap-1"
+          : "reg-toggle-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] text-[var(--foreground)] transition flex items-center gap-1";
+      });
+
+      const isAllSelected = OPTIONAL_REGIONS.every(r => selectedRegions.has(r));
+      const isDefaultSelected = selectedRegions.size === 1 && selectedRegions.has("北區");
+      document.getElementById("btnSelectAllRegions").className = isAllSelected
+        ? "px-2.5 py-1 rounded border border-blue-600 bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold text-xs transition"
+        : "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition";
+      document.getElementById("btnResetDefaultRegions").className = isDefaultSelected
+        ? "px-2.5 py-1 rounded border border-blue-600/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold text-xs transition"
+        : "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] font-medium text-xs transition";
+
+      // Update Sort Button States & Counts
+      const totalRegisteredCount = events.filter(ev => getRegistrationState(ev).isRegistered).length;
+      document.getElementById("regCountBadge").textContent = totalRegisteredCount;
+      document.querySelectorAll(".sort-btn").forEach(btn => {
+        const mode = btn.getAttribute("data-sort");
+        const active = mode === currentSortMode;
+        btn.className = active
+          ? "sort-btn px-2.5 py-1 rounded font-semibold bg-blue-600 text-white shadow-sm transition"
+          : "sort-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] transition";
+      });
 
       const yixueRelevantTotal = events.filter(isYixueRelevant).length;
       document.getElementById("favCountBadge").textContent = favorites.length;
       document.getElementById("yixueCountBadge").textContent = yixueRelevantTotal;
       document.getElementById("crawlerTotalCount").textContent = `${events.length} 場國小相關盃賽`;
 
-      const sorted = [...events].sort((a, b) => a.matchStart.localeCompare(b.matchStart));
-      const filtered = sorted.filter(ev => {
+      // Filter Events (全國賽固定必選顯示！)
+      const filtered = events.filter(ev => {
         const st = computeStatus(ev);
         const info = getEffectiveScheduleInfo(ev);
-        if (currentRegion !== "ALL" && ev.region !== currentRegion) return false;
+        if (ev.region !== "全國" && !selectedRegions.has(ev.region)) return false;
         if (statusVal !== "ALL" && st !== statusVal) return false;
         if (onlyFav && !favorites.includes(ev.id)) return false;
         if (onlyYixue && !isYixueRelevant(ev)) return false;
@@ -2542,7 +2751,58 @@
         return true;
       });
 
-      document.getElementById("tableCountInfo").textContent = `顯示 ${filtered.length} / ${events.length} 筆賽事`;
+      // Split into Active/Upcoming vs Completed (已完成賽事)
+      const activeEvents = filtered.filter(ev => computeStatus(ev) !== "已結束");
+      const completedEvents = filtered.filter(ev => computeStatus(ev) === "已結束");
+
+      // Comparators
+      const REGION_RANK = { "全國": 0, "北區": 1, "中區": 2, "南區": 3, "東區": 4 };
+      const compareByTime = (a, b) =>
+        a.matchStart.localeCompare(b.matchStart) ||
+        a.regEnd.localeCompare(b.regEnd) ||
+        a.id.localeCompare(b.id);
+      const compareByRegionThenTime = (a, b) =>
+        ((REGION_RANK[a.region] ?? 99) - (REGION_RANK[b.region] ?? 99)) ||
+        compareByTime(a, b);
+      const isExplicitlySkipped = (ev) =>
+        Boolean(ev.yixueNotEntered || (ev.yixueStatus && ev.yixueStatus.includes("非跨縣市")));
+      const compareByRegPriority = (a, b) => {
+        const ra = getRegistrationState(a).isRegistered ? 0 : (isExplicitlySkipped(a) ? 2 : 1);
+        const rb = getRegistrationState(b).isRegistered ? 0 : (isExplicitlySkipped(b) ? 2 : 1);
+        if (ra !== rb) return ra - rb;
+        const na = a.region === "全國" ? 0 : 1;
+        const nb = b.region === "全國" ? 0 : 1;
+        if (na !== nb) return na - nb;
+        return compareByTime(a, b);
+      };
+
+      // Sort Completed Events according to currentSortMode
+      const sortedCompleted = [...completedEvents].sort(
+        currentSortMode === "registered"
+          ? compareByRegPriority
+          : currentSortMode === "region"
+            ? compareByRegionThenTime
+            : compareByTime
+      );
+      const completedRegCount = sortedCompleted.filter(ev => getRegistrationState(ev).isRegistered).length;
+      const forceExpandCompleted = statusVal === "已結束" || (activeEvents.length === 0 && sortedCompleted.length > 0);
+      const isCompletedOpen = !completedCollapsed || forceExpandCompleted;
+
+      // Update Top Completed Collapse Button
+      const btnComp = document.getElementById("btnToggleCompleted");
+      if (sortedCompleted.length === 0) {
+        btnComp.innerHTML = `<span>📁 已完賽 (0場)</span>`;
+        btnComp.className = "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] font-medium text-xs transition flex items-center gap-1";
+      } else if (isCompletedOpen) {
+        btnComp.innerHTML = `<span>📂 收折已完成賽事 (${sortedCompleted.length}場) ▲</span>`;
+        btnComp.className = "px-2.5 py-1 rounded border border-slate-500/50 bg-slate-500/10 text-[var(--foreground)] font-semibold text-xs transition flex items-center gap-1";
+      } else {
+        btnComp.innerHTML = `<span>📁 已完賽已收折 (${sortedCompleted.length}場) ▾</span>`;
+        btnComp.className = "px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--hover-bg)] text-[var(--foreground)] font-medium text-xs transition flex items-center gap-1";
+      }
+
+      document.getElementById("tableCountInfo").textContent =
+        `進行中/未開賽 ${activeEvents.length} 筆 ＋ 已完賽 ${sortedCompleted.length} 筆（${isCompletedOpen ? "已展開" : "已收折"}）｜全站共 ${events.length} 場`;
 
       // KPI Strip
       const counts = { total: events.length, live: 0, open: 0, upcoming: 0, ready: 0, yixueVerified: 0, urgent: 0 };
@@ -2585,91 +2845,172 @@
         </div>
       `;
 
-      // Render Gantt
-      const todayLeft = pctPos(REF_TODAY);
-      let ganttHtml = "";
-      if (filtered.length === 0) {
-        ganttHtml = `<div class="py-8 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事，請調整上方篩選器</div>`;
-      } else if (groupByRegion) {
-        const regionOrder = [
-          { key: "全國", label: "🏆 全國指標大賽 (National Tournaments)" },
-          { key: "北區", label: "🌊 北區賽事 (基隆 / 臺北 / 新北 / 桃園 / 新竹 / 宜蘭)" },
-          { key: "中區", label: "⛰️ 中區賽事 (苗栗 / 臺中 / 彰化 / 南投 / 雲林)" },
-          { key: "南區", label: "☀️ 南區賽事 (嘉義 / 臺南 / 高雄 / 屏東 / 澎湖)" },
-          { key: "東區", label: "🌾 東區賽事 (花蓮 / 臺東)" }
-        ];
-        ganttHtml = regionOrder.map(rg => {
-          const groupItems = filtered.filter(e => e.region === rg.key);
-          if (groupItems.length === 0) return "";
-          return `
-            <div class="bg-[var(--background)]/80 px-2 py-1.5 font-bold text-xs text-[var(--foreground)] flex items-center justify-between">
-              <span>${rg.label}</span>
-              <span class="font-mono text-[11px] text-[var(--muted-foreground)]">共 ${groupItems.length} 場</span>
-            </div>
-            ${groupItems.map(ev => renderGanttRow(ev, todayLeft)).join("")}
-          `;
-        }).join("");
-      } else {
-        ganttHtml = filtered.map(ev => renderGanttRow(ev, todayLeft)).join("");
-      }
-      document.getElementById("ganttContainer").innerHTML = ganttHtml;
+      // Build Active Groups based on Sort Mode (全國賽置頂於最上方；已報名優先時已報名排第一、全國賽排第二)
+      const selectedRegionNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r));
+      const regionSummaryLabel = selectedRegionNames.length > 0 ? selectedRegionNames.join("＋") : "未勾選地方分區";
+      let activeGroups = [];
 
-      // Render Table
-      document.getElementById("tableBody").innerHTML = filtered.map(ev => {
-        const st = computeStatus(ev);
-        const isFav = favorites.includes(ev.id);
-        const info = getEffectiveScheduleInfo(ev);
-        return `
-          <tr onclick="openDetailDrawer('${ev.id}', 'all')" class="hover:bg-[var(--hover-bg)] cursor-pointer transition-colors group">
-            <td class="py-2.5 px-2 text-center" onclick="toggleFav('${ev.id}', event)">
-              <button class="text-sm hover:scale-125 transition">${isFav ? "⭐" : "☆"}</button>
-            </td>
-            <td class="py-2.5 px-2 whitespace-nowrap">${regionBadge(ev.region)}</td>
-            <td class="py-2.5 px-2 whitespace-nowrap text-[var(--muted-foreground)]">${escapeHtml(ev.venue)}</td>
-            <td class="py-2.5 px-2 font-semibold group-hover:text-blue-500 transition-colors">${escapeHtml(ev.title)}</td>
-            <td class="py-2.5 px-2">${renderYixueTableCell(ev)}</td>
-            <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'reg', event)">
-              <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition" title="點選查看報名章程與可報組別">🟦 ${ev.regStart} ~ ${ev.regEnd.slice(5)}</span>
-            </td>
-            <td class="py-2.5 px-2 font-mono whitespace-nowrap" onclick="openDetailDrawer('${ev.id}', 'match', event)">
-              <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-emerald-500/20 transition" title="點選查看義學國小正式賽程名單">🏫 ${ev.matchStart} ~ ${ev.matchEnd.slice(5)}</span>
-            </td>
-            <td class="py-2.5 px-2 whitespace-nowrap">
-              <div class="flex items-center gap-1.5">
-                ${statusBadge(st)}
-                ${countdownBadge(ev)}
+      if (currentSortMode === "registered") {
+        const regActive = activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime);
+        const unregNational = activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime);
+        const unregRegional = activeEvents
+          .filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國")
+          .sort((a, b) => (Number(isExplicitlySkipped(a)) - Number(isExplicitlySkipped(b))) || compareByTime(a, b));
+
+        activeGroups = [
+          {
+            label: "✅ 已報名參賽賽事（已報名優先置頂）",
+            headerStyle: "bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-300",
+            items: regActive
+          },
+          {
+            label: "🏆 全國指標大賽（固定必選置頂）",
+            headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300",
+            items: unregNational
+          },
+          {
+            label: `📅 其他待報名／觀望賽事（${regionSummaryLabel}・依時間排序）`,
+            headerStyle: "bg-[var(--background)]/90 border-l-4 border-blue-500 text-[var(--foreground)]",
+            items: unregRegional
+          }
+        ];
+      } else if (currentSortMode === "region") {
+        const regionDefs = [
+          { key: "全國", label: "🏆 全國指標大賽（固定必選置頂）", headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300" },
+          { key: "北區", label: "🌊 北區賽事（基隆 / 臺北 / 新北 / 桃園 / 新竹 / 宜蘭）", headerStyle: "bg-sky-500/10 border-l-4 border-sky-500 text-[var(--foreground)]" },
+          { key: "中區", label: "⛰️ 中區賽事（苗栗 / 臺中 / 彰化 / 南投 / 雲林）", headerStyle: "bg-teal-500/10 border-l-4 border-teal-500 text-[var(--foreground)]" },
+          { key: "南區", label: "☀️ 南區賽事（嘉義 / 臺南 / 高雄 / 屏東 / 澎湖）", headerStyle: "bg-orange-500/10 border-l-4 border-orange-500 text-[var(--foreground)]" },
+          { key: "東區", label: "🌾 東區賽事（花蓮 / 臺東）", headerStyle: "bg-rose-500/10 border-l-4 border-rose-500 text-[var(--foreground)]" }
+        ];
+        activeGroups = regionDefs.map(rg => ({
+          label: rg.label,
+          headerStyle: rg.headerStyle,
+          items: activeEvents.filter(e => e.region === rg.key).sort(compareByTime)
+        }));
+      } else {
+        // Default: 'time' (時間排序 — 全國賽放到最上面必選置頂，下方依時間排序各已選地區)
+        const nationalActive = activeEvents.filter(e => e.region === "全國").sort(compareByTime);
+        const regionalActive = activeEvents.filter(e => e.region !== "全國").sort(compareByTime);
+        activeGroups = [
+          {
+            label: "🏆 全國指標大賽（固定必選置頂・依時間排序）",
+            headerStyle: "bg-amber-500/10 border-l-4 border-amber-500 text-amber-800 dark:text-amber-300",
+            items: nationalActive
+          },
+          {
+            label: `🕒 已選地區進行中／未開賽賽事（${regionSummaryLabel}・依比賽時間排序）`,
+            headerStyle: "bg-[var(--background)]/90 border-l-4 border-blue-500 text-[var(--foreground)]",
+            items: regionalActive
+          }
+        ];
+      }
+
+      const nonEmptyActiveGroups = activeGroups.filter(g => g.items.length > 0);
+      const todayLeft = pctPos(REF_TODAY);
+
+      // Completed Collapsible Section HTML for Gantt & Table
+      const completedSummaryNote = completedRegCount > 0 ? `｜含 ${completedRegCount} 場義學已核對/已報名戰績` : "";
+      const searchMatchHint = (q && !isCompletedOpen && sortedCompleted.length > 0)
+        ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 font-semibold text-[11px]">🔍 含 ${sortedCompleted.length} 筆搜尋符合</span>`
+        : "";
+
+      const ganttCompletedHtml = sortedCompleted.length > 0 ? `
+        <div onclick="toggleCompletedSection(event)" class="px-2.5 py-2 bg-[var(--background)] hover:bg-[var(--hover-bg)] border-l-4 border-slate-400 cursor-pointer flex flex-wrap items-center justify-between gap-2 select-none transition">
+          <div class="flex flex-wrap items-center gap-2 font-bold text-xs text-[var(--muted-foreground)]">
+            <span>${isCompletedOpen ? "📂" : "📁"} 已完成賽事歸檔區（共 ${sortedCompleted.length} 場${completedSummaryNote}）</span>
+            ${searchMatchHint}
+          </div>
+          <span class="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--card)] text-[11px] font-semibold text-[var(--foreground)]">
+            ${isCompletedOpen ? "點擊收折歷史賽事 ▲" : "點擊展開歷史賽事 ▾"}
+          </span>
+        </div>
+        ${isCompletedOpen ? sortedCompleted.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
+      ` : "";
+
+      const tableCompletedHtml = sortedCompleted.length > 0 ? `
+        <tr onclick="toggleCompletedSection(event)" class="bg-[var(--background)] hover:bg-[var(--hover-bg)] cursor-pointer select-none transition">
+          <td colspan="10" class="py-2 px-3 border-l-4 border-slate-400">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2 font-bold text-xs text-[var(--muted-foreground)]">
+                <span>${isCompletedOpen ? "📂" : "📁"} 已完成賽事歸檔區（共 ${sortedCompleted.length} 場${completedSummaryNote}）</span>
+                ${searchMatchHint}
               </div>
-            </td>
-            <td class="py-2.5 px-2 whitespace-nowrap" onclick="event.stopPropagation()">
-              <div class="flex items-center gap-1.5">
-                <a href="${ev.url}" target="_blank" rel="noopener" class="text-blue-500 hover:underline font-medium text-[11px]" title="${escapeHtml(ev.url)}">
-                  🔗 ${escapeHtml(ev.platform.split(" ")[0])}專頁 ↗
-                </a>
-                ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono hover:bg-emerald-600 hover:text-white transition" title="官方競賽規程或第二驗證頁">規程</a>` : ""}
-                ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-[10px] font-mono hover:bg-indigo-600 hover:text-white transition" title="官方正式比賽賽程表">賽程</a>` : ""}
+              <span class="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--card)] text-[11px] font-semibold text-[var(--foreground)]">
+                ${isCompletedOpen ? "點擊收折歷史賽事 ▲" : "點擊展開歷史賽事 ▾"}
+              </span>
+            </div>
+          </td>
+        </tr>
+        ${isCompletedOpen ? sortedCompleted.map(ev => renderTableRow(ev, true)).join("") : ""}
+      ` : "";
+
+      // Render Gantt
+      if (filtered.length === 0) {
+        document.getElementById("ganttContainer").innerHTML = `<div class="py-8 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事，請調整上方篩選器</div>`;
+        document.getElementById("tableBody").innerHTML = `<tr><td colspan="10" class="py-8 text-center text-[var(--muted-foreground)]">無符合篩選條件的賽事，請調整上方篩選器</td></tr>`;
+      } else {
+        const ganttActiveHtml = nonEmptyActiveGroups.map(g => `
+          <div class="${g.headerStyle} px-2.5 py-1.5 font-bold text-xs flex items-center justify-between">
+            <span>${g.label}</span>
+            <span class="font-mono text-[11px] opacity-80">共 ${g.items.length} 場</span>
+          </div>
+          ${g.items.map(ev => renderGanttRow(ev, todayLeft, false)).join("")}
+        `).join("");
+        document.getElementById("ganttContainer").innerHTML = ganttActiveHtml + ganttCompletedHtml;
+
+        const tableActiveHtml = nonEmptyActiveGroups.map(g => `
+          <tr class="${g.headerStyle}">
+            <td colspan="10" class="py-1.5 px-3 font-bold text-xs">
+              <div class="flex items-center justify-between">
+                <span>${g.label}</span>
+                <span class="font-mono text-[11px] opacity-80">共 ${g.items.length} 場</span>
               </div>
-            </td>
-            <td class="py-2.5 px-2 whitespace-nowrap text-right" onclick="event.stopPropagation()">
-              <button onclick="openDetailDrawer('${ev.id}', 'all')" class="px-2 py-1 rounded bg-blue-600/10 text-blue-500 border border-blue-500/30 hover:bg-blue-600 hover:text-white font-medium text-[11px] transition">
-                詳情與核對
-              </button>
             </td>
           </tr>
-        `;
-      }).join("");
+          ${g.items.map(ev => renderTableRow(ev, false)).join("")}
+        `).join("");
+        document.getElementById("tableBody").innerHTML = tableActiveHtml + tableCompletedHtml;
+      }
     }
 
-    // Event Listeners
-    document.querySelectorAll(".reg-btn").forEach(btn => {
+    // Event Listeners: Multi-Select Regions (全國必選 + 北區預選)
+    document.getElementById("btnNationalPinned").addEventListener("click", () => {
+      const btn = document.getElementById("btnNationalPinned");
+      btn.classList.add("ring-2", "ring-amber-500");
+      setTimeout(() => btn.classList.remove("ring-2", "ring-amber-500"), 500);
+    });
+
+    document.querySelectorAll(".reg-toggle-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        currentRegion = btn.getAttribute("data-region");
-        document.querySelectorAll(".reg-btn").forEach(b => {
-          b.className = "reg-btn px-2.5 py-1 rounded font-medium border border-[var(--border)] hover:bg-[var(--hover-bg)] transition";
-        });
-        btn.className = "reg-btn px-2.5 py-1 rounded font-medium bg-blue-600 text-white transition";
+        const reg = btn.getAttribute("data-region");
+        if (selectedRegions.has(reg)) {
+          selectedRegions.delete(reg);
+        } else {
+          selectedRegions.add(reg);
+        }
         renderAll();
       });
     });
+
+    document.getElementById("btnSelectAllRegions").addEventListener("click", () => {
+      OPTIONAL_REGIONS.forEach(r => selectedRegions.add(r));
+      renderAll();
+    });
+
+    document.getElementById("btnResetDefaultRegions").addEventListener("click", () => {
+      selectedRegions = new Set(["北區"]);
+      renderAll();
+    });
+
+    // Event Listeners: Sort Modes & Completed Collapse
+    document.querySelectorAll(".sort-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentSortMode = btn.getAttribute("data-sort");
+        renderAll();
+      });
+    });
+
+    document.getElementById("btnToggleCompleted").addEventListener("click", toggleCompletedSection);
 
     document.getElementById("btnQuickYixue").addEventListener("click", () => {
       const chk = document.getElementById("onlyYixueToggle");
@@ -2679,7 +3020,6 @@
 
     document.getElementById("statusFilter").addEventListener("change", renderAll);
     document.getElementById("searchInput").addEventListener("input", renderAll);
-    document.getElementById("groupByRegionToggle").addEventListener("change", renderAll);
     document.getElementById("onlyFavToggle").addEventListener("change", renderAll);
     document.getElementById("onlyYixueToggle").addEventListener("change", renderAll);
 
