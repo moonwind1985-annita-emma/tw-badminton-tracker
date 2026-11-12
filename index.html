@@ -859,7 +859,7 @@
       </div>
     </section>
 
-    <!-- Gantt Chart Panel (不收折，直接顯示上方勾選之全國＋分區賽事) -->
+    <!-- Gantt Chart Panel (進行中/未開賽直接展開，已完賽預設收折) -->
     <section id="ganttSection" class="panel">
       <div class="panel-head">
         <div class="panel-title">
@@ -868,7 +868,10 @@
           <span class="tag tag-muted">🟩 義學名單</span>
           <span class="tag tag-muted">🟥 LIVE</span>
         </div>
-        <span id="ganttCountInfo" class="mono" style="font-size:12px;color:var(--text-sec);"></span>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;">
+          <span id="ganttCountInfo" class="mono" style="font-size:12px;color:var(--text-sec);"></span>
+          <button id="btnToggleGanttDone" type="button" class="btn btn-xs" onclick="toggleGanttDone(event)">▸ 展開已完賽 (0)</button>
+        </div>
       </div>
       <div id="ganttPanelBody" class="gantt-scroll">
         <div class="gantt-min">
@@ -2541,6 +2544,9 @@
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
     let commentsExpanded = false;
     let isTableBodyOpen = true;
+    // Default for Gantt chart: active/upcoming uncollapsed, finished tournaments collapsed by default
+    let isGanttDoneOpen = false;
+    let ganttDoneClosedDuringSearch = false;
     // Default for below tournament list: ONLY expand registered tournaments in progress or upcoming; collapse all others!
     let openSections = new Set(["reg_active"]);
     let manualClosedDuringFilter = new Set();
@@ -2737,6 +2743,19 @@
 
     function togglePanelBody(which) {
       if (which === "table") isTableBodyOpen = !isTableBodyOpen;
+      renderAll();
+    }
+
+    function toggleGanttDone(e) {
+      if (e) e.stopPropagation();
+      const q = document.getElementById("searchInput").value.trim();
+      const btn = document.getElementById("btnToggleGanttDone");
+      const onlyDoneInSearch = Boolean(q && btn && btn.dataset.onlyDoneSearch === "1");
+      if (onlyDoneInSearch) {
+        ganttDoneClosedDuringSearch = !ganttDoneClosedDuringSearch;
+      } else {
+        isGanttDoneOpen = !isGanttDoneOpen;
+      }
       renderAll();
     }
 
@@ -3215,53 +3234,77 @@
 
       if (filtered.length === 0) {
         document.getElementById("ganttCountInfo").textContent = "0 場";
+        document.getElementById("btnToggleGanttDone").classList.add("hidden");
         document.getElementById("tableCountInfo").textContent = "(0 場)";
         document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
         document.getElementById("tableBody").innerHTML = `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
         return;
       }
 
-      // 1. Gantt Chart: UNCOLLAPSED (shows all filtered events directly according to top filter & sort)
+      const sortedDone = [...completedEvents].sort(
+        currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
+      );
+      const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
+      const doneNote = doneRegCount > 0 ? ` · 含已報完賽${doneRegCount}場` : "";
+
+      // 1. Gantt Chart: Active/upcoming UNCOLLAPSED; already-finished tournaments COLLAPSED by default
       let ganttGroups = [];
       if (currentSortMode === "registered") {
         ganttGroups = [
-          { label: "✅ 已報名・義學優先", cls: "reg-pri", items: filtered.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
-          { label: `📅 分區賽事 (${regNames})`, cls: "", items: filtered.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
+          { label: "✅ 已報名・義學優先", cls: "reg-pri", items: activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
+          { label: `📅 分區賽事 (${regNames})`, cls: "", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
         ];
       } else if (currentSortMode === "region") {
         ganttGroups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: "北區", cls: "", items: filtered.filter(e => e.region === "北區").sort(compareByTime) },
-          { label: "中區", cls: "", items: filtered.filter(e => e.region === "中區").sort(compareByTime) },
-          { label: "南區", cls: "", items: filtered.filter(e => e.region === "南區").sort(compareByTime) },
-          { label: "東區", cls: "", items: filtered.filter(e => e.region === "東區").sort(compareByTime) }
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: "北區", cls: "", items: activeEvents.filter(e => e.region === "北區").sort(compareByTime) },
+          { label: "中區", cls: "", items: activeEvents.filter(e => e.region === "中區").sort(compareByTime) },
+          { label: "南區", cls: "", items: activeEvents.filter(e => e.region === "南區").sort(compareByTime) },
+          { label: "東區", cls: "", items: activeEvents.filter(e => e.region === "東區").sort(compareByTime) }
         ];
       } else {
         ganttGroups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: filtered.filter(e => e.region !== "全國").sort(compareByTime) }
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: activeEvents.filter(e => e.region !== "全國").sort(compareByTime) }
         ];
       }
       const nonEmptyGanttGroups = ganttGroups.filter(g => g.items.length > 0);
-      document.getElementById("ganttCountInfo").textContent = `顯示 ${filtered.length} 場 (全國 + ${regNames})`;
-      document.getElementById("ganttContainer").innerHTML = nonEmptyGanttGroups.map(g => `
+      const onlyDoneSearch = Boolean(q && activeEvents.length === 0 && sortedDone.length > 0);
+      const ganttDoneOpen = sortedDone.length > 0 && (onlyDoneSearch ? !ganttDoneClosedDuringSearch : isGanttDoneOpen);
+
+      const ganttDoneBtn = document.getElementById("btnToggleGanttDone");
+      ganttDoneBtn.dataset.onlyDoneSearch = onlyDoneSearch ? "1" : "0";
+      ganttDoneBtn.classList.toggle("hidden", sortedDone.length === 0);
+      ganttDoneBtn.classList.toggle("btn-active", ganttDoneOpen);
+      ganttDoneBtn.textContent = `${ganttDoneOpen ? "▾ 收折已完賽" : "▸ 展開已完賽"} (${sortedDone.length})`;
+
+      const visibleGanttCount = activeEvents.length + (ganttDoneOpen ? sortedDone.length : 0);
+      document.getElementById("ganttCountInfo").textContent = `展開 ${visibleGanttCount} / 共 ${filtered.length} 場 (全國 + ${regNames})`;
+
+      const ganttActiveHtml = nonEmptyGanttGroups.map(g => `
         <div class="sec-bar ${g.cls}">
           <span>${g.label}</span>
           <span class="mono" style="font-size:12px;">${g.items.length} 場</span>
         </div>
-        ${g.items.map(ev => renderGanttRow(ev, todayLeft, computeStatus(ev) === "已結束")).join("")}
+        ${g.items.map(ev => renderGanttRow(ev, todayLeft, false)).join("")}
       `).join("");
+
+      const ganttDoneHtml = sortedDone.length > 0 ? `
+        <div class="sec-bar collapsible" onclick="toggleGanttDone(event)">
+          <span>${ganttDoneOpen ? "▾" : "▸"} 📁 已完賽歸檔${doneNote} (${sortedDone.length})</span>
+          <span class="sec-toggle-pill">${ganttDoneOpen ? "收折" : "展開"}</span>
+        </div>
+        ${ganttDoneOpen ? sortedDone.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
+      ` : "";
+
+      document.getElementById("ganttContainer").innerHTML = ganttActiveHtml + ganttDoneHtml;
 
       // 2. Below Tournament List (賽事明細清單): Collapsible groups, default ONLY reg_active expanded
       const regActive = activeEvents
         .filter(e => getRegistrationState(e).isRegistered)
         .sort(currentSortMode === "region" ? compareByRegion : compareByTime);
       const unregActive = activeEvents.filter(e => !getRegistrationState(e).isRegistered);
-      const sortedDone = [...completedEvents].sort(
-        currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
-      );
-      const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
 
       let tableGroups = [
         { key: "reg_active", label: "✅ 已報名・義學 (比賽中 / 未比賽)", cls: "reg-pri", items: regActive, isDone: false }
@@ -3286,7 +3329,6 @@
           { key: "regional_unreg", label: `📅 分區賽事・其他未報 (${regNames})`, cls: "", items: unregRegionalItems, isDone: false }
         );
       }
-      const doneNote = doneRegCount > 0 ? ` · 含已報完賽${doneRegCount}場` : "";
       tableGroups.push({
         key: "done",
         label: `📁 已完賽歸檔${doneNote}`,
@@ -3328,6 +3370,8 @@
       selectedStatuses.clear();
       selectedTypes.clear();
       manualClosedDuringFilter.clear();
+      isGanttDoneOpen = false;
+      ganttDoneClosedDuringSearch = false;
       openSections = new Set(["reg_active"]);
       isTableBodyOpen = true;
       document.querySelectorAll(".st-chk, .type-chk").forEach(c => { c.checked = false; });
@@ -3402,6 +3446,7 @@
     });
     document.getElementById("searchInput").addEventListener("input", () => {
       manualClosedDuringFilter.clear();
+      ganttDoneClosedDuringSearch = false;
       renderAll();
     });
     document.getElementById("btnClearSearch").addEventListener("click", () => {
