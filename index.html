@@ -231,30 +231,39 @@
     }
     .stat-chip b { font-family: 'Roboto Mono', monospace; font-weight: 700; }
 
-    /* Control Matrix (Form Rows) */
-    .filter-panel { padding: 10px 14px; display: flex; flex-direction: column; gap: 9px; }
+    /* Control Matrix (Uniform Left-Aligned Form Rows) */
+    .filter-panel { padding: 11px 14px; display: flex; flex-direction: column; gap: 8px; }
     .filter-row {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      align-items: start;
+      gap: 8px;
+      text-align: left;
+    }
+    .filter-controls {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      justify-content: flex-start;
+      gap: 7px;
     }
-    .filter-row + .filter-row {
-      padding-top: 9px;
-      border-top: 1px solid var(--border-light);
+    .filter-divider {
+      height: 1px;
+      background: var(--border-light);
+      margin: 2px 0;
     }
     .group-label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-sec);
-      margin-right: 2px;
       white-space: nowrap;
+      text-align: left;
     }
-    .v-sep {
-      width: 1px;
-      height: 22px;
-      background: var(--border);
-      margin: 0 3px;
+    .filter-row > .group-label {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
     }
 
     /* Checkbox Filter Chips (Large Mobile-Friendly Touch Targets) */
@@ -342,7 +351,8 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      margin-left: auto;
+      justify-content: flex-start;
+      margin-left: 0;
       gap: 8px;
     }
     .search-input {
@@ -686,12 +696,12 @@
     }
     @media (max-width: 768px) {
       .btn, .chk-chip, .seg-btn { min-height: 42px; font-size: 14px; }
+      .filter-row > .group-label { min-height: 42px; font-size: 13.5px; }
       .btn-xs, .stat-chip { min-height: 38px; font-size: 13px; padding: 0 12px; }
       .chk-chip input[type="checkbox"], .chk-chip input[type="radio"] { width: 18px; height: 18px; }
       .search-wrap { width: 100%; margin-left: 0; }
       .search-input, .inp { height: 42px; font-size: 16px; }
       .search-input { width: 100%; }
-      .v-sep { display: none; }
     }
     .kv-grid {
       display: grid;
@@ -780,80 +790,101 @@
   </header>
 
   <main class="workspace">
-    <!-- Checkbox & Button Filter Matrix -->
+    <!-- Checkbox & Button Filter Matrix (全項目統一靠左對齊) -->
     <section class="panel filter-panel" aria-label="篩選與排序表單">
-      <!-- Row 1: 區域勾選 + 狀態勾選 + 檢視勾選 -->
       <div class="filter-row">
         <span class="group-label">區域</span>
-        <label class="chk-chip locked" title="全國賽固定必選並置頂">
-          <input type="checkbox" checked disabled />
-          <span>🏆 全國</span>
-          <span id="cntNational" class="cnt">5</span>
-        </label>
-        <label class="chk-chip">
-          <input type="checkbox" class="reg-chk" value="北區" checked />
-          <span>北區</span>
-          <span class="cnt" data-reg-cnt="北區">0</span>
-        </label>
-        <label class="chk-chip">
-          <input type="checkbox" class="reg-chk" value="中區" />
-          <span>中區</span>
-          <span class="cnt" data-reg-cnt="中區">0</span>
-        </label>
-        <label class="chk-chip">
-          <input type="checkbox" class="reg-chk" value="南區" />
-          <span>南區</span>
-          <span class="cnt" data-reg-cnt="南區">0</span>
-        </label>
-        <label class="chk-chip">
-          <input type="checkbox" class="reg-chk" value="東區" />
-          <span>東區</span>
-          <span class="cnt" data-reg-cnt="東區">0</span>
-        </label>
-        <button id="btnSelectAllRegions" type="button" class="btn btn-xs">全選</button>
-        <button id="btnResetDefaultRegions" type="button" class="btn btn-xs">預設</button>
-
-        <span class="v-sep"></span>
-        <span class="group-label">狀態</span>
-        <label class="chk-chip"><input type="checkbox" class="st-chk" value="比賽中" /><span>🔴 LIVE</span></label>
-        <label class="chk-chip"><input type="checkbox" class="st-chk" value="報名中" /><span>🟢 報名中</span></label>
-        <label class="chk-chip"><input type="checkbox" class="st-chk" value="待開賽" /><span>🟡 待開賽</span></label>
-        <label class="chk-chip"><input type="checkbox" class="st-chk" value="即將開放" /><span>🔵 未開放</span></label>
-
-        <span class="v-sep"></span>
-        <span class="group-label">顯示</span>
-        <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
-        <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>賽事清單</span></label>
+        <div class="filter-controls">
+          <label class="chk-chip locked" title="全國賽固定必選並置頂">
+            <input type="checkbox" checked disabled />
+            <span>🏆 全國</span>
+            <span id="cntNational" class="cnt">5</span>
+          </label>
+          <label class="chk-chip">
+            <input type="checkbox" class="reg-chk" value="北區" checked />
+            <span>北區</span>
+            <span class="cnt" data-reg-cnt="北區">0</span>
+          </label>
+          <label class="chk-chip">
+            <input type="checkbox" class="reg-chk" value="中區" />
+            <span>中區</span>
+            <span class="cnt" data-reg-cnt="中區">0</span>
+          </label>
+          <label class="chk-chip">
+            <input type="checkbox" class="reg-chk" value="南區" />
+            <span>南區</span>
+            <span class="cnt" data-reg-cnt="南區">0</span>
+          </label>
+          <label class="chk-chip">
+            <input type="checkbox" class="reg-chk" value="東區" />
+            <span>東區</span>
+            <span class="cnt" data-reg-cnt="東區">0</span>
+          </label>
+          <button id="btnSelectAllRegions" type="button" class="btn btn-xs">全選</button>
+          <button id="btnResetDefaultRegions" type="button" class="btn btn-xs">預設</button>
+        </div>
       </div>
 
-      <!-- Row 2: 排序按鈕 + 條件勾選 + 組別勾選 + 搜尋 -->
+      <div class="filter-row">
+        <span class="group-label">狀態</span>
+        <div class="filter-controls">
+          <label class="chk-chip"><input type="checkbox" class="st-chk" value="比賽中" /><span>🔴 LIVE</span></label>
+          <label class="chk-chip"><input type="checkbox" class="st-chk" value="報名中" /><span>🟢 報名中</span></label>
+          <label class="chk-chip"><input type="checkbox" class="st-chk" value="待開賽" /><span>🟡 待開賽</span></label>
+          <label class="chk-chip"><input type="checkbox" class="st-chk" value="即將開放" /><span>🔵 未開放</span></label>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="group-label">顯示</span>
+        <div class="filter-controls">
+          <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
+          <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>賽事清單</span></label>
+        </div>
+      </div>
+
+      <div class="filter-divider"></div>
+
       <div class="filter-row">
         <span class="group-label">排序</span>
-        <div class="seg-group" role="group" aria-label="排序方式">
-          <button type="button" data-sort="time" class="seg-btn sort-btn active">🕒 時間</button>
-          <button type="button" data-sort="region" class="seg-btn sort-btn">🗺️ 地區</button>
-          <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名・義學優先 (<span id="regCountBadge">0</span>)</button>
+        <div class="filter-controls">
+          <div class="seg-group" role="group" aria-label="排序方式">
+            <button type="button" data-sort="time" class="seg-btn sort-btn active">🕒 時間</button>
+            <button type="button" data-sort="region" class="seg-btn sort-btn">🗺️ 地區</button>
+            <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名・義學優先 (<span id="regCountBadge">0</span>)</button>
+          </div>
         </div>
+      </div>
 
-        <span class="v-sep"></span>
+      <div class="filter-row">
         <span class="group-label">條件</span>
-        <label class="chk-chip"><input id="onlyRegToggle" type="checkbox" /><span>✅ 已報名・義學 (<span id="regCountBadgeTop">0</span>)</span></label>
-        <label class="chk-chip"><input id="onlyUrgentToggle" type="checkbox" /><span>🔥 10日截止</span></label>
-        <label class="chk-chip"><input id="onlyFavToggle" type="checkbox" /><span>⭐ 關注 (<span id="favCountBadge">0</span>)</span></label>
-        <label class="chk-chip"><input id="hideRestrictedToggle" type="checkbox" /><span>排除外縣市限報</span></label>
+        <div class="filter-controls">
+          <label class="chk-chip"><input id="onlyRegToggle" type="checkbox" /><span>✅ 已報名・義學 (<span id="regCountBadgeTop">0</span>)</span></label>
+          <label class="chk-chip"><input id="onlyUrgentToggle" type="checkbox" /><span>🔥 10日截止</span></label>
+          <label class="chk-chip"><input id="onlyFavToggle" type="checkbox" /><span>⭐ 關注 (<span id="favCountBadge">0</span>)</span></label>
+          <label class="chk-chip"><input id="hideRestrictedToggle" type="checkbox" /><span>排除外縣市限報</span></label>
+        </div>
+      </div>
 
-        <span class="v-sep"></span>
+      <div class="filter-row">
         <span class="group-label">項目</span>
-        <label class="chk-chip"><input type="checkbox" class="type-chk" value="團體" /><span>團體</span></label>
-        <label class="chk-chip"><input type="checkbox" class="type-chk" value="單打" /><span>單打</span></label>
-        <label class="chk-chip"><input type="checkbox" class="type-chk" value="雙打" /><span>雙打</span></label>
-        <label class="chk-chip"><input type="checkbox" class="type-chk" value="親子" /><span>親子</span></label>
+        <div class="filter-controls">
+          <label class="chk-chip"><input type="checkbox" class="type-chk" value="團體" /><span>團體</span></label>
+          <label class="chk-chip"><input type="checkbox" class="type-chk" value="單打" /><span>單打</span></label>
+          <label class="chk-chip"><input type="checkbox" class="type-chk" value="雙打" /><span>雙打</span></label>
+          <label class="chk-chip"><input type="checkbox" class="type-chk" value="親子" /><span>親子</span></label>
+        </div>
+      </div>
 
-        <div class="search-wrap">
-          <button id="btnClearFilters" type="button" class="btn btn-xs hidden">✕ 重設篩選</button>
-          <div style="position:relative;display:inline-flex;align-items:center;flex:1;">
-            <input id="searchInput" type="text" class="search-input" placeholder="🔍 關鍵字 / 選手 / 場館" />
-            <button id="btnClearSearch" type="button" class="search-clear" title="清除">✕</button>
+      <div class="filter-row">
+        <span class="group-label">搜尋</span>
+        <div class="filter-controls">
+          <div class="search-wrap">
+            <div style="position:relative;display:inline-flex;align-items:center;flex:1;">
+              <input id="searchInput" type="text" class="search-input" placeholder="🔍 關鍵字 / 選手 / 場館" />
+              <button id="btnClearSearch" type="button" class="search-clear" title="清除">✕</button>
+            </div>
+            <button id="btnClearFilters" type="button" class="btn btn-xs hidden">✕ 重設篩選</button>
           </div>
         </div>
       </div>
