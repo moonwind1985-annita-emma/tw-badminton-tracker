@@ -70,8 +70,8 @@
       background: var(--bg-app);
       color: var(--text);
       font-family: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
-      font-size: 12.5px;
-      line-height: 1.4;
+      font-size: 13.5px;
+      line-height: 1.45;
       -webkit-font-smoothing: antialiased;
     }
     .mono { font-family: 'Roboto Mono', ui-monospace, monospace; }
@@ -83,7 +83,7 @@
       z-index: 30;
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border);
-      padding: 6px 14px;
+      padding: 8px 14px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -94,21 +94,21 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
     }
     .go-link {
       background: var(--blue);
       color: #fff;
       font-weight: 600;
-      font-size: 11px;
-      padding: 2px 7px;
-      border-radius: 4px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 5px;
       letter-spacing: 0.02em;
     }
     html.dark .go-link { color: #131314; }
     h1.app-title {
       margin: 0 4px 0 0;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       letter-spacing: -0.01em;
     }
@@ -117,21 +117,21 @@
     .workspace {
       max-width: 1560px;
       margin: 0 auto;
-      padding: 10px 14px 28px;
+      padding: 10px 14px 32px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     /* Cards / Panels */
     .panel {
       background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       box-shadow: var(--shadow-sm);
     }
     .panel-head {
-      padding: 7px 12px;
+      padding: 9px 14px;
       border-bottom: 1px solid var(--border-light);
       display: flex;
       flex-wrap: wrap;
@@ -139,7 +139,7 @@
       justify-content: space-between;
       gap: 8px;
       background: var(--bg-subtle);
-      border-radius: 8px 8px 0 0;
+      border-radius: 10px 10px 0 0;
     }
     .panel-head.collapsible-head {
       cursor: pointer;
@@ -149,29 +149,32 @@
     .panel-head.collapsible-head:hover { background: var(--bg-hover); }
     .panel-head.collapsed-head {
       border-bottom: none;
-      border-radius: 8px;
+      border-radius: 10px;
     }
     .panel-title {
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 700;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
     }
 
-    /* Buttons & Interactive Chips */
+    /* Larger Touch-Friendly Buttons & Interactive Chips */
     button, .btn {
       font-family: inherit;
-      font-size: 12px;
+      font-size: 13.5px;
       cursor: pointer;
+      touch-action: manipulation;
     }
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      height: 28px;
-      padding: 0 9px;
-      border-radius: 6px;
+      justify-content: center;
+      gap: 5px;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg-surface);
       color: var(--text);
@@ -196,27 +199,28 @@
     html.dark .btn-primary { color: #131314; }
     .btn-primary:hover { opacity: 0.92; background: var(--blue); }
     .btn-xs {
-      height: 23px;
-      padding: 0 7px;
-      font-size: 11px;
-      border-radius: 4px;
+      min-height: 34px;
+      padding: 0 11px;
+      font-size: 12.5px;
+      border-radius: 7px;
     }
 
     /* KPI / Quick Stat Chips in Appbar */
     .stat-chip {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      height: 24px;
-      padding: 0 8px;
+      gap: 5px;
+      min-height: 34px;
+      padding: 0 12px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--bg-subtle);
       color: var(--text-sec);
-      font-size: 11.5px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.12s;
+      touch-action: manipulation;
     }
     .stat-chip:hover { border-color: var(--blue); color: var(--blue-text); }
     .stat-chip.active {
@@ -225,57 +229,58 @@
       color: var(--blue-text);
       font-weight: 600;
     }
-    .stat-chip b { font-family: 'Roboto Mono', monospace; font-weight: 600; }
+    .stat-chip b { font-family: 'Roboto Mono', monospace; font-weight: 700; }
 
     /* Control Matrix (Form Rows) */
-    .filter-panel { padding: 8px 12px; display: flex; flex-direction: column; gap: 7px; }
+    .filter-panel { padding: 10px 14px; display: flex; flex-direction: column; gap: 9px; }
     .filter-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .filter-row + .filter-row {
-      padding-top: 7px;
+      padding-top: 9px;
       border-top: 1px solid var(--border-light);
     }
     .group-label {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
       color: var(--text-sec);
       margin-right: 2px;
       white-space: nowrap;
     }
     .v-sep {
       width: 1px;
-      height: 18px;
+      height: 22px;
       background: var(--border);
       margin: 0 3px;
     }
 
-    /* Checkbox Filter Chips (Google Filter Chip style) */
+    /* Checkbox Filter Chips (Large Mobile-Friendly Touch Targets) */
     .chk-chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      height: 27px;
-      padding: 0 9px;
-      border-radius: 6px;
+      gap: 7px;
+      min-height: 38px;
+      padding: 0 13px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg-surface);
       color: var(--text);
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 500;
       cursor: pointer;
       user-select: none;
       transition: all 0.12s;
       white-space: nowrap;
+      touch-action: manipulation;
     }
     .chk-chip:hover { background: var(--bg-hover); }
     .chk-chip input[type="checkbox"], .chk-chip input[type="radio"] {
       margin: 0;
-      width: 13.5px;
-      height: 13.5px;
+      width: 17px;
+      height: 17px;
       accent-color: var(--blue);
       cursor: pointer;
     }
@@ -295,32 +300,34 @@
     .chk-chip.locked input { accent-color: var(--amber); cursor: default; }
     .chk-chip .cnt {
       font-family: 'Roboto Mono', monospace;
-      font-size: 11px;
-      opacity: 0.8;
+      font-size: 12px;
+      opacity: 0.85;
     }
 
     /* Segmented Button Group */
     .seg-group {
       display: inline-flex;
+      flex-wrap: wrap;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       background: var(--bg-surface);
     }
     .seg-btn {
-      height: 27px;
-      padding: 0 10px;
+      min-height: 38px;
+      padding: 0 14px;
       border: none;
       border-right: 1px solid var(--border);
       background: transparent;
       color: var(--text-sec);
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       transition: background 0.12s, color 0.12s;
       white-space: nowrap;
+      touch-action: manipulation;
     }
     .seg-btn:last-child { border-right: none; }
     .seg-btn:hover { background: var(--bg-hover); color: var(--text); }
@@ -336,18 +343,18 @@
       display: inline-flex;
       align-items: center;
       margin-left: auto;
-      gap: 6px;
+      gap: 8px;
     }
     .search-input {
-      height: 27px;
-      width: 210px;
-      padding: 0 24px 0 8px;
+      height: 38px;
+      width: 230px;
+      padding: 0 32px 0 11px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--bg-subtle);
       color: var(--text);
       font-family: inherit;
-      font-size: 12px;
+      font-size: 14px;
       outline: none;
     }
     .search-input:focus {
@@ -356,25 +363,26 @@
     }
     .search-clear {
       position: absolute;
-      right: 5px;
+      right: 4px;
       border: none;
       background: transparent;
       color: var(--text-muted);
-      padding: 2px 4px;
-      font-size: 11px;
+      min-width: 30px;
+      min-height: 30px;
+      font-size: 13px;
       display: none;
     }
-    .search-clear.show { display: block; }
+    .search-clear.show { display: inline-flex; align-items: center; justify-content: center; }
 
     /* Tags & Status Pills */
     .tag {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      height: 20px;
-      padding: 0 6px;
-      border-radius: 4px;
-      font-size: 11px;
+      min-height: 23px;
+      padding: 0 7px;
+      border-radius: 5px;
+      font-size: 11.5px;
       font-weight: 600;
       white-space: nowrap;
     }
@@ -393,8 +401,9 @@
 
     /* Section Group Headers (Gantt & Table) */
     .sec-bar {
-      padding: 7px 12px;
-      font-size: 12px;
+      min-height: 42px;
+      padding: 8px 14px;
+      font-size: 13px;
       font-weight: 700;
       background: var(--bg-subtle);
       border-top: 1px solid var(--border-light);
@@ -410,22 +419,32 @@
       cursor: pointer;
       user-select: none;
       transition: filter 0.12s, background 0.12s;
+      touch-action: manipulation;
     }
     .sec-bar.collapsible:hover { filter: brightness(0.97); }
     html.dark .sec-bar.collapsible:hover { filter: brightness(1.14); }
+    .sec-toggle-pill {
+      padding: 4px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+    }
 
     /* Gantt Chart */
     .gantt-scroll { overflow-x: auto; }
-    .gantt-min { min-width: 920px; }
+    .gantt-min { min-width: 940px; }
     .gantt-head, .gantt-row {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 390px 1fr;
       align-items: center;
     }
     .gantt-head {
-      padding: 5px 10px;
+      padding: 7px 12px;
       border-bottom: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-sec);
     }
@@ -436,7 +455,7 @@
       font-family: 'Roboto Mono', monospace;
     }
     .gantt-row {
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-bottom: 1px solid var(--border-light);
       cursor: pointer;
       transition: background 0.1s;
@@ -454,7 +473,7 @@
     .gantt-info-left {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       overflow: hidden;
     }
     .gantt-title {
@@ -466,8 +485,8 @@
     .gantt-row:hover .gantt-title { color: var(--blue-text); }
     .gantt-track {
       position: relative;
-      height: 22px;
-      border-radius: 3px;
+      height: 26px;
+      border-radius: 4px;
       background-color: var(--bg-subtle);
       background-image: linear-gradient(to right, var(--border-light) 1px, transparent 1px);
       background-size: calc(100% / 11) 100%;
@@ -483,9 +502,9 @@
     }
     .bar-reg {
       position: absolute;
-      top: 3px;
-      height: 16px;
-      border-radius: 3px;
+      top: 4px;
+      height: 18px;
+      border-radius: 4px;
       background: repeating-linear-gradient(
         45deg,
         rgba(26, 115, 232, 0.22),
@@ -498,36 +517,36 @@
     }
     .bar-reg-stub {
       position: absolute;
-      top: 3px;
+      top: 4px;
       left: 0;
-      width: 5px;
-      height: 16px;
-      border-radius: 0 3px 3px 0;
+      width: 6px;
+      height: 18px;
+      border-radius: 0 4px 4px 0;
       background: var(--blue);
       opacity: 0.65;
       z-index: 15;
     }
     .bar-match {
       position: absolute;
-      top: 3px;
-      height: 16px;
-      border-radius: 3px;
+      top: 4px;
+      height: 18px;
+      border-radius: 4px;
       background: #1e8e3e;
       border: 1px solid #137333;
       z-index: 20;
     }
     .bar-live {
       position: absolute;
-      top: 3px;
-      height: 16px;
-      border-radius: 3px;
+      top: 4px;
+      height: 18px;
+      border-radius: 4px;
       background: #d93025;
       border: 1px solid #a50e0e;
       z-index: 25;
     }
     .bar-reg:hover, .bar-match:hover, .bar-live:hover {
       filter: brightness(1.1);
-      transform: scaleY(1.1);
+      transform: scaleY(1.08);
     }
 
     /* Dense Buganizer Data Table */
@@ -539,8 +558,8 @@
       text-align: left;
     }
     .b-table th {
-      padding: 6px 8px;
-      font-size: 11px;
+      padding: 8px 10px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-sec);
       background: var(--bg-surface);
@@ -548,7 +567,7 @@
       white-space: nowrap;
     }
     .b-table td {
-      padding: 6px 8px;
+      padding: 9px 10px;
       border-bottom: 1px solid var(--border-light);
       vertical-align: middle;
     }
@@ -558,25 +577,23 @@
     .star-btn {
       border: none;
       background: transparent;
-      padding: 0 2px;
-      font-size: 13px;
+      min-width: 34px;
+      min-height: 34px;
+      padding: 0;
+      font-size: 17px;
       line-height: 1;
       color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
     }
+    .star-btn:hover { background: var(--bg-subtle); }
     .star-btn.on { color: #f9ab00; }
-    .row-chk {
-      width: 14px;
-      height: 14px;
-      margin: 0;
-      accent-color: var(--green);
-      cursor: pointer;
-      vertical-align: middle;
-    }
-    .row-chk.verified { accent-color: var(--indigo); }
 
     /* Compact Feedback Bar */
     .feedback-bar {
-      padding: 8px 12px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -585,17 +602,17 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .inp {
-      height: 28px;
-      padding: 0 8px;
+      height: 38px;
+      padding: 0 11px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--bg-subtle);
       color: var(--text);
       font-family: inherit;
-      font-size: 12px;
+      font-size: 14px;
       outline: none;
     }
     .inp:focus { background: var(--bg-surface); border-color: var(--blue); }
@@ -614,7 +631,7 @@
       top: 0;
       right: 0;
       bottom: 0;
-      width: min(600px, 95vw);
+      width: min(620px, 96vw);
       background: var(--bg-surface);
       border-left: 1px solid var(--border);
       box-shadow: var(--shadow-drawer);
@@ -623,14 +640,14 @@
       z-index: 51;
     }
     .drawer-head {
-      padding: 12px 14px 10px;
+      padding: 14px 16px 12px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
     .drawer-body {
-      padding: 12px 14px;
+      padding: 14px 16px;
       overflow-y: auto;
       flex: 1;
       display: flex;
@@ -638,19 +655,19 @@
       gap: 12px;
     }
     .drawer-foot {
-      padding: 12px 14px;
+      padding: 12px 16px 14px;
       border-top: 1px solid var(--border);
       background: var(--bg-surface);
     }
     .btn-close-large {
       width: 100%;
-      height: 44px;
+      height: 48px;
       border: 1px solid var(--blue);
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--blue-bg);
       color: var(--blue-text);
       font-family: inherit;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.06em;
       cursor: pointer;
@@ -658,6 +675,7 @@
       align-items: center;
       justify-content: center;
       transition: background 0.12s, color 0.12s;
+      touch-action: manipulation;
     }
     .btn-close-large:hover {
       background: var(--blue);
@@ -665,6 +683,15 @@
     }
     html.dark .btn-close-large:hover {
       color: #131314;
+    }
+    @media (max-width: 768px) {
+      .btn, .chk-chip, .seg-btn { min-height: 42px; font-size: 14px; }
+      .btn-xs, .stat-chip { min-height: 38px; font-size: 13px; padding: 0 12px; }
+      .chk-chip input[type="checkbox"], .chk-chip input[type="radio"] { width: 18px; height: 18px; }
+      .search-wrap { width: 100%; margin-left: 0; }
+      .search-input, .inp { height: 42px; font-size: 16px; }
+      .search-input { width: 100%; }
+      .v-sep { display: none; }
     }
     .kv-grid {
       display: grid;
@@ -796,10 +823,7 @@
         <span class="v-sep"></span>
         <span class="group-label">顯示</span>
         <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
-        <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>明細表</span></label>
-        <button id="btnCollapseDefault" type="button" class="btn btn-xs btn-active" title="僅展開已報名之進行中與未開賽賽事，其他全部收折">預設收折</button>
-        <button id="btnExpandAll" type="button" class="btn btn-xs" title="展開所有賽事分組">展開全部</button>
-        <button id="btnCollapseAll" type="button" class="btn btn-xs" title="收折所有賽事分組">全部收折</button>
+        <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>賽事清單</span></label>
       </div>
 
       <!-- Row 2: 排序按鈕 + 條件勾選 + 組別勾選 + 搜尋 -->
@@ -808,13 +832,12 @@
         <div class="seg-group" role="group" aria-label="排序方式">
           <button type="button" data-sort="time" class="seg-btn sort-btn active">🕒 時間</button>
           <button type="button" data-sort="region" class="seg-btn sort-btn">🗺️ 地區</button>
-          <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名優先 (<span id="regCountBadge">0</span>)</button>
+          <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名・義學優先 (<span id="regCountBadge">0</span>)</button>
         </div>
 
         <span class="v-sep"></span>
         <span class="group-label">條件</span>
-        <label class="chk-chip"><input id="onlyRegToggle" type="checkbox" /><span>✅ 已報名</span></label>
-        <label class="chk-chip"><input id="onlyYixueToggle" type="checkbox" /><span>🏫 義學 (<span id="yixueCountBadge">0</span>)</span></label>
+        <label class="chk-chip"><input id="onlyRegToggle" type="checkbox" /><span>✅ 已報名・義學 (<span id="regCountBadgeTop">0</span>)</span></label>
         <label class="chk-chip"><input id="onlyUrgentToggle" type="checkbox" /><span>🔥 10日截止</span></label>
         <label class="chk-chip"><input id="onlyFavToggle" type="checkbox" /><span>⭐ 關注 (<span id="favCountBadge">0</span>)</span></label>
         <label class="chk-chip"><input id="hideRestrictedToggle" type="checkbox" /><span>排除外縣市限報</span></label>
@@ -828,7 +851,7 @@
 
         <div class="search-wrap">
           <button id="btnClearFilters" type="button" class="btn btn-xs hidden">✕ 重設篩選</button>
-          <div style="position:relative;display:inline-flex;align-items:center;">
+          <div style="position:relative;display:inline-flex;align-items:center;flex:1;">
             <input id="searchInput" type="text" class="search-input" placeholder="🔍 關鍵字 / 選手 / 場館" />
             <button id="btnClearSearch" type="button" class="search-clear" title="清除">✕</button>
           </div>
@@ -836,20 +859,16 @@
       </div>
     </section>
 
-    <!-- Gantt Chart Panel -->
+    <!-- Gantt Chart Panel (不收折，直接顯示上方勾選之全國＋分區賽事) -->
     <section id="ganttSection" class="panel">
-      <div id="ganttPanelHead" class="panel-head collapsible-head" onclick="togglePanelBody('gantt')">
+      <div class="panel-head">
         <div class="panel-title">
-          <span id="ganttPanelArrow">▾</span>
           <span>📊 時序甘特圖</span>
           <span class="tag tag-muted">🟦 章程/組別</span>
           <span class="tag tag-muted">🟩 義學名單</span>
           <span class="tag tag-muted">🟥 LIVE</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="ganttCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
-          <span id="ganttPanelBtnTxt" class="btn btn-xs">收折圖表</span>
-        </div>
+        <span id="ganttCountInfo" class="mono" style="font-size:12px;color:var(--text-sec);"></span>
       </div>
       <div id="ganttPanelBody" class="gantt-scroll">
         <div class="gantt-min">
@@ -869,31 +888,34 @@
       </div>
     </section>
 
-    <!-- Dense Data Table Panel -->
+    <!-- Collapsible Tournament List Panel (整區可收折，預設僅展開已報名之進行中/未比賽) -->
     <section id="tableSection" class="panel">
       <div id="tablePanelHead" class="panel-head collapsible-head" onclick="togglePanelBody('table')">
         <div class="panel-title">
           <span id="tablePanelArrow">▾</span>
           <span>📋 賽事明細清單</span>
+          <span id="tableCountInfo" class="mono" style="font-size:12px;font-weight:500;color:var(--text-sec);"></span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="tableCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
-          <span id="tablePanelBtnTxt" class="btn btn-xs">收折清單</span>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;" onclick="event.stopPropagation()">
+          <button id="btnCollapseDefault" type="button" class="btn btn-xs btn-active">預設(已報待賽)</button>
+          <button id="btnExpandAll" type="button" class="btn btn-xs">展開全部</button>
+          <button id="btnCollapseAll" type="button" class="btn btn-xs">全部收折</button>
+          <button type="button" id="tablePanelBtnTxt" class="btn btn-xs" onclick="togglePanelBody('table')">▾ 收折整份清單</button>
         </div>
       </div>
       <div id="tablePanelBody" class="table-scroll">
         <table class="b-table">
           <thead>
             <tr>
-              <th style="width:30px;text-align:center;">☆</th>
-              <th style="width:62px;">區域</th>
+              <th style="width:36px;text-align:center;">☆</th>
+              <th style="width:68px;">區域</th>
               <th>賽事名稱</th>
-              <th style="width:128px;">項目</th>
-              <th style="width:145px;">地點</th>
-              <th style="width:118px;">報名截止</th>
-              <th style="width:108px;">比賽日期</th>
-              <th style="width:190px;">義學名單 / 賽程狀態</th>
-              <th style="width:140px;text-align:right;">快速連結</th>
+              <th style="width:132px;">項目</th>
+              <th style="width:150px;">地點</th>
+              <th style="width:124px;">報名截止</th>
+              <th style="width:112px;">比賽日期</th>
+              <th style="width:195px;">義學名單 / 賽程狀態</th>
+              <th style="width:170px;text-align:right;">快速連結</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -2518,9 +2540,8 @@
     let currentSortMode = "time"; // 'time' | 'region' | 'registered'
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
     let commentsExpanded = false;
-    let isGanttBodyOpen = true;
     let isTableBodyOpen = true;
-    // Default: ONLY expand registered tournaments that are in progress or upcoming; collapse all others!
+    // Default for below tournament list: ONLY expand registered tournaments in progress or upcoming; collapse all others!
     let openSections = new Set(["reg_active"]);
     let manualClosedDuringFilter = new Set();
 
@@ -2715,7 +2736,6 @@
     }
 
     function togglePanelBody(which) {
-      if (which === "gantt") isGanttBodyOpen = !isGanttBodyOpen;
       if (which === "table") isTableBodyOpen = !isTableBodyOpen;
       renderAll();
     }
@@ -3079,7 +3099,6 @@
       document.getElementById("btnClearSearch").classList.toggle("show", Boolean(q));
 
       const onlyReg = document.getElementById("onlyRegToggle").checked;
-      const onlyYixue = document.getElementById("onlyYixueToggle").checked;
       const onlyUrgent = document.getElementById("onlyUrgentToggle").checked;
       const onlyFav = document.getElementById("onlyFavToggle").checked;
       const hideRestricted = document.getElementById("hideRestrictedToggle").checked;
@@ -3089,20 +3108,15 @@
       document.getElementById("ganttSection").classList.toggle("hidden", !showGantt);
       document.getElementById("tableSection").classList.toggle("hidden", !showTable);
 
-      // Sync Panel Whole-Collapse State
-      document.getElementById("ganttPanelBody").classList.toggle("hidden", !isGanttBodyOpen);
-      document.getElementById("ganttPanelHead").classList.toggle("collapsed-head", !isGanttBodyOpen);
-      document.getElementById("ganttPanelArrow").textContent = isGanttBodyOpen ? "▾" : "▸";
-      document.getElementById("ganttPanelBtnTxt").textContent = isGanttBodyOpen ? "收折圖表" : "展開圖表";
-
+      // Sync Table Whole-List Collapse State
       document.getElementById("tablePanelBody").classList.toggle("hidden", !isTableBodyOpen);
       document.getElementById("tablePanelHead").classList.toggle("collapsed-head", !isTableBodyOpen);
       document.getElementById("tablePanelArrow").textContent = isTableBodyOpen ? "▾" : "▸";
-      document.getElementById("tablePanelBtnTxt").textContent = isTableBodyOpen ? "收折清單" : "展開清單";
+      document.getElementById("tablePanelBtnTxt").textContent = isTableBodyOpen ? "▾ 收折整份清單" : "▸ 展開整份清單";
 
-      // Sync Collapse Preset Buttons
-      const isDefaultOpenState = !isFilterAutoExpandActive() && openSections.size === 1 && openSections.has("reg_active") && isGanttBodyOpen && isTableBodyOpen;
-      const isAllExpandedState = !isFilterAutoExpandActive() && ALL_GROUP_KEYS.every(k => openSections.has(k)) && isGanttBodyOpen && isTableBodyOpen;
+      // Sync Table Collapse Preset Buttons
+      const isDefaultOpenState = !isFilterAutoExpandActive() && openSections.size === 1 && openSections.has("reg_active") && isTableBodyOpen;
+      const isAllExpandedState = !isFilterAutoExpandActive() && ALL_GROUP_KEYS.every(k => openSections.has(k)) && isTableBodyOpen;
       const isAllCollapsedState = !isFilterAutoExpandActive() && openSections.size === 0;
       document.getElementById("btnCollapseDefault").classList.toggle("btn-active", isDefaultOpenState);
       document.getElementById("btnExpandAll").classList.toggle("btn-active", isAllExpandedState);
@@ -3119,18 +3133,18 @@
         el.textContent = regionTotals[el.getAttribute("data-reg-cnt")] || 0;
       });
 
-      // Sync Sort Buttons
+      // Sync Unified Registered / Yi-Xue Counts & Sort Buttons
       const totalRegCount = events.filter(e => getRegistrationState(e).isRegistered).length;
       document.getElementById("regCountBadge").textContent = totalRegCount;
+      document.getElementById("regCountBadgeTop").textContent = totalRegCount;
       document.querySelectorAll(".sort-btn").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-sort") === currentSortMode);
       });
 
       // Counts & KPIs
-      const counts = { total: events.length, live: 0, open: 0, urgent: 0, yixue: 0 };
+      const counts = { total: events.length, live: 0, open: 0, urgent: 0 };
       events.forEach(e => {
         const s = computeStatus(e);
-        if (isYixueRelevant(e)) counts.yixue++;
         if (s === "比賽中") counts.live++;
         if (s === "報名中") {
           counts.open++;
@@ -3138,7 +3152,6 @@
         }
       });
       document.getElementById("favCountBadge").textContent = favorites.length;
-      document.getElementById("yixueCountBadge").textContent = counts.yixue;
       document.getElementById("crawlerTotalCount").textContent = events.length;
 
       document.getElementById("kpiStrip").innerHTML = `
@@ -3146,11 +3159,11 @@
         <button type="button" class="stat-chip ${selectedStatuses.has('比賽中') ? 'active' : ''}" onclick="quickToggleStatus('比賽中')">🔴 LIVE <b>${counts.live}</b></button>
         <button type="button" class="stat-chip ${selectedStatuses.has('報名中') ? 'active' : ''}" onclick="quickToggleStatus('報名中')">🟢 報名中 <b>${counts.open}</b></button>
         <button type="button" class="stat-chip ${onlyUrgent ? 'active' : ''}" onclick="document.getElementById('onlyUrgentToggle').click()">🔥 10日截止 <b>${counts.urgent}</b></button>
-        <button type="button" class="stat-chip ${onlyYixue ? 'active' : ''}" onclick="document.getElementById('onlyYixueToggle').click()">🏫 義學 <b>${counts.yixue}</b></button>
+        <button type="button" class="stat-chip ${onlyReg ? 'active' : ''}" onclick="document.getElementById('onlyRegToggle').click()">✅ 已報名・義學 <b>${totalRegCount}</b></button>
       `;
 
       const hasCustomFilters = Boolean(
-        q || onlyReg || onlyYixue || onlyUrgent || onlyFav || hideRestricted ||
+        q || onlyReg || onlyUrgent || onlyFav || hideRestricted ||
         selectedStatuses.size > 0 || selectedTypes.size > 0 ||
         !(selectedRegions.size === 1 && selectedRegions.has("北區"))
       );
@@ -3167,7 +3180,6 @@
           if (![...selectedTypes].some(t => evTypes.includes(t))) return false;
         }
         if (onlyReg && !getRegistrationState(ev).isRegistered) return false;
-        if (onlyYixue && !isYixueRelevant(ev)) return false;
         if (onlyUrgent && !(st === "報名中" && daysBetween(REF_TODAY, ev.regEnd) <= 10)) return false;
         if (onlyFav && !favorites.includes(ev.id)) return false;
         if (hideRestricted && isRestrictedOtherCounty(ev)) return false;
@@ -3198,28 +3210,64 @@
         return compareByTime(a, b);
       };
 
+      const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
+      const todayLeft = pctPos(REF_TODAY);
+
+      if (filtered.length === 0) {
+        document.getElementById("ganttCountInfo").textContent = "0 場";
+        document.getElementById("tableCountInfo").textContent = "(0 場)";
+        document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
+        document.getElementById("tableBody").innerHTML = `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
+        return;
+      }
+
+      // 1. Gantt Chart: UNCOLLAPSED (shows all filtered events directly according to top filter & sort)
+      let ganttGroups = [];
+      if (currentSortMode === "registered") {
+        ganttGroups = [
+          { label: "✅ 已報名・義學優先", cls: "reg-pri", items: filtered.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
+          { label: `📅 分區賽事 (${regNames})`, cls: "", items: filtered.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
+        ];
+      } else if (currentSortMode === "region") {
+        ganttGroups = [
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: "北區", cls: "", items: filtered.filter(e => e.region === "北區").sort(compareByTime) },
+          { label: "中區", cls: "", items: filtered.filter(e => e.region === "中區").sort(compareByTime) },
+          { label: "南區", cls: "", items: filtered.filter(e => e.region === "南區").sort(compareByTime) },
+          { label: "東區", cls: "", items: filtered.filter(e => e.region === "東區").sort(compareByTime) }
+        ];
+      } else {
+        ganttGroups = [
+          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: filtered.filter(e => e.region === "全國").sort(compareByTime) },
+          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: filtered.filter(e => e.region !== "全國").sort(compareByTime) }
+        ];
+      }
+      const nonEmptyGanttGroups = ganttGroups.filter(g => g.items.length > 0);
+      document.getElementById("ganttCountInfo").textContent = `顯示 ${filtered.length} 場 (全國 + ${regNames})`;
+      document.getElementById("ganttContainer").innerHTML = nonEmptyGanttGroups.map(g => `
+        <div class="sec-bar ${g.cls}">
+          <span>${g.label}</span>
+          <span class="mono" style="font-size:12px;">${g.items.length} 場</span>
+        </div>
+        ${g.items.map(ev => renderGanttRow(ev, todayLeft, computeStatus(ev) === "已結束")).join("")}
+      `).join("");
+
+      // 2. Below Tournament List (賽事明細清單): Collapsible groups, default ONLY reg_active expanded
       const regActive = activeEvents
         .filter(e => getRegistrationState(e).isRegistered)
         .sort(currentSortMode === "region" ? compareByRegion : compareByTime);
       const unregActive = activeEvents.filter(e => !getRegistrationState(e).isRegistered);
-
       const sortedDone = [...completedEvents].sort(
         currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
       );
       const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
 
-      // Collapsible Groups:
-      // 1. reg_active (已報名・比賽中 / 未開賽) -> Default EXPANDED
-      // 2. nat_unreg (全國賽・其他未報) -> Default COLLAPSED
-      // 3. regional unreg (分區・其他未報) -> Default COLLAPSED
-      // 4. done (已完賽歸檔，含已報完賽與未報完賽) -> Default COLLAPSED
-      const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
-      let groups = [
-        { key: "reg_active", label: "✅ 已報名・比賽中 / 未比賽", cls: "reg-pri", items: regActive, isDone: false }
+      let tableGroups = [
+        { key: "reg_active", label: "✅ 已報名・義學 (比賽中 / 未比賽)", cls: "reg-pri", items: regActive, isDone: false }
       ];
-
       if (currentSortMode === "region") {
-        groups.push(
+        tableGroups.push(
           { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
           { key: "north_unreg", label: "北區・其他未報", cls: "", items: unregActive.filter(e => e.region === "北區").sort(compareByTime), isDone: false },
           { key: "mid_unreg", label: "中區・其他未報", cls: "", items: unregActive.filter(e => e.region === "中區").sort(compareByTime), isDone: false },
@@ -3233,14 +3281,13 @@
             ? ((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b))
             : compareByTime
           );
-        groups.push(
+        tableGroups.push(
           { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
           { key: "regional_unreg", label: `📅 分區賽事・其他未報 (${regNames})`, cls: "", items: unregRegionalItems, isDone: false }
         );
       }
-
       const doneNote = doneRegCount > 0 ? ` · 含已報完賽${doneRegCount}場` : "";
-      groups.push({
+      tableGroups.push({
         key: "done",
         label: `📁 已完賽歸檔${doneNote}`,
         cls: "",
@@ -3248,39 +3295,18 @@
         isDone: true
       });
 
-      const nonEmptyGroups = groups.filter(g => g.items.length > 0);
-      const visibleCount = nonEmptyGroups.reduce((acc, g) => acc + (isGroupOpen(g.key) ? g.items.length : 0), 0);
-      const summaryTxt = `已報進行/待賽 ${regActive.length} · 其他未報 ${unregActive.length} · 已完賽 ${sortedDone.length} (展開 ${visibleCount}/${filtered.length})`;
-      document.getElementById("ganttCountInfo").textContent = summaryTxt;
-      document.getElementById("tableCountInfo").textContent = summaryTxt;
+      const nonEmptyTableGroups = tableGroups.filter(g => g.items.length > 0);
+      const visibleTableCount = nonEmptyTableGroups.reduce((acc, g) => acc + (isGroupOpen(g.key) ? g.items.length : 0), 0);
+      document.getElementById("tableCountInfo").textContent = `展開 ${visibleTableCount} / 共 ${filtered.length} 場`;
 
-      const todayLeft = pctPos(REF_TODAY);
-
-      if (filtered.length === 0) {
-        document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
-        document.getElementById("tableBody").innerHTML = `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
-        return;
-      }
-
-      document.getElementById("ganttContainer").innerHTML = nonEmptyGroups.map(g => {
-        const open = isGroupOpen(g.key);
-        return `
-          <div class="sec-bar collapsible ${g.cls}" onclick="toggleSectionGroup('${g.key}', event)">
-            <span>${open ? "▾" : "▸"} ${g.label} (${g.items.length})</span>
-            <span class="mono" style="font-size:11px;">${open ? "收折" : "展開"}</span>
-          </div>
-          ${open ? g.items.map(ev => renderGanttRow(ev, todayLeft, g.isDone)).join("") : ""}
-        `;
-      }).join("");
-
-      document.getElementById("tableBody").innerHTML = nonEmptyGroups.map(g => {
+      document.getElementById("tableBody").innerHTML = nonEmptyTableGroups.map(g => {
         const open = isGroupOpen(g.key);
         return `
           <tr onclick="toggleSectionGroup('${g.key}', event)" style="cursor:pointer;">
             <td colspan="9" style="padding:0;">
               <div class="sec-bar collapsible ${g.cls}">
                 <span>${open ? "▾" : "▸"} ${g.label} (${g.items.length})</span>
-                <span class="mono" style="font-size:11px;">${open ? "收折" : "展開"}</span>
+                <span class="sec-toggle-pill">${open ? "收折" : "展開"}</span>
               </div>
             </td>
           </tr>
@@ -3303,11 +3329,9 @@
       selectedTypes.clear();
       manualClosedDuringFilter.clear();
       openSections = new Set(["reg_active"]);
-      isGanttBodyOpen = true;
       isTableBodyOpen = true;
       document.querySelectorAll(".st-chk, .type-chk").forEach(c => { c.checked = false; });
       document.getElementById("onlyRegToggle").checked = false;
-      document.getElementById("onlyYixueToggle").checked = false;
       document.getElementById("onlyUrgentToggle").checked = false;
       document.getElementById("onlyFavToggle").checked = false;
       document.getElementById("hideRestrictedToggle").checked = false;
@@ -3319,14 +3343,12 @@
     document.getElementById("btnCollapseDefault").addEventListener("click", () => {
       openSections = new Set(["reg_active"]);
       manualClosedDuringFilter.clear();
-      isGanttBodyOpen = true;
       isTableBodyOpen = true;
       renderAll();
     });
     document.getElementById("btnExpandAll").addEventListener("click", () => {
       openSections = new Set(ALL_GROUP_KEYS);
       manualClosedDuringFilter.clear();
-      isGanttBodyOpen = true;
       isTableBodyOpen = true;
       renderAll();
     });
@@ -3372,7 +3394,7 @@
         renderAll();
       });
     });
-    ["onlyRegToggle", "onlyYixueToggle", "onlyUrgentToggle", "onlyFavToggle", "hideRestrictedToggle", "chkShowGantt", "chkShowTable"].forEach(id => {
+    ["onlyRegToggle", "onlyUrgentToggle", "onlyFavToggle", "hideRestrictedToggle", "chkShowGantt", "chkShowTable"].forEach(id => {
       document.getElementById(id).addEventListener("change", () => {
         manualClosedDuringFilter.clear();
         renderAll();
