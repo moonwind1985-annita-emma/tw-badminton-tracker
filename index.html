@@ -141,6 +141,16 @@
       background: var(--bg-subtle);
       border-radius: 8px 8px 0 0;
     }
+    .panel-head.collapsible-head {
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s;
+    }
+    .panel-head.collapsible-head:hover { background: var(--bg-hover); }
+    .panel-head.collapsed-head {
+      border-bottom: none;
+      border-radius: 8px;
+    }
     .panel-title {
       font-size: 12.5px;
       font-weight: 700;
@@ -171,6 +181,12 @@
       white-space: nowrap;
     }
     .btn:hover { background: var(--bg-hover); }
+    .btn-active {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      color: var(--blue-text);
+      font-weight: 600;
+    }
     .btn-primary {
       background: var(--blue);
       border-color: var(--blue);
@@ -377,8 +393,8 @@
 
     /* Section Group Headers (Gantt & Table) */
     .sec-bar {
-      padding: 5px 10px;
-      font-size: 11.5px;
+      padding: 7px 12px;
+      font-size: 12px;
       font-weight: 700;
       background: var(--bg-subtle);
       border-top: 1px solid var(--border-light);
@@ -393,9 +409,10 @@
     .sec-bar.collapsible {
       cursor: pointer;
       user-select: none;
-      color: var(--text-sec);
+      transition: filter 0.12s, background 0.12s;
     }
-    .sec-bar.collapsible:hover { background: var(--bg-hover); color: var(--text); }
+    .sec-bar.collapsible:hover { filter: brightness(0.97); }
+    html.dark .sec-bar.collapsible:hover { filter: brightness(1.14); }
 
     /* Gantt Chart */
     .gantt-scroll { overflow-x: auto; }
@@ -620,6 +637,35 @@
       flex-direction: column;
       gap: 12px;
     }
+    .drawer-foot {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+    .btn-close-large {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      background: var(--blue-bg);
+      color: var(--blue-text);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s;
+    }
+    .btn-close-large:hover {
+      background: var(--blue);
+      color: #fff;
+    }
+    html.dark .btn-close-large:hover {
+      color: #131314;
+    }
     .kv-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -751,7 +797,9 @@
         <span class="group-label">顯示</span>
         <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
         <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>明細表</span></label>
-        <label class="chk-chip"><input id="chkCollapseDone" type="checkbox" checked /><span>收折已完賽 (<span id="doneCntBadge">0</span>)</span></label>
+        <button id="btnCollapseDefault" type="button" class="btn btn-xs btn-active" title="僅展開已報名之進行中與未開賽賽事，其他全部收折">預設收折</button>
+        <button id="btnExpandAll" type="button" class="btn btn-xs" title="展開所有賽事分組">展開全部</button>
+        <button id="btnCollapseAll" type="button" class="btn btn-xs" title="收折所有賽事分組">全部收折</button>
       </div>
 
       <!-- Row 2: 排序按鈕 + 條件勾選 + 組別勾選 + 搜尋 -->
@@ -790,16 +838,20 @@
 
     <!-- Gantt Chart Panel -->
     <section id="ganttSection" class="panel">
-      <div class="panel-head">
+      <div id="ganttPanelHead" class="panel-head collapsible-head" onclick="togglePanelBody('gantt')">
         <div class="panel-title">
+          <span id="ganttPanelArrow">▾</span>
           <span>📊 時序甘特圖</span>
           <span class="tag tag-muted">🟦 章程/組別</span>
           <span class="tag tag-muted">🟩 義學名單</span>
           <span class="tag tag-muted">🟥 LIVE</span>
         </div>
-        <span id="ganttCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="ganttCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
+          <span id="ganttPanelBtnTxt" class="btn btn-xs">收折圖表</span>
+        </div>
       </div>
-      <div class="gantt-scroll">
+      <div id="ganttPanelBody" class="gantt-scroll">
         <div class="gantt-min">
           <div class="gantt-head">
             <div style="display:flex;justify-content:space-between;padding-right:10px;">
@@ -819,13 +871,17 @@
 
     <!-- Dense Data Table Panel -->
     <section id="tableSection" class="panel">
-      <div class="panel-head">
+      <div id="tablePanelHead" class="panel-head collapsible-head" onclick="togglePanelBody('table')">
         <div class="panel-title">
-          <span>📋 賽事明細表</span>
+          <span id="tablePanelArrow">▾</span>
+          <span>📋 賽事明細清單</span>
         </div>
-        <span id="tableCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="tableCountInfo" class="mono" style="font-size:11px;color:var(--text-sec);"></span>
+          <span id="tablePanelBtnTxt" class="btn btn-xs">收折清單</span>
+        </div>
       </div>
-      <div class="table-scroll">
+      <div id="tablePanelBody" class="table-scroll">
         <table class="b-table">
           <thead>
             <tr>
@@ -871,12 +927,9 @@
   <div id="detailDrawerOverlay" class="overlay">
     <aside class="drawer" onclick="event.stopPropagation()">
       <div class="drawer-head">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <div id="drawerBadges" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
-            <h3 id="drawerTitle" style="margin:0;font-size:15px;font-weight:700;">賽事</h3>
-          </div>
-          <button id="btnCloseDrawer" type="button" class="btn btn-xs mono">✕ ESC</button>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div id="drawerBadges" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+          <h3 id="drawerTitle" style="margin:0;font-size:15px;font-weight:700;">賽事</h3>
         </div>
         <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;">
           <div id="drawerModeTabs" class="seg-group"></div>
@@ -884,6 +937,9 @@
         </div>
       </div>
       <div id="drawerBody" class="drawer-body"></div>
+      <div class="drawer-foot">
+        <button id="btnCloseDrawer" type="button" class="btn-close-large">關閉</button>
+      </div>
     </aside>
   </div>
 
@@ -892,7 +948,6 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border-light);">
         <strong style="font-size:13px;">📡 資料源同步狀態 (<span id="crawlerTotalCount">50</span>場)</strong>
-        <button id="btnCloseCrawlerModal" type="button" class="btn btn-xs mono">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr;gap:5px;margin:10px 0;font-size:12px;">
         <div class="kv-cell"><span>中華羽協 (id=226 / 116行事曆)</span><span class="tag tag-open mono">✓ OK</span></div>
@@ -901,13 +956,11 @@
         <div class="kv-cell"><span>義學國小榮譽榜 &amp; 秀山賽務網</span><span class="tag tag-open mono">✓ OK</span></div>
         <div class="kv-cell"><span>FB 羽球社團交叉核對</span><span class="tag tag-open mono">✓ OK</span></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;">
         <a href="https://www.yses.ntpc.edu.tw/p/403-1000-29-1.php" target="_blank" rel="noopener" class="btn btn-xs">🏫 義學榮譽榜 ↗</a>
-        <div style="display:flex;gap:6px;">
-          <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker" target="_blank" rel="noopener" class="btn btn-xs">GitHub Repo ↗</a>
-          <button id="btnConfirmCrawlerModal" type="button" class="btn btn-xs btn-primary">關閉</button>
-        </div>
+        <a href="https://github.com/moonwind1985-annita-emma/tw-badminton-tracker" target="_blank" rel="noopener" class="btn btn-xs">GitHub Repo ↗</a>
       </div>
+      <button id="btnConfirmCrawlerModal" type="button" class="btn-close-large">關閉</button>
     </div>
   </div>
 
@@ -2457,6 +2510,7 @@
     ];
 
     const OPTIONAL_REGIONS = ["北區", "中區", "南區", "東區"];
+    const ALL_GROUP_KEYS = ["reg_active", "nat_unreg", "regional_unreg", "north_unreg", "mid_unreg", "south_unreg", "east_unreg", "done"];
     let events = [...INITIAL_EVENTS];
     let selectedRegions = new Set(["北區"]);
     let selectedStatuses = new Set();
@@ -2464,10 +2518,14 @@
     let currentSortMode = "time"; // 'time' | 'region' | 'registered'
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
     let commentsExpanded = false;
+    let isGanttBodyOpen = true;
+    let isTableBodyOpen = true;
+    // Default: ONLY expand registered tournaments that are in progress or upcoming; collapse all others!
+    let openSections = new Set(["reg_active"]);
+    let manualClosedDuringFilter = new Set();
 
     let favorites = JSON.parse(localStorage.getItem("tw_badminton_favs_v1") || "[]");
     let manualRegisteredIds = JSON.parse(localStorage.getItem("tw_badminton_reg_ids_v28") || "[]");
-    let checkedDivisions = JSON.parse(localStorage.getItem("tw_badminton_div_checks_v29") || "{}");
     let customRosters = JSON.parse(localStorage.getItem("tw_badminton_yixue_rosters_v26") || "{}");
 
     if (localStorage.getItem("tw_badminton_theme") === "dark") {
@@ -2630,20 +2688,35 @@
       renderAll();
     }
 
-    function toggleDivisionCheck(evId, idx) {
-      const cur = checkedDivisions[evId] || [];
-      if (cur.includes(idx)) {
-        checkedDivisions[evId] = cur.filter(x => x !== idx);
-      } else {
-        checkedDivisions[evId] = [...cur, idx];
-      }
-      localStorage.setItem("tw_badminton_div_checks_v29", JSON.stringify(checkedDivisions));
+    function isFilterAutoExpandActive() {
+      const q = document.getElementById("searchInput").value.trim();
+      const onlyUrgent = document.getElementById("onlyUrgentToggle").checked;
+      const onlyFav = document.getElementById("onlyFavToggle").checked;
+      return Boolean(q || selectedStatuses.size > 0 || selectedTypes.size > 0 || onlyUrgent || onlyFav);
     }
 
-    function toggleCompletedSection(e) {
+    function isGroupOpen(key) {
+      if (isFilterAutoExpandActive()) {
+        return !manualClosedDuringFilter.has(key);
+      }
+      return openSections.has(key);
+    }
+
+    function toggleSectionGroup(key, e) {
       if (e) e.stopPropagation();
-      const chk = document.getElementById("chkCollapseDone");
-      chk.checked = !chk.checked;
+      if (isFilterAutoExpandActive()) {
+        if (manualClosedDuringFilter.has(key)) manualClosedDuringFilter.delete(key);
+        else manualClosedDuringFilter.add(key);
+      } else {
+        if (openSections.has(key)) openSections.delete(key);
+        else openSections.add(key);
+      }
+      renderAll();
+    }
+
+    function togglePanelBody(which) {
+      if (which === "gantt") isGanttBodyOpen = !isGanttBodyOpen;
+      if (which === "table") isTableBodyOpen = !isTableBodyOpen;
       renderAll();
     }
 
@@ -2902,9 +2975,6 @@
     document.getElementById("btnCrawlerModal").addEventListener("click", () => {
       document.getElementById("crawlerModalOverlay").classList.add("open");
     });
-    document.getElementById("btnCloseCrawlerModal").addEventListener("click", () => {
-      document.getElementById("crawlerModalOverlay").classList.remove("open");
-    });
     document.getElementById("btnConfirmCrawlerModal").addEventListener("click", () => {
       document.getElementById("crawlerModalOverlay").classList.remove("open");
     });
@@ -3015,10 +3085,28 @@
       const hideRestricted = document.getElementById("hideRestrictedToggle").checked;
       const showGantt = document.getElementById("chkShowGantt").checked;
       const showTable = document.getElementById("chkShowTable").checked;
-      const collapseDone = document.getElementById("chkCollapseDone").checked;
 
       document.getElementById("ganttSection").classList.toggle("hidden", !showGantt);
       document.getElementById("tableSection").classList.toggle("hidden", !showTable);
+
+      // Sync Panel Whole-Collapse State
+      document.getElementById("ganttPanelBody").classList.toggle("hidden", !isGanttBodyOpen);
+      document.getElementById("ganttPanelHead").classList.toggle("collapsed-head", !isGanttBodyOpen);
+      document.getElementById("ganttPanelArrow").textContent = isGanttBodyOpen ? "▾" : "▸";
+      document.getElementById("ganttPanelBtnTxt").textContent = isGanttBodyOpen ? "收折圖表" : "展開圖表";
+
+      document.getElementById("tablePanelBody").classList.toggle("hidden", !isTableBodyOpen);
+      document.getElementById("tablePanelHead").classList.toggle("collapsed-head", !isTableBodyOpen);
+      document.getElementById("tablePanelArrow").textContent = isTableBodyOpen ? "▾" : "▸";
+      document.getElementById("tablePanelBtnTxt").textContent = isTableBodyOpen ? "收折清單" : "展開清單";
+
+      // Sync Collapse Preset Buttons
+      const isDefaultOpenState = !isFilterAutoExpandActive() && openSections.size === 1 && openSections.has("reg_active") && isGanttBodyOpen && isTableBodyOpen;
+      const isAllExpandedState = !isFilterAutoExpandActive() && ALL_GROUP_KEYS.every(k => openSections.has(k)) && isGanttBodyOpen && isTableBodyOpen;
+      const isAllCollapsedState = !isFilterAutoExpandActive() && openSections.size === 0;
+      document.getElementById("btnCollapseDefault").classList.toggle("btn-active", isDefaultOpenState);
+      document.getElementById("btnExpandAll").classList.toggle("btn-active", isAllExpandedState);
+      document.getElementById("btnCollapseAll").classList.toggle("btn-active", isAllCollapsedState);
 
       // Sync Region Checkboxes & Counts
       const regionTotals = { "全國": 0, "北區": 0, "中區": 0, "南區": 0, "東區": 0 };
@@ -3092,7 +3180,6 @@
 
       const activeEvents = filtered.filter(ev => computeStatus(ev) !== "已結束");
       const completedEvents = filtered.filter(ev => computeStatus(ev) === "已結束");
-      document.getElementById("doneCntBadge").textContent = completedEvents.length;
 
       // Comparators
       const REGION_RANK = { "全國": 0, "北區": 1, "中區": 2, "南區": 3, "東區": 4 };
@@ -3111,41 +3198,62 @@
         return compareByTime(a, b);
       };
 
+      const regActive = activeEvents
+        .filter(e => getRegistrationState(e).isRegistered)
+        .sort(currentSortMode === "region" ? compareByRegion : compareByTime);
+      const unregActive = activeEvents.filter(e => !getRegistrationState(e).isRegistered);
+
       const sortedDone = [...completedEvents].sort(
         currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
       );
       const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
-      const autoOpenDone = activeEvents.length === 0 && sortedDone.length > 0;
-      const isDoneOpen = !collapseDone || autoOpenDone;
 
-      const summaryTxt = `進行 ${activeEvents.length} · 已完賽 ${sortedDone.length} (${isDoneOpen ? "展開" : "收折"})`;
+      // Collapsible Groups:
+      // 1. reg_active (已報名・比賽中 / 未開賽) -> Default EXPANDED
+      // 2. nat_unreg (全國賽・其他未報) -> Default COLLAPSED
+      // 3. regional unreg (分區・其他未報) -> Default COLLAPSED
+      // 4. done (已完賽歸檔，含已報完賽與未報完賽) -> Default COLLAPSED
+      const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
+      let groups = [
+        { key: "reg_active", label: "✅ 已報名・比賽中 / 未比賽", cls: "reg-pri", items: regActive, isDone: false }
+      ];
+
+      if (currentSortMode === "region") {
+        groups.push(
+          { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
+          { key: "north_unreg", label: "北區・其他未報", cls: "", items: unregActive.filter(e => e.region === "北區").sort(compareByTime), isDone: false },
+          { key: "mid_unreg", label: "中區・其他未報", cls: "", items: unregActive.filter(e => e.region === "中區").sort(compareByTime), isDone: false },
+          { key: "south_unreg", label: "南區・其他未報", cls: "", items: unregActive.filter(e => e.region === "南區").sort(compareByTime), isDone: false },
+          { key: "east_unreg", label: "東區・其他未報", cls: "", items: unregActive.filter(e => e.region === "東區").sort(compareByTime), isDone: false }
+        );
+      } else {
+        const unregRegionalItems = unregActive
+          .filter(e => e.region !== "全國")
+          .sort(currentSortMode === "registered"
+            ? ((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b))
+            : compareByTime
+          );
+        groups.push(
+          { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
+          { key: "regional_unreg", label: `📅 分區賽事・其他未報 (${regNames})`, cls: "", items: unregRegionalItems, isDone: false }
+        );
+      }
+
+      const doneNote = doneRegCount > 0 ? ` · 含已報完賽${doneRegCount}場` : "";
+      groups.push({
+        key: "done",
+        label: `📁 已完賽歸檔${doneNote}`,
+        cls: "",
+        items: sortedDone,
+        isDone: true
+      });
+
+      const nonEmptyGroups = groups.filter(g => g.items.length > 0);
+      const visibleCount = nonEmptyGroups.reduce((acc, g) => acc + (isGroupOpen(g.key) ? g.items.length : 0), 0);
+      const summaryTxt = `已報進行/待賽 ${regActive.length} · 其他未報 ${unregActive.length} · 已完賽 ${sortedDone.length} (展開 ${visibleCount}/${filtered.length})`;
       document.getElementById("ganttCountInfo").textContent = summaryTxt;
       document.getElementById("tableCountInfo").textContent = summaryTxt;
 
-      // Active Groups
-      const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
-      let groups = [];
-      if (currentSortMode === "registered") {
-        groups = [
-          { label: "✅ 已報名優先", cls: "reg-pri", items: activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
-          { label: `📅 其他賽事 (${regNames})`, cls: "", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
-        ];
-      } else if (currentSortMode === "region") {
-        groups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: "北區", cls: "", items: activeEvents.filter(e => e.region === "北區").sort(compareByTime) },
-          { label: "中區", cls: "", items: activeEvents.filter(e => e.region === "中區").sort(compareByTime) },
-          { label: "南區", cls: "", items: activeEvents.filter(e => e.region === "南區").sort(compareByTime) },
-          { label: "東區", cls: "", items: activeEvents.filter(e => e.region === "東區").sort(compareByTime) }
-        ];
-      } else {
-        groups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: activeEvents.filter(e => e.region !== "全國").sort(compareByTime) }
-        ];
-      }
-      const nonEmptyGroups = groups.filter(g => g.items.length > 0);
       const todayLeft = pctPos(REF_TODAY);
 
       if (filtered.length === 0) {
@@ -3154,51 +3262,37 @@
         return;
       }
 
-      const doneNote = doneRegCount > 0 ? ` · 義學${doneRegCount}` : "";
-      const ganttDoneHtml = sortedDone.length > 0 ? `
-        <div class="sec-bar collapsible" onclick="toggleCompletedSection(event)">
-          <span>${isDoneOpen ? "▾" : "▸"} 已完賽 (${sortedDone.length}${doneNote})</span>
-          <span class="mono" style="font-size:11px;">${isDoneOpen ? "收折" : "展開"}</span>
-        </div>
-        ${isDoneOpen ? sortedDone.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
-      ` : "";
+      document.getElementById("ganttContainer").innerHTML = nonEmptyGroups.map(g => {
+        const open = isGroupOpen(g.key);
+        return `
+          <div class="sec-bar collapsible ${g.cls}" onclick="toggleSectionGroup('${g.key}', event)">
+            <span>${open ? "▾" : "▸"} ${g.label} (${g.items.length})</span>
+            <span class="mono" style="font-size:11px;">${open ? "收折" : "展開"}</span>
+          </div>
+          ${open ? g.items.map(ev => renderGanttRow(ev, todayLeft, g.isDone)).join("") : ""}
+        `;
+      }).join("");
 
-      const tableDoneHtml = sortedDone.length > 0 ? `
-        <tr onclick="toggleCompletedSection(event)" style="cursor:pointer;">
-          <td colspan="9" style="padding:0;">
-            <div class="sec-bar collapsible">
-              <span>${isDoneOpen ? "▾" : "▸"} 已完賽 (${sortedDone.length}${doneNote})</span>
-              <span class="mono" style="font-size:11px;">${isDoneOpen ? "收折" : "展開"}</span>
-            </div>
-          </td>
-        </tr>
-        ${isDoneOpen ? sortedDone.map(ev => renderTableRow(ev, true)).join("") : ""}
-      ` : "";
-
-      document.getElementById("ganttContainer").innerHTML = nonEmptyGroups.map(g => `
-        <div class="sec-bar ${g.cls}">
-          <span>${g.label}</span>
-          <span class="mono" style="font-size:11px;">${g.items.length}</span>
-        </div>
-        ${g.items.map(ev => renderGanttRow(ev, todayLeft, false)).join("")}
-      `).join("") + ganttDoneHtml;
-
-      document.getElementById("tableBody").innerHTML = nonEmptyGroups.map(g => `
-        <tr>
-          <td colspan="9" style="padding:0;">
-            <div class="sec-bar ${g.cls}">
-              <span>${g.label}</span>
-              <span class="mono" style="font-size:11px;">${g.items.length}</span>
-            </div>
-          </td>
-        </tr>
-        ${g.items.map(ev => renderTableRow(ev, false)).join("")}
-      `).join("") + tableDoneHtml;
+      document.getElementById("tableBody").innerHTML = nonEmptyGroups.map(g => {
+        const open = isGroupOpen(g.key);
+        return `
+          <tr onclick="toggleSectionGroup('${g.key}', event)" style="cursor:pointer;">
+            <td colspan="9" style="padding:0;">
+              <div class="sec-bar collapsible ${g.cls}">
+                <span>${open ? "▾" : "▸"} ${g.label} (${g.items.length})</span>
+                <span class="mono" style="font-size:11px;">${open ? "收折" : "展開"}</span>
+              </div>
+            </td>
+          </tr>
+          ${open ? g.items.map(ev => renderTableRow(ev, g.isDone)).join("") : ""}
+        `;
+      }).join("");
     }
 
     function quickToggleStatus(st) {
       if (selectedStatuses.has(st)) selectedStatuses.delete(st);
       else selectedStatuses.add(st);
+      manualClosedDuringFilter.clear();
       document.querySelectorAll(".st-chk").forEach(c => { c.checked = selectedStatuses.has(c.value); });
       renderAll();
     }
@@ -3207,6 +3301,10 @@
       selectedRegions = new Set(["北區"]);
       selectedStatuses.clear();
       selectedTypes.clear();
+      manualClosedDuringFilter.clear();
+      openSections = new Set(["reg_active"]);
+      isGanttBodyOpen = true;
+      isTableBodyOpen = true;
       document.querySelectorAll(".st-chk, .type-chk").forEach(c => { c.checked = false; });
       document.getElementById("onlyRegToggle").checked = false;
       document.getElementById("onlyYixueToggle").checked = false;
@@ -3218,6 +3316,25 @@
     }
 
     // Bindings
+    document.getElementById("btnCollapseDefault").addEventListener("click", () => {
+      openSections = new Set(["reg_active"]);
+      manualClosedDuringFilter.clear();
+      isGanttBodyOpen = true;
+      isTableBodyOpen = true;
+      renderAll();
+    });
+    document.getElementById("btnExpandAll").addEventListener("click", () => {
+      openSections = new Set(ALL_GROUP_KEYS);
+      manualClosedDuringFilter.clear();
+      isGanttBodyOpen = true;
+      isTableBodyOpen = true;
+      renderAll();
+    });
+    document.getElementById("btnCollapseAll").addEventListener("click", () => {
+      openSections = new Set();
+      ALL_GROUP_KEYS.forEach(k => manualClosedDuringFilter.add(k));
+      renderAll();
+    });
     document.querySelectorAll(".reg-chk").forEach(chk => {
       chk.addEventListener("change", () => {
         if (chk.checked) selectedRegions.add(chk.value);
@@ -3237,6 +3354,7 @@
       chk.addEventListener("change", () => {
         if (chk.checked) selectedStatuses.add(chk.value);
         else selectedStatuses.delete(chk.value);
+        manualClosedDuringFilter.clear();
         renderAll();
       });
     });
@@ -3244,6 +3362,7 @@
       chk.addEventListener("change", () => {
         if (chk.checked) selectedTypes.add(chk.value);
         else selectedTypes.delete(chk.value);
+        manualClosedDuringFilter.clear();
         renderAll();
       });
     });
@@ -3253,10 +3372,16 @@
         renderAll();
       });
     });
-    ["onlyRegToggle", "onlyYixueToggle", "onlyUrgentToggle", "onlyFavToggle", "hideRestrictedToggle", "chkShowGantt", "chkShowTable", "chkCollapseDone"].forEach(id => {
-      document.getElementById(id).addEventListener("change", renderAll);
+    ["onlyRegToggle", "onlyYixueToggle", "onlyUrgentToggle", "onlyFavToggle", "hideRestrictedToggle", "chkShowGantt", "chkShowTable"].forEach(id => {
+      document.getElementById(id).addEventListener("change", () => {
+        manualClosedDuringFilter.clear();
+        renderAll();
+      });
     });
-    document.getElementById("searchInput").addEventListener("input", renderAll);
+    document.getElementById("searchInput").addEventListener("input", () => {
+      manualClosedDuringFilter.clear();
+      renderAll();
+    });
     document.getElementById("btnClearSearch").addEventListener("click", () => {
       document.getElementById("searchInput").value = "";
       renderAll();
