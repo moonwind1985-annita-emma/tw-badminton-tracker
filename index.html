@@ -838,8 +838,8 @@
       <div class="filter-row">
         <span class="group-label">顯示</span>
         <div class="filter-controls">
-          <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>甘特圖</span></label>
-          <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>賽事清單</span></label>
+          <label class="chk-chip"><input id="chkShowGantt" type="checkbox" checked /><span>賽事排程</span></label>
+          <label class="chk-chip"><input id="chkShowTable" type="checkbox" checked /><span>細節清單</span></label>
         </div>
       </div>
 
@@ -851,7 +851,6 @@
           <div class="seg-group" role="group" aria-label="排序方式">
             <button type="button" data-sort="time" class="seg-btn sort-btn active">🕒 時間</button>
             <button type="button" data-sort="region" class="seg-btn sort-btn">🗺️ 地區</button>
-            <button type="button" data-sort="registered" class="seg-btn sort-btn">✅ 已報名・義學優先 (<span id="regCountBadge">0</span>)</button>
           </div>
         </div>
       </div>
@@ -890,11 +889,11 @@
       </div>
     </section>
 
-    <!-- Gantt Chart Panel (進行中/未開賽直接展開，已完賽預設收折) -->
+    <!-- Schedule Gantt Panel (預設已報名・義學優先置頂，進行中/未開賽展開，已完賽預設收折) -->
     <section id="ganttSection" class="panel">
       <div class="panel-head">
         <div class="panel-title">
-          <span>📊 時序甘特圖</span>
+          <span>📊 賽事排程</span>
           <span class="tag tag-muted">🟦 章程/組別</span>
           <span class="tag tag-muted">🟩 義學名單</span>
           <span class="tag tag-muted">🟥 LIVE</span>
@@ -922,19 +921,19 @@
       </div>
     </section>
 
-    <!-- Collapsible Tournament List Panel (整區可收折，預設僅展開已報名之進行中/未比賽) -->
+    <!-- Collapsible Detail List Panel (整區可收折，預設僅展開已報名・義學之進行中/未比賽) -->
     <section id="tableSection" class="panel">
       <div id="tablePanelHead" class="panel-head collapsible-head" onclick="togglePanelBody('table')">
         <div class="panel-title">
           <span id="tablePanelArrow">▾</span>
-          <span>📋 賽事明細清單</span>
+          <span>📋 細節清單</span>
           <span id="tableCountInfo" class="mono" style="font-size:12px;font-weight:500;color:var(--text-sec);"></span>
         </div>
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;" onclick="event.stopPropagation()">
-          <button id="btnCollapseDefault" type="button" class="btn btn-xs btn-active">預設(已報待賽)</button>
+          <button id="btnCollapseDefault" type="button" class="btn btn-xs btn-active">預設</button>
           <button id="btnExpandAll" type="button" class="btn btn-xs">展開全部</button>
           <button id="btnCollapseAll" type="button" class="btn btn-xs">全部收折</button>
-          <button type="button" id="tablePanelBtnTxt" class="btn btn-xs" onclick="togglePanelBody('table')">▾ 收折整份清單</button>
+          <button type="button" id="tablePanelBtnTxt" class="btn btn-xs" onclick="togglePanelBody('table')">▾ 收折細節清單</button>
         </div>
       </div>
       <div id="tablePanelBody" class="table-scroll">
@@ -3162,7 +3161,7 @@
       document.getElementById("tablePanelBody").classList.toggle("hidden", !isTableBodyOpen);
       document.getElementById("tablePanelHead").classList.toggle("collapsed-head", !isTableBodyOpen);
       document.getElementById("tablePanelArrow").textContent = isTableBodyOpen ? "▾" : "▸";
-      document.getElementById("tablePanelBtnTxt").textContent = isTableBodyOpen ? "▾ 收折整份清單" : "▸ 展開整份清單";
+      document.getElementById("tablePanelBtnTxt").textContent = isTableBodyOpen ? "▾ 收折細節清單" : "▸ 展開細節清單";
 
       // Sync Table Collapse Preset Buttons
       const isDefaultOpenState = !isFilterAutoExpandActive() && openSections.size === 1 && openSections.has("reg_active") && isTableBodyOpen;
@@ -3185,7 +3184,6 @@
 
       // Sync Unified Registered / Yi-Xue Counts & Sort Buttons
       const totalRegCount = events.filter(e => getRegistrationState(e).isRegistered).length;
-      document.getElementById("regCountBadge").textContent = totalRegCount;
       document.getElementById("regCountBadgeTop").textContent = totalRegCount;
       document.querySelectorAll(".sort-btn").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-sort") === currentSortMode);
@@ -3243,21 +3241,18 @@
       const activeEvents = filtered.filter(ev => computeStatus(ev) !== "已結束");
       const completedEvents = filtered.filter(ev => computeStatus(ev) === "已結束");
 
-      // Comparators
+      // Comparators (已報名・義學 永遠預設優先置頂)
       const REGION_RANK = { "全國": 0, "北區": 1, "中區": 2, "南區": 3, "東區": 4 };
       const compareByTime = (a, b) =>
         a.matchStart.localeCompare(b.matchStart) || a.regEnd.localeCompare(b.regEnd) || a.id.localeCompare(b.id);
       const compareByRegion = (a, b) =>
         ((REGION_RANK[a.region] ?? 99) - (REGION_RANK[b.region] ?? 99)) || compareByTime(a, b);
       const isSkipped = (ev) => Boolean(ev.yixueNotEntered || isRestrictedOtherCounty(ev));
-      const compareByReg = (a, b) => {
+      const compareDone = (a, b) => {
         const ra = getRegistrationState(a).isRegistered ? 0 : (isSkipped(a) ? 2 : 1);
         const rb = getRegistrationState(b).isRegistered ? 0 : (isSkipped(b) ? 2 : 1);
         if (ra !== rb) return ra - rb;
-        const na = a.region === "全國" ? 0 : 1;
-        const nb = b.region === "全國" ? 0 : 1;
-        if (na !== nb) return na - nb;
-        return compareByTime(a, b);
+        return currentSortMode === "region" ? compareByRegion(a, b) : compareByTime(a, b);
       };
 
       const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
@@ -3272,33 +3267,36 @@
         return;
       }
 
-      const sortedDone = [...completedEvents].sort(
-        currentSortMode === "registered" ? compareByReg : currentSortMode === "region" ? compareByRegion : compareByTime
-      );
-      const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
-      const doneNote = doneRegCount > 0 ? ` · 含已報完賽${doneRegCount}場` : "";
+      // Shared Built-in Priority Buckets: 1. ✅ 已報名・義學 -> 2. 🏆 全國賽 -> 3. 分區 (依時間或地區) -> 4. 📁 已完賽 (預設收折)
+      const regActive = activeEvents
+        .filter(e => getRegistrationState(e).isRegistered)
+        .sort(currentSortMode === "region" ? compareByRegion : compareByTime);
+      const unregActive = activeEvents.filter(e => !getRegistrationState(e).isRegistered);
+      const unregNational = unregActive.filter(e => e.region === "全國").sort(compareByTime);
+      const unregRegionalByTime = unregActive
+        .filter(e => e.region !== "全國")
+        .sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b));
 
-      // 1. Gantt Chart: Active/upcoming UNCOLLAPSED; already-finished tournaments COLLAPSED by default
-      let ganttGroups = [];
-      if (currentSortMode === "registered") {
-        ganttGroups = [
-          { label: "✅ 已報名・義學優先", cls: "reg-pri", items: activeEvents.filter(e => getRegistrationState(e).isRegistered).sort(compareByTime) },
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region === "全國").sort(compareByTime) },
-          { label: `📅 分區賽事 (${regNames})`, cls: "", items: activeEvents.filter(e => !getRegistrationState(e).isRegistered && e.region !== "全國").sort((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b)) }
-        ];
-      } else if (currentSortMode === "region") {
-        ganttGroups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: "北區", cls: "", items: activeEvents.filter(e => e.region === "北區").sort(compareByTime) },
-          { label: "中區", cls: "", items: activeEvents.filter(e => e.region === "中區").sort(compareByTime) },
-          { label: "南區", cls: "", items: activeEvents.filter(e => e.region === "南區").sort(compareByTime) },
-          { label: "東區", cls: "", items: activeEvents.filter(e => e.region === "東區").sort(compareByTime) }
-        ];
+      const sortedDone = [...completedEvents].sort(compareDone);
+      const doneRegCount = sortedDone.filter(e => getRegistrationState(e).isRegistered).length;
+      const doneNote = doneRegCount > 0 ? ` · 義學${doneRegCount}場` : "";
+
+      // 1. 賽事排程 (Gantt): Active/upcoming UNCOLLAPSED with 已報名・義學 built-in top priority; finished COLLAPSED by default
+      let ganttGroups = [
+        { label: "✅ 已報名・義學", cls: "reg-pri", items: regActive },
+        { label: "🏆 全國賽", cls: "nat", items: unregNational }
+      ];
+      if (currentSortMode === "region") {
+        ganttGroups.push(
+          { label: "北區", cls: "", items: unregActive.filter(e => e.region === "北區").sort(compareByTime) },
+          { label: "中區", cls: "", items: unregActive.filter(e => e.region === "中區").sort(compareByTime) },
+          { label: "南區", cls: "", items: unregActive.filter(e => e.region === "南區").sort(compareByTime) },
+          { label: "東區", cls: "", items: unregActive.filter(e => e.region === "東區").sort(compareByTime) }
+        );
       } else {
-        ganttGroups = [
-          { label: "🏆 全國賽 (必選置頂)", cls: "nat", items: activeEvents.filter(e => e.region === "全國").sort(compareByTime) },
-          { label: `🕒 ${regNames} (時間排序)`, cls: "", items: activeEvents.filter(e => e.region !== "全國").sort(compareByTime) }
-        ];
+        ganttGroups.push(
+          { label: `📅 分區 (${regNames})`, cls: "", items: unregRegionalByTime }
+        );
       }
       const nonEmptyGanttGroups = ganttGroups.filter(g => g.items.length > 0);
       const onlyDoneSearch = Boolean(q && activeEvents.length === 0 && sortedDone.length > 0);
@@ -3311,7 +3309,7 @@
       ganttDoneBtn.textContent = `${ganttDoneOpen ? "▾ 收折已完賽" : "▸ 展開已完賽"} (${sortedDone.length})`;
 
       const visibleGanttCount = activeEvents.length + (ganttDoneOpen ? sortedDone.length : 0);
-      document.getElementById("ganttCountInfo").textContent = `展開 ${visibleGanttCount} / 共 ${filtered.length} 場 (全國 + ${regNames})`;
+      document.getElementById("ganttCountInfo").textContent = `${visibleGanttCount} / ${filtered.length} 場`;
 
       const ganttActiveHtml = nonEmptyGanttGroups.map(g => `
         <div class="sec-bar ${g.cls}">
@@ -3323,7 +3321,7 @@
 
       const ganttDoneHtml = sortedDone.length > 0 ? `
         <div class="sec-bar collapsible" onclick="toggleGanttDone(event)">
-          <span>${ganttDoneOpen ? "▾" : "▸"} 📁 已完賽歸檔${doneNote} (${sortedDone.length})</span>
+          <span>${ganttDoneOpen ? "▾" : "▸"} 📁 已完賽${doneNote} (${sortedDone.length})</span>
           <span class="sec-toggle-pill">${ganttDoneOpen ? "收折" : "展開"}</span>
         </div>
         ${ganttDoneOpen ? sortedDone.map(ev => renderGanttRow(ev, todayLeft, true)).join("") : ""}
@@ -3331,38 +3329,26 @@
 
       document.getElementById("ganttContainer").innerHTML = ganttActiveHtml + ganttDoneHtml;
 
-      // 2. Below Tournament List (賽事明細清單): Collapsible groups, default ONLY reg_active expanded
-      const regActive = activeEvents
-        .filter(e => getRegistrationState(e).isRegistered)
-        .sort(currentSortMode === "region" ? compareByRegion : compareByTime);
-      const unregActive = activeEvents.filter(e => !getRegistrationState(e).isRegistered);
-
+      // 2. 細節清單 (Table): Collapsible groups, default ONLY reg_active expanded
       let tableGroups = [
-        { key: "reg_active", label: "✅ 已報名・義學 (比賽中 / 未比賽)", cls: "reg-pri", items: regActive, isDone: false }
+        { key: "reg_active", label: "✅ 已報名・義學", cls: "reg-pri", items: regActive, isDone: false },
+        { key: "nat_unreg", label: "🏆 全國賽", cls: "nat", items: unregNational, isDone: false }
       ];
       if (currentSortMode === "region") {
         tableGroups.push(
-          { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
-          { key: "north_unreg", label: "北區・其他未報", cls: "", items: unregActive.filter(e => e.region === "北區").sort(compareByTime), isDone: false },
-          { key: "mid_unreg", label: "中區・其他未報", cls: "", items: unregActive.filter(e => e.region === "中區").sort(compareByTime), isDone: false },
-          { key: "south_unreg", label: "南區・其他未報", cls: "", items: unregActive.filter(e => e.region === "南區").sort(compareByTime), isDone: false },
-          { key: "east_unreg", label: "東區・其他未報", cls: "", items: unregActive.filter(e => e.region === "東區").sort(compareByTime), isDone: false }
+          { key: "north_unreg", label: "北區", cls: "", items: unregActive.filter(e => e.region === "北區").sort(compareByTime), isDone: false },
+          { key: "mid_unreg", label: "中區", cls: "", items: unregActive.filter(e => e.region === "中區").sort(compareByTime), isDone: false },
+          { key: "south_unreg", label: "南區", cls: "", items: unregActive.filter(e => e.region === "南區").sort(compareByTime), isDone: false },
+          { key: "east_unreg", label: "東區", cls: "", items: unregActive.filter(e => e.region === "東區").sort(compareByTime), isDone: false }
         );
       } else {
-        const unregRegionalItems = unregActive
-          .filter(e => e.region !== "全國")
-          .sort(currentSortMode === "registered"
-            ? ((a, b) => (Number(isSkipped(a)) - Number(isSkipped(b))) || compareByTime(a, b))
-            : compareByTime
-          );
         tableGroups.push(
-          { key: "nat_unreg", label: "🏆 全國賽・其他未報", cls: "nat", items: unregActive.filter(e => e.region === "全國").sort(compareByTime), isDone: false },
-          { key: "regional_unreg", label: `📅 分區賽事・其他未報 (${regNames})`, cls: "", items: unregRegionalItems, isDone: false }
+          { key: "regional_unreg", label: `📅 分區 (${regNames})`, cls: "", items: unregRegionalByTime, isDone: false }
         );
       }
       tableGroups.push({
         key: "done",
-        label: `📁 已完賽歸檔${doneNote}`,
+        label: `📁 已完賽${doneNote}`,
         cls: "",
         items: sortedDone,
         isDone: true
@@ -3370,7 +3356,7 @@
 
       const nonEmptyTableGroups = tableGroups.filter(g => g.items.length > 0);
       const visibleTableCount = nonEmptyTableGroups.reduce((acc, g) => acc + (isGroupOpen(g.key) ? g.items.length : 0), 0);
-      document.getElementById("tableCountInfo").textContent = `展開 ${visibleTableCount} / 共 ${filtered.length} 場`;
+      document.getElementById("tableCountInfo").textContent = `${visibleTableCount} / ${filtered.length} 場`;
 
       document.getElementById("tableBody").innerHTML = nonEmptyTableGroups.map(g => {
         const open = isGroupOpen(g.key);
