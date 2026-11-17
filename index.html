@@ -781,7 +781,7 @@
       <div id="kpiStrip" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
     </div>
     <div class="appbar-right">
-      <span class="tag tag-muted mono" title="基準日">📅 <span id="refDateDisplay">2026-11-11</span></span>
+      <span class="tag tag-muted mono" title="基準日 (依臺灣時間自動更新)">📅 <span id="refDateDisplay">2026-11-17</span></span>
       <button id="btnCrawlerModal" type="button" class="btn btn-xs">📡 來源狀態</button>
       <button id="btnExportCsv" type="button" class="btn btn-xs">📥 CSV</button>
       <a href="#commentSection" class="btn btn-xs">💬 回報</a>
@@ -1002,7 +1002,7 @@
   <div id="crawlerModalOverlay" class="overlay">
     <div class="modal-card" onclick="event.stopPropagation()">
       <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border-light);">
-        <strong style="font-size:13px;">📡 資料源同步狀態 (<span id="crawlerTotalCount">50</span>場)</strong>
+        <strong style="font-size:13px;">📡 資料源同步狀態 (<span id="crawlerTotalCount">55</span>場)</strong>
       </div>
       <div style="display:grid;grid-template-columns:1fr;gap:5px;margin:10px 0;font-size:12px;">
         <div class="kv-cell"><span>中華羽協 (id=226 / 116行事曆)</span><span class="tag tag-open mono">✓ OK</span></div>
@@ -1020,7 +1020,27 @@
   </div>
 
   <script>
-    const REF_TODAY = "2026-11-11";
+    function getTaiwanTodayIso() {
+      try {
+        const parts = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Asia/Taipei",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).formatToParts(new Date());
+        const y = parts.find(p => p.type === "year")?.value;
+        const m = parts.find(p => p.type === "month")?.value;
+        const d = parts.find(p => p.type === "day")?.value;
+        const iso = (y && m && d) ? `${y}-${m}-${d}` : "2026-11-17";
+        if (iso < "2026-11-17") return "2026-11-17";
+        if (iso > "2027-07-31") return "2027-07-31";
+        return iso;
+      } catch (_) {
+        return "2026-11-17";
+      }
+    }
+    const REF_TODAY = getTaiwanTodayIso();
+    document.getElementById("refDateDisplay").textContent = REF_TODAY;
     const TIMELINE_START = new Date("2026-09-01T00:00:00");
     const TIMELINE_END = new Date("2027-07-31T23:59:59");
     const TOTAL_MS = TIMELINE_END - TIMELINE_START;
@@ -1342,8 +1362,8 @@
           { event: "團體賽抽籤籤位", players: "國小中年級男團 (#14 籤)、國小中年級女團 (C組 #6 籤) 及高年級團體組" },
           { event: "秩序冊核對號碼布選手 ([17]義學國小)", players: "5147 王品鈞、5148 劉恩宇、5149 張曜宇、5150 翁佳禾（另含 5151~5154 選手，點上方按鈕可下載完整秩序冊 PDF）" }
         ],
-        fbCheck: "已核對新北基層羽球 FB 社團熱議焦點與秀山國小承辦網 (ssps.ntpc.edu.tw)：今日 (11/10~11/13) 激戰進行中！本屆率先配合 BWF 試辦 3局15分新制，秩序冊 [17]義學國小名單已直接核對寫入。",
-        notes: "🔴 今日 (11/11) 現正激戰開打中！義學國小代表隊男團、女團與單雙打主力盡出，全力爭取新北市學年度最高榮譽！"
+        fbCheck: "已核對新北基層羽球 FB 社團熱議焦點與秀山國小承辦網 (ssps.ntpc.edu.tw)：11/10~11/13 已完賽！本屆率先配合 BWF 試辦 3局15分新制，秩序冊 [17]義學國小名單已直接核對寫入。",
+        notes: "✅ 已於 11/10~11/13 完賽！義學國小代表隊男團、女團與單雙打主力出賽。"
       },
       {
         id: "ev-15",
@@ -1388,8 +1408,8 @@
           { event: "國小中年級父女雙打", players: "卓詩涵 / 卓冠宇" },
           { event: "國小高年級父子雙打", players: "李信隆 / 李國源" }
         ],
-        fbCheck: "已核對「Race8 競速運動網 FB」、MY Livescore (opid=342874) 11/04 正式賽程表與大會《報名結果(含種子序)1027v2.pdf》：本週六日 (11/14~11/15) 中山國中開打，義學國小全隊 20 組名單已完整核對！",
-        notes: "⚡ 3 天後（本週六日 11/14~11/15）開打！中山國中（原詩欣館）捷運中山國中站步行可達。"
+        fbCheck: "已核對「Race8 競速運動網 FB」、MY Livescore (opid=342874) 11/04 正式賽程表與大會《報名結果(含種子序)1027v2.pdf》：11/14~11/15 中山國中已完賽，義學國小全隊 20 組名單已完整核對！",
+        notes: "✅ 已於 11/14~11/15 完賽！中山國中（原詩欣館）捷運中山國中站步行可達。"
       },
       {
         id: "ev-16",
@@ -1418,18 +1438,51 @@
         scheduleUrl: "https://go.mylivescore.link/?opid=341069",
         yixueStatus: "與台北生麗盃撞期 (義學主力參加生麗盃)",
         yixueEntries: [],
-        fbCheck: "已核對「臺中市體育總會羽球委員會 FB」與 MY Livescore (opid=341069)：場次時間賽程表已於 11/03 公告，與生麗盃同週末。",
-        notes: "本週末起連續兩週於朝馬運動中心開打，為 12 月全國國小盃前大型模擬戰。"
+        fbCheck: "已核對「臺中市體育總會羽球委員會 FB」與 MY Livescore (opid=341069)：場次時間賽程表已於 11/03 公告，11/14~11/22 現正開打中。",
+        notes: "🔴 11/14~11/22 於朝馬運動中心進行中，為 12 月全國國小盃前大型模擬戰。"
+      },
+      {
+        id: "ev-16ty",
+        region: "北區",
+        venue: "桃園市・蘆竹富暘羽球育樂旗艦館",
+        address: "桃園市蘆竹區大華北街170巷27號",
+        title: "2026第二屆桃園市航空城盃全國羽球錦標賽 (含國小/國高中/公開組)",
+        regStart: "2026-08-10",
+        regEnd: "2026-10-05",
+        matchStart: "2026-11-18",
+        matchEnd: "2026-11-22",
+        platform: "LAPGO 桃園航空城盃專頁",
+        url: "https://lapgo.com.tw/web/taoyuan2026002",
+        grades: "國小中/高年級組、國中組、高中組、大專與社會公開組",
+        divisions: [
+          "國小學生組：中/高年級男單、女單、男雙、女雙",
+          "國中組、高中組、大專學生組單雙打",
+          "社會分齡組、混齡組、公開組、團體組"
+        ],
+        eventsList: "男單、女單、男雙、女雙、團體組",
+        eligibility: "全國各公私立國小、國高中學生及社會球友（10/05 已截止報名）。",
+        scoring: "預賽分組循環、決賽單敗淘汰，單局 25 分不加分制。",
+        shuttlecock: "大會指定比賽級羽球",
+        fee: "依桃園航空城盃正式競賽規程",
+        drawDate: "2026-10-28",
+        organizer: "桃園市體育發展與基層羽球單位、富暘羽球育樂旗艦館、LAPGO",
+        hasSchedule: true,
+        scheduleLabel: "LAPGO taoyuan2026002 10/28 正式賽程公告",
+        scheduleUrl: "https://lapgo.com.tw/web/taoyuan2026002",
+        yixueStatus: "賽程已出 (10/28公告)",
+        yixueEntries: [],
+        fbCheck: "已核對 LAPGO 專屬頁 lapgo.com.tw/web/taoyuan2026002、RALLY TW 與地方新聞：本週三至週日 2026/11/18~11/22（含本週五 11/20）於桃園蘆竹富暘羽球育樂旗艦館舉行，10/28 已正式公告賽程表！",
+        notes: "🔥 本週三至週日（11/18~11/22，含本週五 11/20）於桃園蘆竹富暘羽球育樂旗艦館開打！平日場次含學生各組賽程。"
       },
       {
         id: "ev-17",
         region: "北區",
-        venue: "新竹市・竹光國民運動中心 / 舊社國小",
-        address: "新竹市北區竹光路325號 / 金竹路99號",
+        venue: "新竹市・竹光國民運動中心",
+        address: "新竹市北區竹光路325號",
         title: "115年未來里建設盃國小羽球錦標賽",
         regStart: "2026-10-19",
         regEnd: "2026-10-30",
-        matchStart: "2026-11-21",
+        matchStart: "2026-11-22",
         matchEnd: "2026-11-22",
         platform: "LAPGO 未來里建設盃專頁",
         url: "https://lapgo.com.tw/web/future2026",
@@ -1440,15 +1493,15 @@
         scoring: "預賽循環制、決賽單敗淘汰，單局 25 分不加分。",
         shuttlecock: "大會指定比賽級羽球",
         fee: "單打 NT$600 / 雙打 NT$1,100",
-        drawDate: "2026-11-05",
+        drawDate: "2026-11-11",
         organizer: "未來里建設、新竹市基層羽球推廣單位",
         hasSchedule: true,
-        scheduleLabel: "LAPGO future2026 11/05 籤表與賽程頁",
+        scheduleLabel: "LAPGO future2026 11/11 賽程正式公告",
         scheduleUrl: "https://lapgo.com.tw/web/future2026",
         yixueStatus: "賽程已出・核對確認後可補登",
         yixueEntries: [],
-        fbCheck: "已核對「LAPGO 運動共享平台 FB」與新竹羽球社團：專屬頁為 lapgo.com.tw/web/future2026，已移除舊版未驗證之預估名單，請查驗賽程後再填寫。",
-        notes: "抽籤結果與賽程已於 11/05 在 LAPGO 專頁公布，桃竹苗與北部國小選手參賽踴躍。"
+        fbCheck: "已核對 LAPGO 最新公告與專頁 lapgo.com.tw/web/future2026：比賽日為本週日 2026/11/22 於新竹市竹光國民運動中心，正式賽程已於 11/11 19:31 公告。",
+        notes: "本週日 (11/22) 於新竹竹光國民運動中心開打，正式賽程已於 11/11 在 LAPGO 專頁公布。"
       },
       {
         id: "ev-18",
@@ -1480,6 +1533,35 @@
         notes: "離島基層羽球年度重要聯賽。"
       },
       {
+        id: "ev-18sosa",
+        region: "北區",
+        venue: "新竹市・實驗中學健身工房體育館",
+        address: "新竹市東區介壽路300號",
+        title: "2026 VICTOR SOSA盃全國羽球錦標賽 (含學生單雙打/團體)",
+        regStart: "2026-08-27",
+        regEnd: "2026-10-20",
+        matchStart: "2026-11-28",
+        matchEnd: "2026-11-29",
+        platform: "LAPGO VICTOR SOSA盃專頁",
+        url: "https://lapgo.com.tw/web/sosa2026",
+        grades: "國小/國中學生分齡單雙打組、社會與團體組",
+        divisions: ["學生分齡男單、女單、男雙、女雙", "公開單雙打與團體組"],
+        eventsList: "男單、女單、男雙、女雙、團體組",
+        eligibility: "全國在學學童及羽球球友（10/20 已截止報名）。",
+        scoring: "預賽分組循環、決賽單敗淘汰，單局 25 分不加分制。",
+        shuttlecock: "VICTOR 勝利比賽級指定羽球",
+        fee: "依 LAPGO SOSA盃正式競賽規程",
+        drawDate: "2026-11-10",
+        organizer: "SOSA 羽球超市、VICTOR 勝利體育、LAPGO",
+        hasSchedule: true,
+        scheduleLabel: "LAPGO sosa2026 11/10 賽程正式公告",
+        scheduleUrl: "https://lapgo.com.tw/web/sosa2026",
+        yixueStatus: "賽程已出 (11/10公告)",
+        yixueEntries: [],
+        fbCheck: "已核對「SOSA 羽球超市 FB」與 LAPGO 專屬頁 lapgo.com.tw/web/sosa2026：11/28~11/29 於新竹實驗中學體育館舉辦，正式賽程已於 11/10 公告。",
+        notes: "新竹指標羽球用品名店 SOSA 年度盃賽，11/10 已公布正式賽程。"
+      },
+      {
         id: "ev-18kh",
         region: "南區",
         venue: "高雄市・亞柏會館",
@@ -1504,10 +1586,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名明(11/12)截止・11/20出賽程",
+        yixueStatus: "🔒 報名已截止・11/20出賽程",
         yixueEntries: [],
-        fbCheck: "已核對「高雄市體育總會羽球委員會 FB」與 RALLY TW / FB 社團勘誤：報名截止日實為明日 2026/11/12（非 11/15），專屬入口 go.mylivescore.link/?opid=340004！",
-        notes: "🔥 緊急提醒：報名明天 (11/12) 截止！南台灣年底全國國小盃前最後大型暖身賽。"
+        fbCheck: "已核對「高雄市體育總會羽球委員會 FB」與 MY Livescore (opid=340004)：報名已於 2026/11/12 截止，預計 11/20 公告賽程。",
+        notes: "南台灣年底全國國小盃前最後大型暖身賽，預計 11/20 公告賽程。"
       },
       {
         id: "ev-19",
@@ -1574,6 +1656,35 @@
         notes: "宜蘭縣內最高等級學年度中小學運動會羽球賽事。"
       },
       {
+        id: "ev-20ym",
+        region: "北區",
+        venue: "桃園市・楊梅體育園區",
+        address: "桃園市楊梅區裕成路7號",
+        title: "2026梅好羽你・桃園羽球嘉年華 (分齡單雙打/團體交流)",
+        regStart: "2026-10-08",
+        regEnd: "2026-11-05",
+        matchStart: "2026-12-19",
+        matchEnd: "2026-12-19",
+        platform: "LAPGO 桃園楊梅嘉年華專頁",
+        url: "https://lapgo.com.tw/web/yangmei2026",
+        grades: "學生分齡單雙打、親子與公開團體交流組",
+        divisions: ["分齡個人單雙打、親子與趣味團體交流組"],
+        eventsList: "男單、女單、男雙、女雙、團體組",
+        eligibility: "全國羽球愛好者與學童依簡章分齡組別報名。",
+        scoring: "單局 25 分不加分制，預賽循環制。",
+        shuttlecock: "大會指定比賽級羽球",
+        fee: "依 LAPGO 桃園羽球嘉年華簡章公告",
+        drawDate: "2026-11-11名單公告 / 12月賽程公告",
+        organizer: "桃園市體育發展單位、LAPGO",
+        hasSchedule: false,
+        scheduleLabel: "",
+        scheduleUrl: "",
+        yixueStatus: "🔒 11/11選手名單已公告・待賽程表發布",
+        yixueEntries: [],
+        fbCheck: "已核對 LAPGO 專屬頁 lapgo.com.tw/web/yangmei2026 與 RALLY TW：比賽日為 2026/12/19 (六) 於桃園楊梅體育園區（裕成路7號），11/11 已公告選手名單。",
+        notes: "桃園楊梅體育園區全新大型場館賽事，距離國道一號楊梅交流道極近。"
+      },
+      {
         id: "ev-21",
         region: "南區",
         venue: "高雄市・亞柏會館",
@@ -1626,10 +1737,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名剩6天・12/09出賽程後解鎖",
+        yixueStatus: "🔒 11/17報名截止・12/09出賽程後解鎖",
         yixueEntries: [],
         fbCheck: "已核對「力羽美羽球 FB 粉專」與「FB 全台羽球交流賽社團」：專屬報名章程頁為 lapgo.com.tw/web/kaohsiung202602，11/17 報名截止！",
-        notes: "⚠️ 距離報名截止僅剩 6 天（11/17截止）！聖誕週末南部熱門賽事。"
+        notes: "⚠️ 11/17 報名截止！聖誕週末南部熱門新手友善賽事。"
       },
       {
         id: "ev-23",
@@ -1882,6 +1993,35 @@
         notes: "🟢 現正火熱報名中（11/27截止）！苗栗巨蛋16面標準場地，寒假中北部指標大賽。"
       },
       {
+        id: "ev-25ncue",
+        region: "中區",
+        venue: "彰化縣・國立彰化師範大學體育館",
+        address: "彰化縣彰化市進德路1號",
+        title: "2027年第十六屆彰化師大全國羽球錦標賽 (含國小/學生組)",
+        regStart: "2026-11-05",
+        regEnd: "2026-11-25",
+        matchStart: "2027-01-23",
+        matchEnd: "2027-01-24",
+        platform: "LAPGO 彰師大全國賽專頁",
+        url: "https://lapgo.com.tw/web/ncue2027",
+        grades: "國小學生組、國中組、高中組、大專社會組",
+        divisions: ["國小學生單打、雙打組", "國高中與大專公開組"],
+        eventsList: "男單、女單、男雙、女雙",
+        eligibility: "全國公私立國小在學學童自由報名參加。",
+        scoring: "預賽分組循環、決賽單敗淘汰，單局 25 分不加分制。",
+        shuttlecock: "大會指定比賽級羽球",
+        fee: "依 LAPGO 彰師大盃正式競賽規程",
+        drawDate: "2027-01-06",
+        organizer: "國立彰化師範大學羽球隊、運動學系",
+        hasSchedule: false,
+        scheduleLabel: "",
+        scheduleUrl: "",
+        yixueStatus: "🔒 報名中(11/25截止)・01/06出賽程後解鎖",
+        yixueEntries: [],
+        fbCheck: "已核對「彰師羽球錦標賽 FB 粉專」與 LAPGO 專屬頁 lapgo.com.tw/web/ncue2027：報名自 11/05 至 11/25 截止，2027/01/23~01/24 開打。",
+        notes: "🔥 現正報名中（11/25截止）！中部大專傳統寒假全國盃賽。"
+      },
+      {
         id: "ev-26",
         region: "南區",
         venue: "高雄市・樹德科技大學體育館",
@@ -1909,10 +2049,39 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名倒數9天・12/28出賽程後解鎖",
+        yixueStatus: "🔒 首波11/20截止・12/28出賽程後解鎖",
         yixueEntries: [],
         fbCheck: "已交叉核對「超力運動用品 FB」、北市教育局轉發公文 (11/20截止) 與 MY Livescore (opid=326156，額滿提前截止或最晚12/18)：強烈建議於公文首波截止日 11/20 前完成報名以免額滿！",
-        notes: "🔥 寒假南部最大規模經典全國賽！名額極搶手常提前額滿，請把握 11/20 前完成報名。"
+        notes: "🔥 寒假南部最大規模經典全國賽！首波 11/20 截止在即，名額極搶手常提前額滿。"
+      },
+      {
+        id: "ev-26fh",
+        region: "北區",
+        venue: "桃園市・龍潭名人堂羽球館",
+        address: "桃園市龍潭區民生路141巷150號",
+        title: "2027名人堂兒童羽球訓練營暨對抗賽 (國小寒假五日梯)",
+        regStart: "2026-10-22",
+        regEnd: "2027-01-15",
+        matchStart: "2027-01-25",
+        matchEnd: "2027-01-29",
+        platform: "LAPGO 桃園名人堂專頁",
+        url: "https://lapgo.com.tw/web/fhgh202701",
+        grades: "國小一～六年級學童組",
+        divisions: ["國小學童分級訓練與結業單雙打對抗賽（寒假五日全日梯次）"],
+        eventsList: "單打、雙打",
+        eligibility: "全國國小一～六年級學童皆可報名。",
+        scoring: "依分組實力循環對抗計分。",
+        shuttlecock: "名人堂訓練與比賽級用球",
+        fee: "依 LAPGO 桃園名人堂簡章公告（含五日專業教練團與場地）",
+        drawDate: "2027-01-18",
+        organizer: "桃園龍潭名人堂羽球館、LAPGO",
+        hasSchedule: false,
+        scheduleLabel: "",
+        scheduleUrl: "",
+        yixueStatus: "🔒 報名中(01/15截止)",
+        yixueEntries: [],
+        fbCheck: "已核對 LAPGO 專屬頁 lapgo.com.tw/web/fhgh202701 與桃園羽球社團：報名期 2026/10/22~2027/01/15，活動日 2027/01/25~01/29。",
+        notes: "🟢 桃園龍潭名人堂花園大飯店旁專用羽球館寒假營隊暨實戰對抗，現正開放報名中。"
       },
       {
         id: "ev-26gf",
@@ -2125,9 +2294,9 @@
       },
       {
         id: "ev-32",
-        region: "中區",
-        venue: "臺中市・指定專用羽球館",
-        address: "臺中市西屯區/北屯區指定專用球館",
+        region: "北區",
+        venue: "桃園市・龍潭名人堂羽球館",
+        address: "桃園市龍潭區民生路141巷150號",
         title: "2027 SUPERKIDS 羽球新秀挑戰賽 (國小新秀各組)",
         regStart: "2027-01-11",
         regEnd: "2027-02-19",
@@ -2149,8 +2318,8 @@
         scheduleUrl: "",
         yixueStatus: "",
         yixueEntries: [],
-        fbCheck: "已核對 LAPGO 與 FB 兒童羽球社團：SuperKids 系列賽固定於 lapgo.com.tw/web/superkids2026 系列專頁更新。",
-        notes: "新手友善度最高！避免初學者第一場就遇到甲組預備軍被震撼教育。"
+        fbCheck: "已核對 LAPGO 活動列表與兒童羽球社團：2027/03/13~03/14 場館公告為桃園龍潭名人堂羽球館（民生路141巷150號）。",
+        notes: "新手友善度最高！移師桃園龍潭名人堂羽球館舉辦，適合雙北桃園初學學童。"
       },
       {
         id: "ev-33",
@@ -3354,12 +3523,19 @@
         isDone: true
       });
 
-      const nonEmptyTableGroups = tableGroups.filter(g => g.items.length > 0);
+      const nonEmptyTableGroups = tableGroups.filter(g =>
+        g.items.length > 0 || (g.key === "reg_active" && !onlyDoneSearch && !isFilterAutoExpandActive())
+      );
       const visibleTableCount = nonEmptyTableGroups.reduce((acc, g) => acc + (isGroupOpen(g.key) ? g.items.length : 0), 0);
       document.getElementById("tableCountInfo").textContent = `${visibleTableCount} / ${filtered.length} 場`;
 
       document.getElementById("tableBody").innerHTML = nonEmptyTableGroups.map(g => {
         const open = isGroupOpen(g.key);
+        const bodyRows = !open ? "" : (
+          g.items.length > 0
+            ? g.items.map(ev => renderTableRow(ev, g.isDone)).join("")
+            : `<tr><td colspan="9" style="padding:10px 14px;color:var(--text-muted);font-size:12.5px;">尚無進行中／未開賽之已報名賽事（上週新北對抗賽、生麗盃已完賽歸入下方「📁 已完賽」；點選任一賽事可按「＋標記已報」）</td></tr>`
+        );
         return `
           <tr onclick="toggleSectionGroup('${g.key}', event)" style="cursor:pointer;">
             <td colspan="9" style="padding:0;">
@@ -3369,7 +3545,7 @@
               </div>
             </td>
           </tr>
-          ${open ? g.items.map(ev => renderTableRow(ev, g.isDone)).join("") : ""}
+          ${bodyRows}
         `;
       }).join("");
     }
@@ -3474,6 +3650,7 @@
 
     // Compact Feedback Notes
     const INITIAL_COMMENTS = [
+      { time: "2026-11-17", author: "系統", type: "情報補充", content: "同步 11/17 最新賽況：新增桃園航空城盃(11/18-22)、新竹SOSA盃、桃園楊梅嘉年華、彰師大盃、桃園名人堂冬令營，共 55 場" },
       { time: "2026-11-11", author: "系統", type: "賽程名單", content: "v2.9 精簡介面・全國必選置頂・北區預選・已完賽收折" }
     ];
     let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v29") || "null") || [...INITIAL_COMMENTS];
