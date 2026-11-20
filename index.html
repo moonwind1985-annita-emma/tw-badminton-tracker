@@ -781,7 +781,7 @@
       <div id="kpiStrip" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
     </div>
     <div class="appbar-right">
-      <span class="tag tag-muted mono" title="基準日 (依臺灣時間自動更新)">📅 <span id="refDateDisplay">2026-11-17</span></span>
+      <span class="tag tag-muted mono" title="基準日 (依臺灣時間自動更新)">📅 <span id="refDateDisplay">2026-11-20</span></span>
       <button id="btnCrawlerModal" type="button" class="btn btn-xs">📡 來源狀態</button>
       <button id="btnExportCsv" type="button" class="btn btn-xs">📥 CSV</button>
       <a href="#commentSection" class="btn btn-xs">💬 回報</a>
@@ -2770,9 +2770,80 @@
         .replace(/"/g, "&quot;");
     }
 
-    // Concise Keyword Extractors
-    function shortTitle(t) {
-      return String(t || "").replace(/\s*[\(（].*?[\)）]\s*/g, "").trim();
+    // Colloquial Taiwan Badminton Community Shorthand Names
+    const SHORT_TITLES_BY_ID = {
+      "ev-09": "夏季舞動山水盃",
+      "ev-10": "明日星親子賽",
+      "ev-11": "臺南中小學賽",
+      "ev-11b": "竹塹盃",
+      "ev-11c": "羽霸盃",
+      "ev-11d": "中秋華江盃",
+      "ev-12b": "新北城市夏季盃",
+      "ev-13": "彰化縣長盃",
+      "ev-14": "高雄體促盃",
+      "ev-14live": "新北中小學對抗賽",
+      "ev-15": "生麗盃",
+      "ev-16": "臺中市長盃",
+      "ev-16ty": "桃園航空城盃",
+      "ev-17": "未來里建設盃",
+      "ev-18": "澎湖中小學聯賽",
+      "ev-18sosa": "SOSA盃",
+      "ev-18kh": "高雄市長盃",
+      "ev-19": "全國國小盃",
+      "ev-20": "宜蘭中小運",
+      "ev-20ym": "梅好羽你嘉年華",
+      "ev-21": "冬季亞柏盃",
+      "ev-22": "力羽美新手盃",
+      "ev-23": "樂穎盃",
+      "ev-23ld": "羅東飛羽盃",
+      "ev-24": "聖誕舞動山水盃",
+      "ev-24cy-tp": "群岳盃(臺北元旦)",
+      "ev-24cy-tc": "群岳盃(臺中元旦)",
+      "ev-24fd": "富易達公益盃",
+      "ev-25": "北市冬季主委盃",
+      "ev-29": "山城盃",
+      "ev-25ncue": "彰師大盃",
+      "ev-26": "樹德超力盃",
+      "ev-26fh": "名人堂寒假營",
+      "ev-26gf": "一線入魂",
+      "ev-26by": "比格楊冒險者盃",
+      "ev-27": "台羽盃",
+      "ev-28": "新苗後山盃",
+      "ev-29tn": "府城羽鋒盃",
+      "ev-30": "全國學童盃",
+      "ev-31": "群岳盃(新竹228)",
+      "ev-32": "SuperKids(3月)",
+      "ev-33": "日月潭盃",
+      "ev-34": "新北青年盃",
+      "ev-35": "春季舞動山水盃",
+      "ev-36": "群岳盃(臺北清明)",
+      "ev-37": "花蓮縣長盃",
+      "ev-37b": "北市中正盃",
+      "ev-38": "全國團體賽",
+      "ev-39": "久樘國小盃",
+      "ev-40": "SuperKids(6月)",
+      "ev-41": "港都群岳盃",
+      "ev-42": "羽協暑期育樂營",
+      "ev-43": "二次分齡賽(U15)",
+      "ev-44": "群岳盃(臺北暑期)",
+      "ev-45": "葛瑪蘭盃"
+    };
+
+    function shortTitle(evOrStr) {
+      if (evOrStr && typeof evOrStr === "object") {
+        if (evOrStr.shortName) return evOrStr.shortName;
+        if (evOrStr.id && SHORT_TITLES_BY_ID[evOrStr.id]) return SHORT_TITLES_BY_ID[evOrStr.id];
+        evOrStr = evOrStr.title || "";
+      } else if (typeof evOrStr === "string" && SHORT_TITLES_BY_ID[evOrStr]) {
+        return SHORT_TITLES_BY_ID[evOrStr];
+      }
+      return String(evOrStr || "")
+        .replace(/\s*[\(（].*?[\)）]\s*/g, "")
+        .replace(/^(202\d|11\d)(年|學年度|年度)?/g, "")
+        .replace(/第[一二三四五六七八九十\d]+屆/g, "")
+        .replace(/(全國)?(學童|青少年|分級)?(分齡)?羽球(公開分齡|公開)?(錦標賽|爭霸賽|公開賽)/g, "")
+        .replace(/[「」]/g, "")
+        .trim();
     }
     function shortVenue(v) {
       return String(v || "")
@@ -3015,7 +3086,7 @@
     }
 
     function buildGoogleCalUrl(ev, mode = "match") {
-      const title = encodeURIComponent(mode === "reg" ? `[報名截止] ${shortTitle(ev.title)}` : `[比賽] ${shortTitle(ev.title)}`);
+      const title = encodeURIComponent(mode === "reg" ? `[報名截止] ${shortTitle(ev)}` : `[比賽] ${shortTitle(ev)}`);
       const startStr = (mode === "reg" ? ev.regStart : ev.matchStart).replace(/-/g, "");
       const endDateObj = new Date((mode === "reg" ? ev.regEnd : ev.matchEnd) + "T00:00:00");
       endDateObj.setDate(endDateObj.getDate() + 1);
@@ -3064,7 +3135,7 @@
       const regState = getRegistrationState(ev);
       const info = getEffectiveScheduleInfo(ev);
       const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
-      const fbSearchUrl = `https://www.facebook.com/search/top/?q=${encodeURIComponent(shortTitle(ev.title))}`;
+      const fbSearchUrl = `https://www.facebook.com/search/top/?q=${encodeURIComponent(shortTitle(ev))}`;
 
       document.getElementById("drawerBadges").innerHTML = `
         ${regionTag(ev.region)}
@@ -3072,7 +3143,9 @@
         ${getEventTypes(ev).map(t => `<span class="tag tag-muted">${t}</span>`).join("")}
         <span class="tag tag-muted mono">${ev.id.toUpperCase()}</span>
       `;
-      document.getElementById("drawerTitle").textContent = shortTitle(ev.title);
+      const drawerTitleEl = document.getElementById("drawerTitle");
+      drawerTitleEl.textContent = shortTitle(ev);
+      drawerTitleEl.title = ev.title;
 
       document.getElementById("drawerModeTabs").innerHTML = [
         ["all", "總覽"],
@@ -3250,7 +3323,7 @@
             <div class="gantt-info-left">
               <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)" title="關注">${isFav ? "★" : "☆"}</button>
               ${regionTag(ev.region)}
-              <span class="gantt-title" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev.title))}</span>
+              <span class="gantt-title" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev))}</span>
             </div>
             <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
               ${regState.isVerified ? `<span class="tag tag-yixue">義學</span>` : (regState.isManual ? `<span class="tag tag-open">已報</span>` : "")}
@@ -3278,7 +3351,7 @@
             <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)">${isFav ? "★" : "☆"}</button>
           </td>
           <td>${regionTag(ev.region)}</td>
-          <td style="font-weight:600;">${escapeHtml(shortTitle(ev.title))}</td>
+          <td style="font-weight:600;" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev))}</td>
           <td>
             <div style="display:flex;flex-wrap:wrap;gap:3px;">
               ${types.map(t => `<span class="tag tag-muted">${t}</span>`).join("")}
@@ -3401,7 +3474,7 @@
         if (onlyFav && !favorites.includes(ev.id)) return false;
         if (hideRestricted && isRestrictedOtherCounty(ev)) return false;
         if (q) {
-          const hay = `${ev.title} ${ev.venue} ${ev.region} ${ev.grades} ${ev.shuttlecock} ${ev.platform} ${ev.url} ${info.rosterText}`.toLowerCase();
+          const hay = `${shortTitle(ev)} ${ev.title} ${ev.venue} ${ev.region} ${ev.grades} ${ev.shuttlecock} ${ev.platform} ${ev.url} ${info.rosterText}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;
@@ -3650,7 +3723,8 @@
 
     // Compact Feedback Notes
     const INITIAL_COMMENTS = [
-      { time: "2026-11-17", author: "系統", type: "情報補充", content: "同步 11/17 最新賽況：新增桃園航空城盃(11/18-22)、新竹SOSA盃、桃園楊梅嘉年華、彰師大盃、桃園名人堂冬令營，共 55 場" },
+      { time: "2026-11-20", author: "系統", type: "賽程名單", content: "全站賽事名稱改為球界通用簡寫（如全國國小盃、樂穎盃、生麗盃、新北青年盃等）" },
+      { time: "2026-11-17", author: "系統", type: "情報補充", content: "同步最新賽況：新增桃園航空城盃(11/18-22)、SOSA盃、梅好羽你嘉年華、彰師大盃、名人堂寒假營，共 55 場" },
       { time: "2026-11-11", author: "系統", type: "賽程名單", content: "v2.9 精簡介面・全國必選置頂・北區預選・已完賽收折" }
     ];
     let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v29") || "null") || [...INITIAL_COMMENTS];
@@ -3705,7 +3779,7 @@
         const info = getEffectiveScheduleInfo(e);
         const reg = getRegistrationState(e).isRegistered ? "是" : "否";
         return [
-          e.region, reg, `"${shortTitle(e.title).replace(/"/g, '""')}"`, `"${shortVenue(e.venue)}"`,
+          e.region, reg, `"${shortTitle(e).replace(/"/g, '""')}"`, `"${shortVenue(e.venue)}"`,
           e.regStart, e.regEnd, e.matchStart, e.matchEnd, computeStatus(e),
           `"${info.rosterText.replace(/"/g, '""')}"`, e.url, info.scheduleUrl || ""
         ];
