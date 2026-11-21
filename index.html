@@ -115,7 +115,7 @@
 
     /* Main Workspace Container */
     .workspace {
-      max-width: 1560px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 10px 14px 32px;
       display: flex;
@@ -445,10 +445,10 @@
 
     /* Gantt Chart */
     .gantt-scroll { overflow-x: auto; }
-    .gantt-min { min-width: 940px; }
+    .gantt-min { min-width: 720px; }
     .gantt-head, .gantt-row {
       display: grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 272px 1fr;
       align-items: center;
     }
     .gantt-head {
@@ -476,21 +476,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
-      padding-right: 10px;
+      gap: 5px;
+      padding-right: 8px;
       overflow: hidden;
     }
     .gantt-info-left {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       overflow: hidden;
+    }
+    .gantt-info .star-btn {
+      min-width: 28px;
+      min-height: 28px;
+      font-size: 16px;
     }
     .gantt-title {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-weight: 500;
+      font-weight: 600;
     }
     .gantt-row:hover .gantt-title { color: var(--blue-text); }
     .gantt-track {
@@ -563,12 +568,12 @@
     .table-scroll { overflow-x: auto; }
     table.b-table {
       width: 100%;
-      min-width: 1040px;
+      min-width: 880px;
       border-collapse: collapse;
       text-align: left;
     }
     .b-table th {
-      padding: 8px 10px;
+      padding: 8px 8px;
       font-size: 12px;
       font-weight: 600;
       color: var(--text-sec);
@@ -577,7 +582,7 @@
       white-space: nowrap;
     }
     .b-table td {
-      padding: 9px 10px;
+      padding: 8px 8px;
       border-bottom: 1px solid var(--border-light);
       vertical-align: middle;
     }
@@ -587,8 +592,8 @@
     .star-btn {
       border: none;
       background: transparent;
-      min-width: 34px;
-      min-height: 34px;
+      min-width: 30px;
+      min-height: 30px;
       padding: 0;
       font-size: 17px;
       line-height: 1;
@@ -702,6 +707,8 @@
       .search-wrap { width: 100%; margin-left: 0; }
       .search-input, .inp { height: 42px; font-size: 16px; }
       .search-input { width: 100%; }
+      .gantt-min { min-width: 630px; }
+      .gantt-head, .gantt-row { grid-template-columns: 242px 1fr; }
     }
     .kv-grid {
       display: grid;
@@ -941,14 +948,14 @@
           <thead>
             <tr>
               <th style="width:36px;text-align:center;">☆</th>
-              <th style="width:68px;">區域</th>
-              <th>賽事名稱</th>
-              <th style="width:132px;">項目</th>
-              <th style="width:150px;">地點</th>
-              <th style="width:124px;">報名截止</th>
-              <th style="width:112px;">比賽日期</th>
-              <th style="width:195px;">義學名單 / 賽程狀態</th>
-              <th style="width:170px;text-align:right;">快速連結</th>
+              <th style="width:60px;">區域</th>
+              <th style="width:142px;">賽事名稱</th>
+              <th style="width:148px;">項目</th>
+              <th style="width:175px;">地點</th>
+              <th style="width:118px;">報名截止</th>
+              <th style="width:98px;">比賽日期</th>
+              <th>義學名單 / 賽程狀態</th>
+              <th style="width:152px;text-align:right;">快速連結</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -3353,8 +3360,8 @@
           <td style="text-align:center;" onclick="event.stopPropagation()">
             <button type="button" class="star-btn ${isFav ? 'on' : ''}" onclick="toggleFav('${ev.id}', event)">${isFav ? "★" : "☆"}</button>
           </td>
-          <td>${regionTag(ev.region)}</td>
-          <td style="font-weight:600;" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev))}</td>
+          <td style="white-space:nowrap;">${regionTag(ev.region)}</td>
+          <td style="font-weight:600;white-space:nowrap;" title="${escapeHtml(ev.title)}">${escapeHtml(shortTitle(ev))}</td>
           <td>
             <div style="display:flex;flex-wrap:wrap;gap:3px;">
               ${types.map(t => `<span class="tag tag-muted">${t}</span>`).join("")}
@@ -3371,9 +3378,9 @@
             ${shortRange(ev.matchStart, ev.matchEnd)}
           </td>
           <td onclick="openDetailDrawer('${ev.id}', 'match', event)">
-            <div style="display:flex;align-items:center;gap:5px;max-width:210px;">
+            <div style="display:flex;align-items:center;gap:5px;max-width:360px;">
               ${yixueShortCell(ev)}
-              ${info.shortRoster ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-sec);" title="${escapeHtml(info.rosterText)}">${escapeHtml(info.shortRoster)}</span>` : ""}
+              ${info.shortRoster ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;color:var(--text-sec);" title="${escapeHtml(info.rosterText)}">${escapeHtml(info.shortRoster)}</span>` : ""}
             </div>
           </td>
           <td style="text-align:right;white-space:nowrap;" onclick="event.stopPropagation()">
