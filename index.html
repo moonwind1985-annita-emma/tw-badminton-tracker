@@ -345,6 +345,11 @@
       color: var(--blue-text);
       font-weight: 600;
     }
+    .horizon-switch-sm .seg-btn {
+      min-height: 34px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
 
     /* Search Input */
     .search-wrap {
@@ -445,7 +450,8 @@
 
     /* Gantt Chart */
     .gantt-scroll { overflow-x: auto; }
-    .gantt-min { min-width: 720px; }
+    .gantt-min { min-width: 720px; --gantt-cols: 4; }
+    .gantt-min.horizon-compact { min-width: 620px; }
     .gantt-head, .gantt-row {
       display: grid;
       grid-template-columns: 272px 1fr;
@@ -460,7 +466,7 @@
     }
     .gantt-months {
       display: grid;
-      grid-template-columns: repeat(11, minmax(0, 1fr));
+      grid-template-columns: repeat(var(--gantt-cols, 4), minmax(0, 1fr));
       text-align: center;
       font-family: 'Roboto Mono', monospace;
     }
@@ -504,7 +510,7 @@
       border-radius: 4px;
       background-color: var(--bg-subtle);
       background-image: linear-gradient(to right, var(--border-light) 1px, transparent 1px);
-      background-size: calc(100% / 11) 100%;
+      background-size: calc(100% / var(--gantt-cols, 4)) 100%;
     }
     .today-line {
       position: absolute;
@@ -528,6 +534,15 @@
         rgba(26, 115, 232, 0.42) 10px
       );
       border: 1px solid var(--blue);
+      z-index: 15;
+    }
+    .bar-reg-tentative {
+      position: absolute;
+      top: 4px;
+      height: 18px;
+      border-radius: 4px;
+      background: rgba(128, 134, 139, 0.14);
+      border: 1px dashed var(--text-muted);
       z-index: 15;
     }
     .bar-reg-stub {
@@ -559,7 +574,7 @@
       border: 1px solid #a50e0e;
       z-index: 25;
     }
-    .bar-reg:hover, .bar-match:hover, .bar-live:hover {
+    .bar-reg:hover, .bar-reg-tentative:hover, .bar-match:hover, .bar-live:hover {
       filter: brightness(1.1);
       transform: scaleY(1.08);
     }
@@ -701,6 +716,7 @@
     }
     @media (max-width: 768px) {
       .btn, .chk-chip, .seg-btn { min-height: 42px; font-size: 14px; }
+      .horizon-switch-sm .seg-btn { min-height: 38px; font-size: 13.5px; padding: 0 11px; }
       .filter-row > .group-label { min-height: 42px; font-size: 13.5px; }
       .btn-xs, .stat-chip { min-height: 38px; font-size: 13px; padding: 0 12px; }
       .chk-chip input[type="checkbox"], .chk-chip input[type="radio"] { width: 18px; height: 18px; }
@@ -708,6 +724,7 @@
       .search-input, .inp { height: 42px; font-size: 16px; }
       .search-input { width: 100%; }
       .gantt-min { min-width: 630px; }
+      .gantt-min.horizon-compact { min-width: 530px; }
       .gantt-head, .gantt-row { grid-template-columns: 242px 1fr; }
     }
     .kv-grid {
@@ -788,7 +805,7 @@
       <div id="kpiStrip" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
     </div>
     <div class="appbar-right">
-      <span class="tag tag-muted mono" title="基準日 (依臺灣時間自動更新)">📅 <span id="refDateDisplay">2026-11-20</span></span>
+      <span class="tag tag-muted mono" title="基準日 (依臺灣時間自動更新)">📅 <span id="refDateDisplay">2026-11-22</span></span>
       <button id="btnCrawlerModal" type="button" class="btn btn-xs">📡 來源狀態</button>
       <button id="btnExportCsv" type="button" class="btn btn-xs">📥 CSV</button>
       <a href="#commentSection" class="btn btn-xs">💬 回報</a>
@@ -799,6 +816,17 @@
   <main class="workspace">
     <!-- Checkbox & Button Filter Matrix (全項目統一靠左對齊) -->
     <section class="panel filter-panel" aria-label="篩選與排序表單">
+      <div class="filter-row">
+        <span class="group-label">期間</span>
+        <div class="filter-controls">
+          <div class="seg-group" role="group" aria-label="排程期間版本切換">
+            <button type="button" data-horizon="3m" class="seg-btn horizon-btn active">📅 未來 3 個月</button>
+            <button type="button" data-horizon="8m" class="seg-btn horizon-btn">🗓️ 未來 8 個月</button>
+          </div>
+          <span id="horizonRuleHint" class="tag tag-muted" style="font-size:12px;">已隱藏未定報名場次</span>
+        </div>
+      </div>
+
       <div class="filter-row">
         <span class="group-label">區域</span>
         <div class="filter-controls">
@@ -839,6 +867,7 @@
           <label class="chk-chip"><input type="checkbox" class="st-chk" value="報名中" /><span>🟢 報名中</span></label>
           <label class="chk-chip"><input type="checkbox" class="st-chk" value="待開賽" /><span>🟡 待開賽</span></label>
           <label class="chk-chip"><input type="checkbox" class="st-chk" value="即將開放" /><span>🔵 未開放</span></label>
+          <label id="lblPendingStatusChk" class="chk-chip hidden"><input type="checkbox" class="st-chk" value="報名待定" /><span>⏳ 待定</span></label>
         </div>
       </div>
 
@@ -896,11 +925,15 @@
       </div>
     </section>
 
-    <!-- Schedule Gantt Panel (預設已報名・義學優先置頂，進行中/未開賽展開，已完賽預設收折) -->
+    <!-- Schedule Gantt Panel (預設未來 3 個月並隱藏未定報名場次；可一鍵切換 3 個月 / 8 個月) -->
     <section id="ganttSection" class="panel">
       <div class="panel-head">
         <div class="panel-title">
           <span>📊 賽事排程</span>
+          <div class="seg-group horizon-switch-sm" role="group" aria-label="賽事排程期間快速切換">
+            <button type="button" data-horizon="3m" class="seg-btn horizon-btn active">未來 3 個月</button>
+            <button type="button" data-horizon="8m" class="seg-btn horizon-btn">未來 8 個月</button>
+          </div>
           <span class="tag tag-muted">🟦 章程/組別</span>
           <span class="tag tag-muted">🟩 義學名單</span>
           <span class="tag tag-muted">🟥 LIVE</span>
@@ -911,17 +944,13 @@
         </div>
       </div>
       <div id="ganttPanelBody" class="gantt-scroll">
-        <div class="gantt-min">
+        <div id="ganttMinWrap" class="gantt-min horizon-compact">
           <div class="gantt-head">
             <div style="display:flex;justify-content:space-between;padding-right:10px;">
               <span>☆ / 區域 / 賽事</span>
               <span>狀態</span>
             </div>
-            <div class="gantt-months">
-              <span>26/09</span><span>26/10</span>
-              <span style="color:var(--red);font-weight:700;">26/11</span>
-              <span>26/12</span><span>27/01</span><span>27/02</span><span>27/03</span><span>27/04</span><span>27/05</span><span>27/06</span><span>27/07</span>
-            </div>
+            <div id="ganttMonthsHeader" class="gantt-months"></div>
           </div>
           <div id="ganttContainer"></div>
         </div>
@@ -1038,19 +1067,16 @@
         const y = parts.find(p => p.type === "year")?.value;
         const m = parts.find(p => p.type === "month")?.value;
         const d = parts.find(p => p.type === "day")?.value;
-        const iso = (y && m && d) ? `${y}-${m}-${d}` : "2026-11-17";
-        if (iso < "2026-11-17") return "2026-11-17";
+        const iso = (y && m && d) ? `${y}-${m}-${d}` : "2026-11-22";
+        if (iso < "2026-11-22") return "2026-11-22";
         if (iso > "2027-07-31") return "2027-07-31";
         return iso;
       } catch (_) {
-        return "2026-11-17";
+        return "2026-11-22";
       }
     }
     const REF_TODAY = getTaiwanTodayIso();
     document.getElementById("refDateDisplay").textContent = REF_TODAY;
-    const TIMELINE_START = new Date("2026-09-01T00:00:00");
-    const TIMELINE_END = new Date("2027-07-31T23:59:59");
-    const TOTAL_MS = TIMELINE_END - TIMELINE_START;
 
     const INITIAL_EVENTS = [
       // ==================== 往前 2 個月 (2026/09 ~ 2026/10) ====================
@@ -1702,6 +1728,8 @@
         title: "2026冬季亞柏盃全國學童分齡羽球錦標賽",
         regStart: "2026-11-01",
         regEnd: "2026-11-27",
+       regConfirmed: false,
+        regConfirmed: false,
         matchStart: "2026-12-19",
         matchEnd: "2026-12-20",
         platform: "亞柏盃專屬賽事網 (ap.mylivescore.link)",
@@ -1718,10 +1746,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名中・12/07出賽程後解鎖",
+        yixueStatus: "⏳ 確切報名時間待官方公告",
         yixueEntries: [],
-        fbCheck: "已核對「亞柏羽球隊 FB 粉專」與全台羽球交流賽社團：報名專屬網址為 ap.mylivescore.link，11/27 截止報名、12/07 公告賽程表。",
-        notes: "🟢 現正報名中！由職業球團亞柏會館主辦，場地品質極佳。"
+        fbCheck: "已核對 ap.mylivescore.link：目前專網仍停留在 2026 夏季場次，冬季場確切報名時間尚未公告。",
+        notes: "⏳ 由職業球團亞柏會館主辦，冬季場確切報名時間待官方公告。"
       },
       {
         id: "ev-22",
@@ -1762,9 +1790,9 @@
         regEnd: "2026-11-24",
         matchStart: "2026-12-25",
         matchEnd: "2026-12-27",
-        platform: "樂穎盃專網 & MY Livescore (opid=302615)",
-        url: "https://rollin.mylivescore.link/",
-        docUrl: "https://go.mylivescore.link/?opid=302615",
+        platform: "MY Livescore 第四屆樂穎盃專頁 (opid=302615)",
+        url: "https://go.mylivescore.link/?opid=302615",
+        docUrl: "https://rollin.mylivescore.link/",
         grades: "國小一～六年級分齡、國際學校組、親子雙打組、師生雙打組",
         divisions: [
           "國小一年級組：男女混合半場單打",
@@ -1786,7 +1814,7 @@
         scheduleUrl: "",
         yixueStatus: "🔒 報名中(11/24截止)・待12/15正式賽程公布後填寫",
         yixueEntries: [],
-        fbCheck: "已核對「新莊樂穎羽球館 FB 粉專」、MY Livescore (opid=302615) 與「FB 全台羽球交流賽社團」：報名期為 8/31~11/24，12/08 抽籤、12/15 才出正式賽程表（已嚴格清除未出賽程前之預估名單）。",
+        fbCheck: "已核對「新莊樂穎羽球館 FB 粉專」、MY Livescore (opid=302615) 與 RALLY TW：報名期為 8/31~11/24，12/08 抽籤、12/15 公告正式賽程表。",
         notes: "🟢 場館緊鄰泰山義學國小（車程15分鐘）！現正報名中（11/24截止），待 12/15 正式賽程表公布後再登錄義學參賽人名。"
       },
       {
@@ -1796,7 +1824,7 @@
         address: "宜蘭縣羅東鎮公正路/體育路羅東羽球館",
         title: "2026羅東飛羽盃全國分齡羽球公開賽 (含國小分齡)",
         regStart: "2026-10-20",
-        regEnd: "2026-11-27",
+        regEnd: "2026-11-22",
         matchStart: "2026-12-25",
         matchEnd: "2026-12-27",
         platform: "MY Livescore 羅東飛羽盃專頁 (opid=344684)",
@@ -1813,10 +1841,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名中・12/11出賽程後解鎖",
+        yixueStatus: "🔒 11/22報名截止・12/11出賽程後解鎖",
         yixueEntries: [],
-        fbCheck: "已核對「FB 全台羽球交流賽社團」與 MY Livescore (opid=344684)：11/27 報名截止，專屬網址 go.mylivescore.link/?opid=344684。",
-        notes: "🟢 聖誕節連假宜蘭羅東分齡賽，適合雙北球隊雪隧一日往返參賽。"
+        fbCheck: "已核對 RALLY TW 公告與 MY Livescore (opid=344684)：公告報名截止日為 115/11/22，專屬網址 go.mylivescore.link/?opid=344684。",
+        notes: "🔥 11/22 報名截止！聖誕節連假宜蘭羅東分齡賽。"
       },
       {
         id: "ev-24",
@@ -1826,6 +1854,8 @@
         title: "2026聖誕舞動山水盃全國羽球錦標賽 (國小/親子分齡)",
         regStart: "2026-10-26",
         regEnd: "2026-11-30",
+       regConfirmed: false,
+        regConfirmed: false,
         matchStart: "2026-12-26",
         matchEnd: "2026-12-27",
         platform: "舞動山水盃專屬網 (wdygsports)",
@@ -1842,10 +1872,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名中・12/15出賽程後解鎖",
+        yixueStatus: "⏳ 確切報名時間待官方公告",
         yixueEntries: [],
-        fbCheck: "已核對「山水羽球 FB」與「FB 全台羽球交流賽社團」：聖誕場專屬報名入口為 wdygsports.mylivescore.link，12/15 公告賽程。",
-        notes: "🟢 聖誕週末檔期現正報名中，適合想在年底再衝一波實戰經驗的小選手。"
+        fbCheck: "已核對 wdygsports.mylivescore.link：目前官網仍停留在前次舞動盃，2026 聖誕場確切報名時間尚未上架公告。",
+        notes: "⏳ 例行聖誕檔期，確切報名時間待官方公告。"
       },
       {
         id: "ev-24cy-tp",
@@ -1917,9 +1947,9 @@
         regEnd: "2026-12-11",
         matchStart: "2027-01-16",
         matchEnd: "2027-01-16",
-        platform: "富易達盃專網 & MY Livescore (opid=813720)",
-        url: "https://fueda.mylivescore.link/",
-        docUrl: "https://go.mylivescore.link/?opid=813720",
+        platform: "MY Livescore 第五屆富易達盃專頁 (opid=813720)",
+        url: "https://go.mylivescore.link/?opid=813720",
+        docUrl: "https://fueda.mylivescore.link/",
         grades: "國小學生分齡組、公益親子組",
         divisions: ["國小學生分齡單打、雙打組", "公益親子交流組"],
         eventsList: "單打、雙打、親子公益組",
@@ -1934,7 +1964,7 @@
         scheduleUrl: "",
         yixueStatus: "🔒 報名中・12/30出賽程後解鎖",
         yixueEntries: [],
-        fbCheck: "已核對「FB 全台羽球交流賽社團」與專屬網 fueda.mylivescore.link (opid=813720)：12/11 報名截止。",
+        fbCheck: "已核對 RALLY TW 與 MY Livescore (opid=813720)：2027/01/16 於朝馬運動中心舉行，12/11 報名截止。",
         notes: "🟢 結合公益捐助之中部熱門單日分齡賽事。"
       },
       {
@@ -1945,6 +1975,8 @@
         title: "2027北市冬季主委盃暨舞動盃國小分齡親子羽球賽",
         regStart: "2026-11-05",
         regEnd: "2026-12-11",
+       regConfirmed: false,
+        regConfirmed: false,
         matchStart: "2027-01-16",
         matchEnd: "2027-01-17",
         platform: "舞動陽光賽事專頁 (wdygsports)",
@@ -1961,10 +1993,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 報名中・01/04出賽程後解鎖",
+        yixueStatus: "⏳ 確切報名時間待官方公告",
         yixueEntries: [],
-        fbCheck: "已核對中正運動中心（舞動陽光）FB 粉專：寒假前夕週末檔期，統一由 wdygsports.mylivescore.link 受理報名。",
-        notes: "🟢 寒假前夕台北市中心場館賽事，捷運中正紀念堂站步行5分鐘。"
+        fbCheck: "已核對 wdygsports.mylivescore.link：2027 冬季場確切報名時間尚未公告。",
+        notes: "⏳ 寒假前夕例行檔期，確切報名時間待官方公告。"
       },
       {
         id: "ev-29",
@@ -1976,9 +2008,9 @@
         regEnd: "2026-11-27",
         matchStart: "2027-01-21",
         matchEnd: "2027-01-25",
-        platform: "竹南羽協山城盃專網 & MY Livescore (opid=819141)",
-        url: "https://cnba.mylivescore.link/",
-        docUrl: "https://go.mylivescore.link/?opid=819141",
+        platform: "MY Livescore 2027山城盃專頁 (opid=819141)",
+        url: "https://go.mylivescore.link/?opid=819141",
+        docUrl: "https://cnba.mylivescore.link/",
         grades: "國小二～六年級各年級個人單雙打組（國小組排定於 1/21~1/23 出賽）",
         divisions: [
           "國小二年級組：男單、女單",
@@ -1999,7 +2031,7 @@
         scheduleUrl: "",
         yixueStatus: "🔒 火熱報名中(11/27截止)・待12/30正式賽程公布後填寫",
         yixueEntries: [],
-        fbCheck: "已核對「苗栗縣竹南鎮羽球協會 FB 粉專」與 MY Livescore (opid=819141) 正式規程：報名已於 10/25 開放至 11/27 截止（11/30 名單、12/23 抽籤、12/30 賽程公告），國小組於 1/21~1/23 比賽！已清除未出賽程前之預估名單。",
+        fbCheck: "已核對「苗栗縣竹南鎮羽球協會 FB 粉專」與 MY Livescore (opid=819141) 正式規程：報名已於 10/25 開放至 11/27 截止（11/30 名單、12/23 抽籤、12/30 賽程公告），國小組於 1/21~1/23 比賽！",
         notes: "🟢 現正火熱報名中（11/27截止）！苗栗巨蛋16面標準場地，寒假中北部指標大賽。"
       },
       {
@@ -2054,15 +2086,15 @@
         scoring: "預賽分組循環、決賽單敗淘汰；單局 25 分不加分制。",
         shuttlecock: "EXTHREE 超力比賽級指定羽球 (X-750)",
         fee: "單打 NT$650 / 雙打 NT$1,200 / 團體 NT$2,600（贈超力紀念衫）",
-        drawDate: "2026-12-28",
+        drawDate: "2026-11-27抽籤 / 12-28賽程",
         organizer: "樹德科技大學、超力運動用品、高雄市羽委會",
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 首波11/20截止・12/28出賽程後解鎖",
+        yixueStatus: "🔒 11/20報名截止・11/27直播抽籤",
         yixueEntries: [],
-        fbCheck: "已交叉核對「超力運動用品 FB」、北市教育局轉發公文 (11/20截止) 與 MY Livescore (opid=326156，額滿提前截止或最晚12/18)：強烈建議於公文首波截止日 11/20 前完成報名以免額滿！",
-        notes: "🔥 寒假南部最大規模經典全國賽！首波 11/20 截止在即，名額極搶手常提前額滿。"
+        fbCheck: "已交叉核對「超力運動用品 FB」、競賽規程 (11/20截止、11/27 19:00 FB直播抽籤) 與 MY Livescore (opid=326156)。",
+        notes: "🔥 寒假南部最大規模經典全國賽！11/27 晚間 FB 直播抽籤。"
       },
       {
         id: "ev-26fh",
@@ -2103,8 +2135,8 @@
         regEnd: "2026-12-25",
         matchStart: "2027-01-26",
         matchEnd: "2027-01-31",
-        platform: "一線入魂專網 & MY Livescore (opid=817332)",
-        url: "https://goforone.mylivescore.link/",
+        platform: "MY Livescore 第七屆一線入魂專頁 (opid=817332)",
+        url: "https://go.mylivescore.link/?opid=817332",
         docUrl: "https://goforone365.com/tournament",
         grades: "國小一年級～六年級各年級單雙打組",
         divisions: [
@@ -2165,6 +2197,8 @@
         title: "2027台羽盃全國分齡羽球錦標賽 (國小U11/各年級分齡)",
         regStart: "2026-12-01",
         regEnd: "2027-01-08",
+       regConfirmed: false,
+        regConfirmed: false,
         matchStart: "2027-01-30",
         matchEnd: "2027-01-31",
         platform: "台羽盃專屬賽事網 (exic.mylivescore.link)",
@@ -2181,10 +2215,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "🔒 12/01開放報名",
+        yixueStatus: "⏳ 確切報名時間待官方公告",
         yixueEntries: [],
-        fbCheck: "已核對「FB 全台羽球交流賽社團」：台羽盃專屬報名與章程子網域為 exic.mylivescore.link。",
-        notes: "寒假桃竹苗大型分齡賽事，場館寬敞好停車。"
+        fbCheck: "已核對 exic.mylivescore.link：2027 新年度場次確切報名日期尚未公告。",
+        notes: "⏳ 寒假桃竹苗分齡賽事預估檔期，確切報名時間待官方公告。"
       },
       {
         id: "ev-28",
@@ -2194,6 +2228,7 @@
         title: "2027年第十二屆新苗後山盃全國羽球錦標賽 (國小組)",
         regStart: "2026-12-07",
         regEnd: "2027-01-08",
+        regConfirmed: false,
         matchStart: "2027-02-03",
         matchEnd: "2027-02-07",
         platform: "新苗後山盃專屬網 (smba.mylivescore.link)",
@@ -2252,6 +2287,7 @@
         title: "116年度全國學童盃羽球錦標賽 (國小1~6年級單雙打)",
         regStart: "2027-01-18",
         regEnd: "2027-02-10",
+        regConfirmed: false,
         matchStart: "2027-02-26",
         matchEnd: "2027-03-01",
         platform: "台灣愛運動資訊網 (twisport)",
@@ -2281,6 +2317,7 @@
         title: "2027群岳盃全國羽球分齡錦標賽 (228風城站・國小組)",
         regStart: "2026-12-15",
         regEnd: "2027-01-19",
+        regConfirmed: false,
         matchStart: "2027-02-27",
         matchEnd: "2027-03-01",
         platform: "群岳盃專屬賽事網 (cysports)",
@@ -2310,10 +2347,12 @@
         title: "2027 SUPERKIDS 羽球新秀挑戰賽 (國小新秀各組)",
         regStart: "2027-01-11",
         regEnd: "2027-02-19",
+       regConfirmed: false,
+        regConfirmed: false,
         matchStart: "2027-03-13",
         matchEnd: "2027-03-14",
-        platform: "LAPGO SuperKids 專頁",
-        url: "https://lapgo.com.tw/web/superkids2026",
+        platform: "LAPGO SuperKids 2027專頁",
+        url: "https://lapgo.com.tw/web/superkids2027",
         grades: "國小一～六年級新秀組（分齡單打、雙打）",
         divisions: ["國小一～六年級新秀單打、雙打組（謝絕縣市/全國前四名）"],
         eventsList: "男單、女單、男雙、女雙",
@@ -2326,10 +2365,10 @@
         hasSchedule: false,
         scheduleLabel: "",
         scheduleUrl: "",
-        yixueStatus: "",
+        yixueStatus: "⏳ 專頁已開・確切報名時間待公告",
         yixueEntries: [],
-        fbCheck: "已核對 LAPGO 活動列表與兒童羽球社團：2027/03/13~03/14 場館公告為桃園龍潭名人堂羽球館（民生路141巷150號）。",
-        notes: "新手友善度最高！移師桃園龍潭名人堂羽球館舉辦，適合雙北桃園初學學童。"
+        fbCheck: "已核對 LAPGO 最新上架專頁 lapgo.com.tw/web/superkids2027：比賽日確認為 2027/03/13~03/14 於桃園名人堂羽球館，報名狀態顯示「尚未開始」（確切報名時間待公告）。",
+        notes: "新手友善度最高！移師桃園龍潭名人堂羽球館舉辦，確切報名開放日待官方公告。"
       },
       {
         id: "ev-33",
@@ -2339,6 +2378,7 @@
         title: "116年「日月潭盃」全國羽球錦標賽 (含國小各組)",
         regStart: "2027-01-25",
         regEnd: "2027-03-05",
+        regConfirmed: false,
         matchStart: "2027-03-18",
         matchEnd: "2027-03-21",
         platform: "南投羽委會專屬網 (ntbc.mylivescore.link)",
@@ -2368,6 +2408,7 @@
         title: "新北市116年度青年盃羽球錦標賽 (國小團/個人賽)",
         regStart: "2027-02-08",
         regEnd: "2027-03-03",
+        regConfirmed: false,
         matchStart: "2027-03-23",
         matchEnd: "2027-03-26",
         platform: "新北市體育總會最新賽事公告",
@@ -2397,6 +2438,7 @@
         title: "2027舞動山水盃春季羽球錦標賽 (含國小/親子分齡)",
         regStart: "2027-01-20",
         regEnd: "2027-03-05",
+        regConfirmed: false,
         matchStart: "2027-03-27",
         matchEnd: "2027-03-28",
         platform: "舞動山水盃專屬網 (wdygsports)",
@@ -2426,6 +2468,7 @@
         title: "2027群岳盃全國羽球分齡錦標賽 (臺北清明場・國小組)",
         regStart: "2027-01-25",
         regEnd: "2027-03-01",
+        regConfirmed: false,
         matchStart: "2027-04-03",
         matchEnd: "2027-04-06",
         platform: "群岳盃專屬賽事網 (cysports)",
@@ -2455,6 +2498,7 @@
         title: "116年花蓮縣縣長盃暨議長盃羽球錦標賽 (國小組)",
         regStart: "2027-02-22",
         regEnd: "2027-03-19",
+        regConfirmed: false,
         matchStart: "2027-04-10",
         matchEnd: "2027-04-12",
         platform: "LAPGO 花蓮縣長盃專頁",
@@ -2484,6 +2528,7 @@
         title: "116年臺北市中正盃羽球錦標賽 (國小團/個人賽)",
         regStart: "2027-02-25",
         regEnd: "2027-03-18",
+        regConfirmed: false,
         matchStart: "2027-04-12",
         matchEnd: "2027-04-16",
         platform: "臺北市政府教育局競賽公告專頁",
@@ -2513,6 +2558,7 @@
         title: "116年全國羽球團體錦標賽 (含國小男女團體組)",
         regStart: "2027-03-22",
         regEnd: "2027-04-14",
+        regConfirmed: false,
         matchStart: "2027-05-10",
         matchEnd: "2027-05-21",
         platform: "中華羽協 116年度行事曆專頁 (id=213)",
@@ -2543,6 +2589,7 @@
         title: "116年臺中久樘國小盃羽球錦標賽 (年度6月例行檔期)",
         regStart: "2027-04-19",
         regEnd: "2027-05-14",
+        regConfirmed: false,
         matchStart: "2027-06-05",
         matchEnd: "2027-06-06",
         platform: "臺中市羽委會 久樘國小盃規程專頁",
@@ -2572,6 +2619,7 @@
         title: "2027 Super Kids 羽球新秀挑戰賽 (桃園6月場・預定檔期)",
         regStart: "2027-04-26",
         regEnd: "2027-05-28",
+        regConfirmed: false,
         matchStart: "2027-06-12",
         matchEnd: "2027-06-13",
         platform: "LAPGO SuperKids 專屬賽事頁",
@@ -2601,6 +2649,7 @@
         title: "2027港都群岳盃全國羽球分齡錦標賽 (高雄亞柏站・國小各年級)",
         regStart: "2027-04-28",
         regEnd: "2027-05-31",
+        regConfirmed: false,
         matchStart: "2027-06-26",
         matchEnd: "2027-06-27",
         platform: "群岳盃專屬賽事網 (cysports)",
@@ -2630,6 +2679,7 @@
         title: "VICTOR 116年中華民國羽球協會暑期羽球育樂營 (國小學童梯次)",
         regStart: "2027-05-10",
         regEnd: "2027-06-18",
+        regConfirmed: false,
         matchStart: "2027-07-05",
         matchEnd: "2027-07-09",
         platform: "中華羽協 116年度行事曆專頁 (id=213)",
@@ -2660,6 +2710,7 @@
         title: "2027年第二次全國青少年羽球分齡錦標賽 (U15組・小六升國一銜接)",
         regStart: "2027-05-24",
         regEnd: "2027-06-16",
+        regConfirmed: false,
         matchStart: "2027-07-12",
         matchEnd: "2027-07-20",
         platform: "中華羽協 116年度行事曆專頁 (id=213)",
@@ -2690,6 +2741,7 @@
         title: "2027群岳盃全國羽球分齡錦標賽 (臺北暑期場・國小組預定檔期)",
         regStart: "2027-05-31",
         regEnd: "2027-06-30",
+        regConfirmed: false,
         matchStart: "2027-07-22",
         matchEnd: "2027-07-25",
         platform: "群岳盃專屬賽事網 (cysports)",
@@ -2719,6 +2771,7 @@
         title: "2027葛瑪蘭全國羽球錦標賽 (含國小分齡各組・暑期檔期)",
         regStart: "2027-05-14",
         regEnd: "2027-06-25",
+        regConfirmed: false,
         matchStart: "2027-07-28",
         matchEnd: "2027-07-31",
         platform: "LAPGO 葛瑪蘭盃專屬賽事頁",
@@ -2743,13 +2796,20 @@
       }
     ];
 
+    const UNCONFIRMED_REG_IDS = new Set([
+      "ev-21", "ev-24", "ev-25", "ev-27", "ev-28", "ev-30", "ev-31", "ev-32",
+      "ev-33", "ev-34", "ev-35", "ev-36", "ev-37", "ev-37b", "ev-38", "ev-39",
+      "ev-40", "ev-41", "ev-42", "ev-43", "ev-44", "ev-45"
+    ]);
     const OPTIONAL_REGIONS = ["北區", "中區", "南區", "東區"];
     const ALL_GROUP_KEYS = ["reg_active", "nat_unreg", "regional_unreg", "north_unreg", "mid_unreg", "south_unreg", "east_unreg", "done"];
     let events = [...INITIAL_EVENTS];
+    let currentHorizon = "3m"; // '3m' | '8m' (預設未來 3 個月，自動隱藏未公告確切報名時間之賽事)
+    let activeGanttMonths = [];
     let selectedRegions = new Set(["北區"]);
     let selectedStatuses = new Set();
     let selectedTypes = new Set();
-    let currentSortMode = "time"; // 'time' | 'region' | 'registered'
+    let currentSortMode = "time"; // 'time' | 'region'
     let currentDrawerMode = "all"; // 'all' | 'reg' | 'match'
     let commentsExpanded = false;
     let isTableBodyOpen = true;
@@ -2912,18 +2972,69 @@
       return `${s.slice(5)}~${e.slice(5)}`;
     }
 
+    function daysInMonth(year, month1Based) {
+      return new Date(year, month1Based, 0).getDate();
+    }
+    function addMonthsIso(isoStr, deltaMonths) {
+      const [y, m, d] = isoStr.split("-").map(Number);
+      const totalM = (y * 12 + (m - 1)) + deltaMonths;
+      const ny = Math.floor(totalM / 12);
+      const nm = (totalM % 12) + 1;
+      const nd = Math.min(d, daysInMonth(ny, nm));
+      return `${ny}-${String(nm).padStart(2, "0")}-${String(nd).padStart(2, "0")}`;
+    }
+    function endOfMonthIso(isoStr) {
+      const [y, m] = isoStr.split("-").map(Number);
+      const nd = daysInMonth(y, m);
+      return `${y}-${String(m).padStart(2, "0")}-${String(nd).padStart(2, "0")}`;
+    }
+    function buildGanttMonths(startYm, endYm) {
+      const [sy, sm] = startYm.split("-").map(Number);
+      const [ey, em] = endYm.split("-").map(Number);
+      const list = [];
+      let cur = sy * 12 + (sm - 1);
+      const end = Math.max(cur, ey * 12 + (em - 1));
+      while (cur <= end) {
+        const year = Math.floor(cur / 12);
+        const month = (cur % 12) + 1;
+        const ym = `${year}-${String(month).padStart(2, "0")}`;
+        list.push({
+          ym,
+          year,
+          month,
+          days: daysInMonth(year, month),
+          label: `${String(year).slice(2)}/${String(month).padStart(2, "0")}`
+        });
+        cur++;
+      }
+      return list;
+    }
+
     function daysBetween(d1Str, d2Str) {
       const d1 = new Date(d1Str + "T00:00:00");
       const d2 = new Date(d2Str + "T00:00:00");
       return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
     }
 
+    function isRegConfirmed(ev) {
+      return ev.regConfirmed !== false && !UNCONFIRMED_REG_IDS.has(ev.id);
+    }
+
     function computeStatus(ev) {
       if (REF_TODAY >= ev.matchStart && REF_TODAY <= ev.matchEnd) return "比賽中";
       if (REF_TODAY > ev.matchEnd) return "已結束";
+      if (!isRegConfirmed(ev)) return "報名待定";
       if (REF_TODAY >= ev.regStart && REF_TODAY <= ev.regEnd) return "報名中";
       if (REF_TODAY < ev.regStart) return "即將開放";
       return "待開賽";
+    }
+
+    function getHorizonBounds() {
+      const limit3m = addMonthsIso(REF_TODAY, 3);
+      const end3mMonth = endOfMonthIso(limit3m);
+      const limit8m = addMonthsIso(REF_TODAY, 8);
+      const end8mMonth = endOfMonthIso(limit8m > "2027-07-31" ? "2027-07-31" : limit8m);
+      return { limit3m, end3mMonth, limit8m, end8mMonth };
     }
 
     function getEffectiveScheduleInfo(ev) {
@@ -2965,6 +3076,30 @@
         isVerified: verified,
         isManual: manual && !verified
       };
+    }
+
+    function isInHorizonScope(ev) {
+      const st = computeStatus(ev);
+      if (st === "已結束" || st === "比賽中") return true;
+      if (getRegistrationState(ev).isRegistered) return true;
+      const { limit3m, end3mMonth, end8mMonth } = getHorizonBounds();
+      if (currentHorizon === "3m") {
+        // 未來3個月版本：若三個月內尚未公告確切報名時間（或開放報名在3個月後），先從表裡隱藏
+        if (!isRegConfirmed(ev)) return false;
+        if (ev.regStart > limit3m) return false;
+        return ev.matchStart <= end3mMonth || ev.regStart <= limit3m;
+      }
+      return ev.matchStart <= end8mMonth || ev.regStart <= end8mMonth;
+    }
+
+    function setHorizon(mode) {
+      if (mode !== "3m" && mode !== "8m") return;
+      currentHorizon = mode;
+      if (currentHorizon === "3m" && selectedStatuses.has("報名待定")) {
+        selectedStatuses.delete("報名待定");
+        document.querySelectorAll(".st-chk").forEach(c => { c.checked = selectedStatuses.has(c.value); });
+      }
+      renderAll();
     }
 
     function toggleRegistered(id, e) {
@@ -3053,6 +3188,7 @@
     function statusTag(ev) {
       const st = computeStatus(ev);
       if (st === "比賽中") return `<span class="tag tag-live mono">🔴 LIVE</span>`;
+      if (st === "報名待定") return `<span class="tag tag-muted mono" title="官方尚未公告確切報名時間">⏳ 待定</span>`;
       if (st === "報名中") {
         const left = daysBetween(REF_TODAY, ev.regEnd);
         if (left <= 10) return `<span class="tag tag-urgent mono">🔥 剩${left}d</span>`;
@@ -3086,13 +3222,43 @@
       if (info.hasSchedule) {
         return `<span class="tag tag-soon">📋 賽程已出</span>`;
       }
+      if (!isRegConfirmed(ev)) {
+        return `<span class="mono" style="font-size:11px;color:var(--text-muted);">⏳ 報名待公告</span>`;
+      }
       return `<span class="mono" style="font-size:11px;color:var(--text-muted);">🔒 ${ev.drawDate ? ev.drawDate.slice(5) : "待公布"}</span>`;
     }
 
-    function pctPos(dateStr) {
-      const d = new Date(dateStr + "T00:00:00");
-      const clamped = Math.max(TIMELINE_START.getTime(), Math.min(TIMELINE_END.getTime(), d.getTime()));
-      return ((clamped - TIMELINE_START.getTime()) / TOTAL_MS) * 100;
+    function pctPos(dateStr, mode = "start") {
+      if (!activeGanttMonths.length || !dateStr) return 0;
+      const firstYm = activeGanttMonths[0].ym;
+      const lastObj = activeGanttMonths[activeGanttMonths.length - 1];
+      const ym = dateStr.slice(0, 7);
+      if (ym < firstYm) return 0;
+      if (ym > lastObj.ym) return 100;
+      const idx = activeGanttMonths.findIndex(m => m.ym === ym);
+      if (idx < 0) return 0;
+      const day = Number(dateStr.slice(8, 10)) || 1;
+      const mDays = activeGanttMonths[idx].days;
+      const offsetInMonth = mode === "end"
+        ? Math.min(1, day / mDays)
+        : (mode === "today" ? Math.min(1, Math.max(0, (day - 0.5) / mDays)) : Math.max(0, (day - 1) / mDays));
+      return ((idx + offsetInMonth) / activeGanttMonths.length) * 100;
+    }
+
+    function syncGanttTimelineAxis(ganttDoneOpen) {
+      const { limit3m, end8mMonth } = getHorizonBounds();
+      const startYm = ganttDoneOpen ? "2026-09" : REF_TODAY.slice(0, 7);
+      const endYm = currentHorizon === "3m" ? limit3m.slice(0, 7) : end8mMonth.slice(0, 7);
+      activeGanttMonths = buildGanttMonths(startYm, endYm);
+      const wrapEl = document.getElementById("ganttMinWrap");
+      wrapEl.style.setProperty("--gantt-cols", String(activeGanttMonths.length));
+      wrapEl.classList.toggle("horizon-compact", activeGanttMonths.length <= 5);
+      const todayYm = REF_TODAY.slice(0, 7);
+      document.getElementById("ganttMonthsHeader").innerHTML = activeGanttMonths.map(m =>
+        m.ym === todayYm
+          ? `<span style="color:var(--red);font-weight:700;">${m.label}</span>`
+          : `<span>${m.label}</span>`
+      ).join("");
     }
 
     function buildGoogleCalUrl(ev, mode = "match") {
@@ -3144,6 +3310,7 @@
       const isFav = favorites.includes(ev.id);
       const regState = getRegistrationState(ev);
       const info = getEffectiveScheduleInfo(ev);
+      const confirmedReg = isRegConfirmed(ev);
       const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
       const fbSearchUrl = `https://www.facebook.com/search/top/?q=${encodeURIComponent(shortTitle(ev))}`;
 
@@ -3180,18 +3347,21 @@
           ${ev.docUrl ? `<a href="${ev.docUrl}" target="_blank" rel="noopener" class="btn">📄 規程PDF ↗</a>` : ""}
           ${info.scheduleUrl ? `<a href="${info.scheduleUrl}" target="_blank" rel="noopener" class="btn">📊 賽程表 ↗</a>` : ""}
           <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" rel="noopener" class="btn">📍 導航 ↗</a>
-          <a href="${buildGoogleCalUrl(ev, 'reg')}" target="_blank" rel="noopener" class="btn">📅 報名日曆</a>
+          ${confirmedReg ? `<a href="${buildGoogleCalUrl(ev, 'reg')}" target="_blank" rel="noopener" class="btn">📅 報名日曆</a>` : ""}
           <a href="${buildGoogleCalUrl(ev, 'match')}" target="_blank" rel="noopener" class="btn">📅 比賽日曆</a>
           <a href="${fbSearchUrl}" target="_blank" rel="noopener" class="btn">📘 FB查驗 ↗</a>
         </div>
       `;
 
       // Key-Value Keyword Grid
+      const regRangeLabel = confirmedReg
+        ? shortRange(ev.regStart, ev.regEnd)
+        : `待公告 (預估 ${shortRange(ev.regStart, ev.regEnd)})`;
       const kvHtml = `
         <div class="kv-grid">
-          <div class="kv-cell"><span class="kv-k">報名區間</span><span class="kv-v mono">${shortRange(ev.regStart, ev.regEnd)}</span></div>
+          <div class="kv-cell"><span class="kv-k">報名區間</span><span class="kv-v mono">${escapeHtml(regRangeLabel)}</span></div>
           <div class="kv-cell"><span class="kv-k">比賽日期</span><span class="kv-v mono">${shortRange(ev.matchStart, ev.matchEnd)}</span></div>
-          <div class="kv-cell"><span class="kv-k">抽籤/賽程</span><span class="kv-v mono">${escapeHtml(ev.drawDate ? ev.drawDate.slice(5) : "-")}</span></div>
+          <div class="kv-cell"><span class="kv-k">抽籤/賽程</span><span class="kv-v mono">${escapeHtml(confirmedReg && ev.drawDate ? ev.drawDate.slice(5) : "待公告")}</span></div>
           <div class="kv-cell"><span class="kv-k">比賽地點</span><span class="kv-v">${escapeHtml(shortVenue(ev.venue))}</span></div>
           <div class="kv-cell"><span class="kv-k">賽制計分</span><span class="kv-v">${escapeHtml(shortScoring(ev.scoring))}</span></div>
           <div class="kv-cell"><span class="kv-k">報名資格</span><span class="kv-v">${escapeHtml(shortEligibility(ev))}</span></div>
@@ -3265,7 +3435,7 @@
           <div class="sub-box ${currentDrawerMode === 'match' ? 'focus-ring' : ''}">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <strong style="font-size:12px;">🏫 義學國小正式賽程名單</strong>
-              <span class="tag tag-muted mono">🔒 待賽程 (${escapeHtml(ev.drawDate ? ev.drawDate.slice(5) : "未定")})</span>
+              <span class="tag tag-muted mono">🔒 待賽程 (${escapeHtml(confirmedReg && ev.drawDate ? ev.drawDate.slice(5) : "未定")})</span>
             </div>
             <div style="display:flex;gap:6px;">
               <input id="newScheduleUrlInput" type="url" class="inp" style="flex:1;" placeholder="貼上已公告之官方賽程表網址解鎖 (https://...)" />
@@ -3310,22 +3480,29 @@
     });
 
     function renderGanttRow(ev, todayLeft, isDone) {
-      const rLeft = pctPos(ev.regStart);
-      const rRight = pctPos(ev.regEnd);
-      const rWidth = Math.max(1.2, rRight - rLeft);
-      const regEndedBeforeStart = new Date(ev.regEnd + "T23:59:59") < TIMELINE_START;
+      const confirmedReg = isRegConfirmed(ev);
+      const firstMonthStart = activeGanttMonths.length ? `${activeGanttMonths[0].ym}-01` : "2026-11-01";
+      const regEndedBeforeStart = confirmedReg && ev.regEnd < firstMonthStart;
+      const rLeft = Math.min(98.8, pctPos(ev.regStart, "start"));
+      const rRight = pctPos(ev.regEnd, "end");
+      const rWidth = Math.min(100 - rLeft, Math.max(1.2, rRight - rLeft));
 
-      const mLeft = pctPos(ev.matchStart);
-      const mRight = pctPos(ev.matchEnd);
-      const mWidth = Math.max(1.1, mRight - mLeft);
+      const mLeft = Math.min(98.9, pctPos(ev.matchStart, "start"));
+      const mRight = pctPos(ev.matchEnd, "end");
+      const mWidth = Math.min(100 - mLeft, Math.max(1.1, mRight - mLeft));
       const isFav = favorites.includes(ev.id);
       const regState = getRegistrationState(ev);
       const st = computeStatus(ev);
       const matchClass = st === "比賽中" ? "bar-live" : "bar-match";
 
-      const regBar = regEndedBeforeStart
-        ? `<div class="bar-reg-stub" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名：${ev.regStart}~${ev.regEnd}"></div>`
-        : `<div class="bar-reg" style="left:${rLeft}%;width:${rWidth}%;" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名：${ev.regStart}~${ev.regEnd}"></div>`;
+      let regBar = "";
+      if (!confirmedReg) {
+        regBar = `<div class="bar-reg-tentative" style="left:${rLeft}%;width:${rWidth}%;" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="預估報名檔期（官方確切日期尚未公告）"></div>`;
+      } else if (regEndedBeforeStart) {
+        regBar = `<div class="bar-reg-stub" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名已截止：${ev.regStart}~${ev.regEnd}"></div>`;
+      } else {
+        regBar = `<div class="bar-reg" style="left:${rLeft}%;width:${rWidth}%;" onclick="openDetailDrawer('${ev.id}', 'reg', event)" title="報名：${ev.regStart}~${ev.regEnd}"></div>`;
+      }
 
       return `
         <div class="gantt-row ${isDone ? 'done-row' : ''}" onclick="openDetailDrawer('${ev.id}', 'all')">
@@ -3352,6 +3529,7 @@
     function renderTableRow(ev, isDone) {
       const isFav = favorites.includes(ev.id);
       const info = getEffectiveScheduleInfo(ev);
+      const confirmedReg = isRegConfirmed(ev);
       const types = getEventTypes(ev);
       const mapQuery = encodeURIComponent(`${ev.venue} ${ev.address}`);
 
@@ -3370,7 +3548,7 @@
           <td style="color:var(--text-sec);white-space:nowrap;">${escapeHtml(shortVenue(ev.venue))}</td>
           <td class="mono" style="white-space:nowrap;" onclick="openDetailDrawer('${ev.id}', 'reg', event)">
             <div style="display:flex;align-items:center;gap:4px;">
-              <span>${ev.regEnd.slice(5)}</span>
+              ${confirmedReg ? `<span>${ev.regEnd.slice(5)}</span>` : `<span style="color:var(--text-muted);font-size:12px;">待公告</span>`}
               ${statusTag(ev)}
             </div>
           </td>
@@ -3409,6 +3587,20 @@
       document.getElementById("ganttSection").classList.toggle("hidden", !showGantt);
       document.getElementById("tableSection").classList.toggle("hidden", !showTable);
 
+      // Sync Horizon Switch Buttons & Pending Status Filter Visibility
+      document.querySelectorAll(".horizon-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-horizon") === currentHorizon);
+      });
+      document.getElementById("lblPendingStatusChk").classList.toggle("hidden", currentHorizon === "3m");
+
+      const scopedEvents = events.filter(isInHorizonScope);
+      const hiddenInSelectedRegions = events.filter(e =>
+        (e.region === "全國" || selectedRegions.has(e.region)) && !isInHorizonScope(e)
+      ).length;
+      document.getElementById("horizonRuleHint").textContent = currentHorizon === "3m"
+        ? `已隱藏未定報名 ${hiddenInSelectedRegions} 場`
+        : "完整顯示未來 8 個月預估與已公告檔期";
+
       // Sync Table Whole-List Collapse State
       document.getElementById("tablePanelBody").classList.toggle("hidden", !isTableBodyOpen);
       document.getElementById("tablePanelHead").classList.toggle("collapsed-head", !isTableBodyOpen);
@@ -3423,9 +3615,9 @@
       document.getElementById("btnExpandAll").classList.toggle("btn-active", isAllExpandedState);
       document.getElementById("btnCollapseAll").classList.toggle("btn-active", isAllCollapsedState);
 
-      // Sync Region Checkboxes & Counts
+      // Sync Region Checkboxes & Counts (matching active 3m / 8m version)
       const regionTotals = { "全國": 0, "北區": 0, "中區": 0, "南區": 0, "東區": 0 };
-      events.forEach(e => { regionTotals[e.region] = (regionTotals[e.region] || 0) + 1; });
+      scopedEvents.forEach(e => { regionTotals[e.region] = (regionTotals[e.region] || 0) + 1; });
       document.getElementById("cntNational").textContent = regionTotals["全國"] || 0;
       document.querySelectorAll(".reg-chk").forEach(chk => {
         chk.checked = selectedRegions.has(chk.value);
@@ -3435,15 +3627,15 @@
       });
 
       // Sync Unified Registered / Yi-Xue Counts & Sort Buttons
-      const totalRegCount = events.filter(e => getRegistrationState(e).isRegistered).length;
+      const totalRegCount = scopedEvents.filter(e => getRegistrationState(e).isRegistered).length;
       document.getElementById("regCountBadgeTop").textContent = totalRegCount;
       document.querySelectorAll(".sort-btn").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-sort") === currentSortMode);
       });
 
-      // Counts & KPIs
-      const counts = { total: events.length, live: 0, open: 0, urgent: 0 };
-      events.forEach(e => {
+      // Counts & KPIs (matching active 3m / 8m version)
+      const counts = { total: scopedEvents.length, live: 0, open: 0, urgent: 0 };
+      scopedEvents.forEach(e => {
         const s = computeStatus(e);
         if (s === "比賽中") counts.live++;
         if (s === "報名中") {
@@ -3470,7 +3662,7 @@
       document.getElementById("btnClearFilters").classList.toggle("hidden", !hasCustomFilters);
 
       // Filter Logic (全國固定必選)
-      const filtered = events.filter(ev => {
+      const filtered = scopedEvents.filter(ev => {
         const st = computeStatus(ev);
         const info = getEffectiveScheduleInfo(ev);
         if (ev.region !== "全國" && !selectedRegions.has(ev.region)) return false;
@@ -3508,13 +3700,13 @@
       };
 
       const regNames = OPTIONAL_REGIONS.filter(r => selectedRegions.has(r)).join("+") || "無分區";
-      const todayLeft = pctPos(REF_TODAY);
 
       if (filtered.length === 0) {
+        syncGanttTimelineAxis(false);
         document.getElementById("ganttCountInfo").textContent = "0 場";
         document.getElementById("btnToggleGanttDone").classList.add("hidden");
         document.getElementById("tableCountInfo").textContent = "(0 場)";
-        document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</div>`;
+        document.getElementById("ganttContainer").innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事${currentHorizon === "3m" && hiddenInSelectedRegions > 0 ? `（未來3個月另有 ${hiddenInSelectedRegions} 場未定報名賽事已隱藏，可切換至「未來 8 個月」檢視）` : ""}</div>`;
         document.getElementById("tableBody").innerHTML = `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-muted);">無符合條件賽事</td></tr>`;
         return;
       }
@@ -3553,6 +3745,9 @@
       const nonEmptyGanttGroups = ganttGroups.filter(g => g.items.length > 0);
       const onlyDoneSearch = Boolean(q && activeEvents.length === 0 && sortedDone.length > 0);
       const ganttDoneOpen = sortedDone.length > 0 && (onlyDoneSearch ? !ganttDoneClosedDuringSearch : isGanttDoneOpen);
+
+      syncGanttTimelineAxis(ganttDoneOpen);
+      const todayLeft = pctPos(REF_TODAY, "today");
 
       const ganttDoneBtn = document.getElementById("btnToggleGanttDone");
       ganttDoneBtn.dataset.onlyDoneSearch = onlyDoneSearch ? "1" : "0";
@@ -3617,7 +3812,7 @@
         const bodyRows = !open ? "" : (
           g.items.length > 0
             ? g.items.map(ev => renderTableRow(ev, g.isDone)).join("")
-            : `<tr><td colspan="9" style="padding:10px 14px;color:var(--text-muted);font-size:12.5px;">尚無進行中／未開賽之已報名賽事（上週新北對抗賽、生麗盃已完賽歸入下方「📁 已完賽」；點選任一賽事可按「＋標記已報」）</td></tr>`
+            : `<tr><td colspan="9" style="padding:10px 14px;color:var(--text-muted);font-size:12.5px;">尚無進行中／未開賽之已報名賽事（已完賽場次歸入下方「📁 已完賽」；點選任一賽事可按「＋標記已報」）</td></tr>`
         );
         return `
           <tr onclick="toggleSectionGroup('${g.key}', event)" style="cursor:pointer;">
@@ -3660,6 +3855,11 @@
     }
 
     // Bindings
+    document.querySelectorAll(".horizon-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setHorizon(btn.getAttribute("data-horizon"));
+      });
+    });
     document.getElementById("btnCollapseDefault").addEventListener("click", () => {
       openSections = new Set(["reg_active"]);
       manualClosedDuringFilter.clear();
@@ -3733,12 +3933,13 @@
 
     // Compact Feedback Notes
     const INITIAL_COMMENTS = [
+      { time: "2026-11-22", author: "系統", type: "賽程名單", content: "新增排程「未來 3 個月 / 未來 8 個月」切換按鈕；3 個月模式自動隱藏尚未公告確切報名時間之賽事" },
       { time: "2026-11-21", author: "系統", type: "賽程名單", content: "補登《桃園航空城盃》LAPGO 官方賽程與比數：新北義學 鄭又心 晉級小四女單八強（並列第五名）" },
       { time: "2026-11-20", author: "系統", type: "賽程名單", content: "全站賽事名稱改為球界通用簡寫（如全國國小盃、樂穎盃、生麗盃、新北青年盃等）" },
       { time: "2026-11-17", author: "系統", type: "情報補充", content: "同步最新賽況：新增桃園航空城盃(11/18-22)、SOSA盃、梅好羽你嘉年華、彰師大盃、名人堂寒假營，共 55 場" },
       { time: "2026-11-11", author: "系統", type: "賽程名單", content: "v2.9 精簡介面・全國必選置頂・北區預選・已完賽收折" }
     ];
-    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v29") || "null") || [...INITIAL_COMMENTS];
+    let comments = JSON.parse(localStorage.getItem("tw_badminton_comments_v29_h") || "null") || [...INITIAL_COMMENTS];
 
     function renderComments() {
       document.getElementById("commentCountBadge").textContent = comments.length;
@@ -3769,7 +3970,7 @@
       const now = new Date();
       const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       comments.unshift({ time: timeStr, author, type, content });
-      localStorage.setItem("tw_badminton_comments_v29", JSON.stringify(comments));
+      localStorage.setItem("tw_badminton_comments_v29_h", JSON.stringify(comments));
       document.getElementById("cContent").value = "";
       commentsExpanded = true;
       renderComments();
@@ -3786,19 +3987,21 @@
 
     document.getElementById("btnExportCsv").addEventListener("click", () => {
       const headers = ["區域", "已報名", "賽事", "地點", "報名起", "報名迄", "比賽起", "比賽迄", "狀態", "義學名單", "章程網址", "賽程網址"];
-      const rows = events.map(e => {
+      const rows = events.filter(isInHorizonScope).map(e => {
         const info = getEffectiveScheduleInfo(e);
         const reg = getRegistrationState(e).isRegistered ? "是" : "否";
+        const confirmed = isRegConfirmed(e);
         return [
           e.region, reg, `"${shortTitle(e).replace(/"/g, '""')}"`, `"${shortVenue(e.venue)}"`,
-          e.regStart, e.regEnd, e.matchStart, e.matchEnd, computeStatus(e),
+          confirmed ? e.regStart : "待公告", confirmed ? e.regEnd : "待公告",
+          e.matchStart, e.matchEnd, computeStatus(e),
           `"${info.rosterText.replace(/"/g, '""')}"`, e.url, info.scheduleUrl || ""
         ];
       });
       const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-      a.download = `tw_badminton_${REF_TODAY}_v29.csv`;
+      a.download = `tw_badminton_${REF_TODAY}_${currentHorizon}_v29.csv`;
       a.click();
     });
 
